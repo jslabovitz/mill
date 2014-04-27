@@ -20,7 +20,6 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_path  = 'lib'
 
-  s.add_dependency 'hashstruct'
   s.add_dependency 'image_size'
   s.add_dependency 'kramdown'
   s.add_dependency 'nokogiri'

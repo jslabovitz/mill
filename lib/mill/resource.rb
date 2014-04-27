@@ -6,6 +6,7 @@ module Mill
     attr_accessor :dest_file
     attr_accessor :date
     attr_accessor :title
+    attr_accessor :status
     attr_accessor :data
     attr_accessor :site
 

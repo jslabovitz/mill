@@ -18,7 +18,7 @@ module Mill
           Filters::AddImageSizes,
           Filters::WriteFile
         ],
-        '*.markdown' => [
+        '*.{md,mdown,markdown}' => [
           Filters::ReadFile,
           Filters::ParseMarkdown,
           Filters::MarkdownToHTML

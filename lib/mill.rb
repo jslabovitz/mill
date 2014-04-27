@@ -1,11 +1,11 @@
 require 'kramdown'
-require 'hashstruct'
 require 'nokogiri'
 require 'pp'
 require 'webrick'
 require 'image_size'
 require 'path'
 require 'logger'
+require 'date'
 require 'uri'
 
 require 'mill/version'
