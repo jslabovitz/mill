@@ -47,7 +47,11 @@ module Mill
         dest_file = @site_dir / file.relative_path_from(@content_dir)
         resource = Resource.new(src_file: file, dest_file: dest_file, site: self)
         log.debug(2) { "before: #{resource.inspect}" }
-        process(resource)
+        begin
+          process(resource)
+        rescue Filter::SkipResource => e
+          log.debug(2) { "skipping resource" }
+        end
         log.debug(2) { "after : #{resource.inspect}" }
       end
     end
@@ -70,6 +74,10 @@ module Mill
 
     def validate
       #FIXME
+    end
+
+    def decorate_html(resource)
+      # implemented by subclass
     end
 
   end
