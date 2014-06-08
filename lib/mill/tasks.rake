@@ -1,23 +1,16 @@
 $LOAD_PATH.unshift 'lib'
 
-task :clean do
-  $site.clean
-end
-
+desc 'Build.'
 task :build do
-  files = ARGV
-  files.shift
-  $site.build(*files)
+  $mill.build
 end
 
-task :validate do
-  $site.validate
+desc 'Clean.'
+task :clean do
+  $mill.clean
 end
 
-task :server => [:build, :validate] do
-  $site.server
-end
-
-task :publish => [:clean, :build, :validate] do
-  #FIXME
+desc 'Run web server.'
+task :server => 'build' do
+  $mill.server
 end

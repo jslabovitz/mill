@@ -20,10 +20,12 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_path  = 'lib'
 
+  s.add_dependency 'addressable'
   s.add_dependency 'image_size'
   s.add_dependency 'kramdown'
   s.add_dependency 'nokogiri'
   s.add_dependency 'path'
+  s.add_dependency 'sinatra'
 
   s.add_development_dependency 'bundler'
   s.add_development_dependency 'rake'

@@ -1,0 +1,7 @@
+$LOAD_PATH.unshift "#{ENV['HOME']}/Projects/mill/lib"
+require 'mill'
+load 'mill/tasks.rake'
+
+$LOAD_PATH.unshift '.'
+require 'test-mill'
+$mill = TestMill.new

@@ -1,85 +1,116 @@
-module Mill
+class Mill
 
   class Resource
 
-    attr_accessor :src_file
-    attr_accessor :dest_file
-    attr_accessor :date
+    attr_accessor :src_path
+    attr_accessor :path
+    attr_accessor :type
     attr_accessor :title
-    attr_accessor :status
+    attr_accessor :date
     attr_accessor :data
-    attr_accessor :site
+    attr_accessor :processor
+
+    def self.load_file(file, processor)
+      resource = new(
+        src_path: file,
+        path: file.relative_to(processor.src_dir).without_extension,
+        type: Mill.type_for_file(file),
+        processor: processor)
+      [resource]
+    end
+
+    def self.load_path(path, processor, type=nil)
+      path = Path.new(path)
+      if path.extname.empty?
+        files = processor.src_dir.glob(path.relative_to('/').to_s + '.*')
+        resources = files.map do |file|
+          load_file(file, processor)
+        end.flatten
+        resources.select! { |r| r.type == type } if type
+        raise "No resources for path #{path} (type = #{type.inspect}) in #{processor.src_dir}" if resources.empty?
+        resources
+      else
+        file = processor.dest_dir / Path.new(path).relative_to('/')
+        if type
+          extensions = Mill.extensions_for_type(type) or raise "Unknown file type: #{type.inspect}"
+          file.add_extension(extensions.first)
+        end
+        load_file(file, processor)
+      end
+    end
 
     def initialize(params={})
-      @status = []
       params.each { |k, v| send("#{k}=", v) }
     end
 
     def inspect
-      "<#{self.class}: src_file: #{@src_file.to_s.inspect}, dest_file: #{@dest_file.to_s.inspect}, uri: #{uri.to_s.inspect}, date: #{@date.inspect}, title: #{@title.inspect}, status: #{@status.inspect}, data: <#{@data.class}>>"
+      "<#{self.class}: " + instance_variables.map do |var|
+        val = instance_variable_get(var)
+        str = case var
+        when :@data, :@processor
+          "<#{val.class}>"
+        when :@date, :@src_path, :@path
+          val.to_s
+        when :@log
+          nil
+        else
+          val.inspect
+        end
+        "#{var[1..-1]} = #{str}" if str
+      end.compact.join(', ') + '>'
     end
 
-    def date=(date)
-      @date = date.kind_of?(DateTime) ? date : DateTime.parse(date.to_s)
-    end
-
-    def status=(status)
-      @status = status.kind_of?(Array) ? status : status.to_s.split(/\s/).map(&:downcase).map(&:to_sym)
+    def dest_path
+      @processor.dest_dir / (@path.to_s + Mill.extensions_for_type(@type).first)
     end
 
     def uri
-      URI.parse('/' + @dest_file.relative_path_from(@site.site_dir).to_s)
+      Addressable::URI.parse('/' + @path.to_s)
     end
 
-    def draft?
-      @status.include?(:draft)
+    def uri_with_extension
+      Addressable::URI.parse('/' + @path.to_s + Mill.extensions_for_type(@type).first)
     end
 
-    def invisible?
-      @status.include?(:invisible)
+    def date=(date)
+      @date = date.kind_of?(DateTime) ? date : DateTime.parse(date)
     end
 
-    def add_script(script)
-      if script.kind_of?(Hash)
-        elem = @data.create_element('script', script)
+    def load
+      load_file_metadata
+    end
+
+    def process
+    end
+
+    def save
+      if @data
+        write_file
       else
-        elem = @data.create_element('script') { |e| e.content = script }
-      end
-      @data.at_xpath('/html/head') << elem
-    end
-
-    def add_stylesheet(stylesheet)
-      attrs = { rel: 'stylesheet', type: 'text/css' }
-      if stylesheet.kind_of?(Hash)
-        add_link(attrs.merge(stylesheet))
-      else
-        add_link(attrs) { stylesheet }
+        copy_file
       end
     end
 
-    def add_feed(feed)
-      attrs = {
-        rel: 'alternate',
-        type: 'application/atom+xml',
-        title: feed.title,
-        href: feed.link,
-      }
-      add_link(attrs)
+    def load_file_metadata
+      @date ||= @src_path.mtime
     end
 
-    def add_link(attrs, &block)
-      elem = @data.create_element('link', attrs) { e.content = yield if block_given? }
-      @data.at_xpath('/html/head') << elem
+    def read_file
+      log.debug(3) { "reading file #{@src_path.to_s.inspect}" }
+      @data ||= @src_path.read
     end
 
-    def wrap_body
-      body = @data.at_xpath('/html/body')
-      old_body = body.children.remove
-      new_body = Nokogiri::XML::DocumentFragment.parse('')
-      Nokogiri::HTML::Builder.with(new_body) do |builder|
-        yield(self, builder, old_body)
-      end
-      body << new_body
+    def write_file
+      log.debug(3) { "writing file #{dest_path}" }
+      dest_path.dirname.mkpath unless dest_path.dirname.exist?
+      dest_path.open('w') { |io| io.write(@data) }
+      dest_path.utime(@date.to_time, @date.to_time)
+    end
+
+    def copy_file
+      log.debug(3) { "copying file #{@src_path} to #{dest_path}" }
+      dest_path.dirname.mkpath unless dest_path.dirname.exist?
+      @src_path.cp(dest_path)
     end
 
   end

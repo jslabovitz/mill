@@ -1,13 +1,3 @@
-- pre-read all files
-  - skip drafts
-  - if Markdown:
-    - read header
-  - if HTML
-    - read <head>
-  - else
-    - read metadata
-  - build tree of Resource objects
-
 - check external links (rake task)
   - redirects
   - 404s
@@ -15,4 +5,7 @@
 - add RSS feed
   - for all non-invisible pages
 
--
+EXPERIMENTS
+
+- treat entire site as single virtual XML document
+  - use XPointer (XPath) for finding/navigating documents
