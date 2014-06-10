@@ -2,6 +2,7 @@ class Mill
 
   class Processor
 
+    attr_accessor :name
     attr_accessor :mill
     attr_accessor :src_dir
     attr_accessor :dest_dir
@@ -33,7 +34,7 @@ class Mill
     end
 
     def build
-      log.info "building from #{@src_dir} to #{@dest_dir} for #{@handlers.keys.inspect}"
+      log.info "#{@name}: building from #{@src_dir} to #{@dest_dir} for #{@handlers.keys.inspect}"
       load_resources
       mill.resources_loaded(self)
       process_resources
@@ -48,7 +49,6 @@ class Mill
         @handlers.each do |extname, resource_class|
           if extname == '*' || file.extname == extname
             resource_class.load_file(file, self).each do |resource|
-              resource.load
               log.debug(3) { "loaded resource: #{resource.inspect}" }
               @resources << resource
             end

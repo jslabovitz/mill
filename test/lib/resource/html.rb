@@ -17,7 +17,7 @@ class TestMill < Mill
             builder.h1(title)
           end
           builder.div(id: 'main') do
-            builder << body
+            builder << body.to_html
           end
         end
       end

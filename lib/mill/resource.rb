@@ -2,6 +2,8 @@ class Mill
 
   class Resource
 
+    class SkipResource < Exception; end
+
     attr_accessor :src_path
     attr_accessor :path
     attr_accessor :type
@@ -11,18 +13,23 @@ class Mill
     attr_accessor :processor
 
     def self.load_file(file, processor)
-      resource = new(
-        src_path: file,
-        path: file.relative_to(processor.src_dir).without_extension,
-        type: Mill.type_for_file(file),
-        processor: processor)
-      [resource]
+      begin
+        resource = new(
+          src_path: file,
+          path: Path.new('/') / file.relative_to(processor.src_dir).without_extension,
+          type: Mill.type_for_file(file),
+          processor: processor)
+        [resource]
+      rescue SkipResource
+        []
+      end
     end
 
     def self.load_path(path, processor, type=nil)
       path = Path.new(path)
       if path.extname.empty?
-        files = processor.src_dir.glob(path.relative_to('/').to_s + '.*')
+        pattern = path.relative_to('/').add_extension('.*')
+        files = processor.src_dir.glob(pattern)
         resources = files.map do |file|
           load_file(file, processor)
         end.flatten
@@ -41,10 +48,11 @@ class Mill
 
     def initialize(params={})
       params.each { |k, v| send("#{k}=", v) }
+      load
     end
 
     def inspect
-      "<#{self.class}: " + instance_variables.map do |var|
+      "<#{self.class}[#{'0x%08x' % self.object_id}]: " + instance_variables.map do |var|
         val = instance_variable_get(var)
         str = case var
         when :@data, :@processor
@@ -61,22 +69,28 @@ class Mill
     end
 
     def dest_path
-      @processor.dest_dir / (@path.to_s + Mill.extensions_for_type(@type).first)
+      @processor.dest_dir / (@path.relative_to('/').to_s + Mill.extensions_for_type(@type).first)
     end
 
     def uri
-      Addressable::URI.parse('/' + @path.to_s)
+      Addressable::URI.parse(@path.to_s)
     end
 
     def uri_with_extension
-      Addressable::URI.parse('/' + @path.to_s + Mill.extensions_for_type(@type).first)
+      Addressable::URI.parse(@path.add_extension(Mill.extensions_for_type(@type).first).to_s)
     end
 
     def date=(date)
       @date = date.kind_of?(DateTime) ? date : DateTime.parse(date)
     end
 
+    def full_title
+      @title
+    end
+
     def load
+      raise "Already loaded!" if @loaded
+      @loaded = true
       load_file_metadata
     end
 
@@ -92,7 +106,7 @@ class Mill
     end
 
     def load_file_metadata
-      @date ||= @src_path.mtime
+      @date ||= @src_path.mtime.to_datetime
     end
 
     def read_file

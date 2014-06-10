@@ -13,6 +13,8 @@ require 'rmagick'
 require 'mill/version'
 
 require 'mill/extensions/path'
+require 'mill/extensions/string'
+require 'mill/extensions/time'
 
 require 'mill/logging'
 require 'mill/resource'
@@ -89,7 +91,7 @@ class Mill
   def build_processors
     @processors = {}
     @@processor_specs.each do |name, proc|
-      processor = Processor.new(mill: self)
+      processor = Processor.new(name: name, mill: self)
       processor.instance_eval(&proc)
       @processors[name] = processor
     end

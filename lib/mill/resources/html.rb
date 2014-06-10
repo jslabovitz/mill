@@ -35,7 +35,6 @@ class Mill
           resources = Resource::Image.load_path(img_link.path, @processor, :jpeg)
           raise "Multiple resources for image link #{img_link}" if resources.length > 1
           img_resource = resources.first
-          img_resource.load
           log.debug(4) { "#{img_resource.uri}: #{img_resource.width}x#{img_resource.height}" }
           img[:width], img[:height] = img_resource.width, img_resource.height
         end
@@ -94,7 +93,7 @@ class Mill
         new_body = Nokogiri::HTML.fragment('')
         Nokogiri::HTML::Builder.with(new_body) do |builder|
           builder.body do
-            yield(builder, body.children.to_html)
+            yield(builder, body.children)
           end
         end
         body.replace(new_body)

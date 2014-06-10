@@ -27,6 +27,7 @@ class Mill
         super
         read_file
         parse_header
+        raise SkipResource if draft?
       end
 
       def process
@@ -51,7 +52,7 @@ class Mill
         builder = Nokogiri::HTML::Builder.new(encoding: 'utf-8') do |builder|
           builder.html do
             builder.head do
-              builder.title(@title) if @title
+              builder.title(full_title) if full_title
             end
             builder.body do
               builder << Kramdown::Document.new(@data).to_html
