@@ -34,7 +34,7 @@ class Mill
     end
 
     def build
-      log.info "#{@name}: building from #{@src_dir} to #{@dest_dir} for #{@handlers.keys.inspect}"
+      log.debug "#{@name}: building from #{@src_dir} to #{@dest_dir} for #{@handlers.keys.inspect}"
       load_resources
       mill.resources_loaded(self)
       process_resources
