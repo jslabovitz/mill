@@ -1,6 +1,8 @@
-- check external links (rake task)
-  - redirects
-  - 404s
+- validate generated HTML (rake task)
+  - use existing gem?
+  - check external links
+    - redirects
+    - 404s
 
 - add RSS feed
   - for all non-invisible pages
