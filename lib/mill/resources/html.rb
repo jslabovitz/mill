@@ -23,6 +23,9 @@ class Mill
             log.error { "#{@src_path}: Error in HTML: #{error.line}:#{error.column}: #{error.message}" }
           end
           @title = @data.at_xpath('//html/head/title').text
+          if (date_elem = @data.at_xpath('//html/head/meta[@name="date"]'))
+            @date = DateTime.parse(date_elem.text) rescue nil
+          end
         end
       end
 

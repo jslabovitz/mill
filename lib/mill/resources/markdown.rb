@@ -52,7 +52,8 @@ class Mill
         builder = Nokogiri::HTML::Builder.new(encoding: 'utf-8') do |builder|
           builder.html do
             builder.head do
-              builder.title(full_title) if full_title
+              builder.title(full_title)
+              builder.meta(name: 'date', content: @date.to_iso8601)
             end
             builder.body do
               builder << Kramdown::Document.new(@data).to_html
