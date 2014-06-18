@@ -100,7 +100,7 @@ class Mill
     def save
       if @data
         write_file
-      else
+      elsif @src_path
         copy_file
       end
     end
