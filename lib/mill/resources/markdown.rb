@@ -53,7 +53,7 @@ class Mill
           builder.html do
             builder.head do
               builder.title(full_title)
-              builder.meta(name: 'date', content: @date.to_iso8601)
+              builder.meta(name: 'date', content: @date.to_s)
             end
             builder.body do
               builder << Kramdown::Document.new(@data).to_html
