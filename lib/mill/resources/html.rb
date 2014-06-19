@@ -22,9 +22,10 @@ class Mill
           @data.errors.reject { |e| e.message =~ /Tag members? invalid/ }.each do |error|
             log.error { "#{@src_path}: Error in HTML: #{error.line}:#{error.column}: #{error.message}" }
           end
-          @title = @data.at_xpath('//html/head/title').text
-          if (date_elem = @data.at_xpath('//html/head/meta[@name="date"]'))
-            @date = DateTime.parse(date_elem.text) rescue nil
+          @title = @data.at_xpath('/html/head/title').text
+          @data.xpath('/html/head/meta[@name]').each do |meta_elem|
+            name, content = meta_elem['name'], meta_elem['content']
+            send("#{name}=", content)
           end
         end
       end
