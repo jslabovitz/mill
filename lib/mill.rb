@@ -88,6 +88,15 @@ class Mill
     @@processor_specs[name] = block
   end
 
+  ###
+
+  attr_accessor :site_dir
+
+  def initialize(params={})
+    @site_dir = 'site'
+    params.each { |k, v| send("#{k}=", v) }
+  end
+
   def build_processors
     @processors = {}
     @@processor_specs.each do |name, proc|
@@ -121,7 +130,7 @@ class Mill
   end
 
   def server
-    Server.run!
+    Server.run!(public_dir: @site_dir)
   end
 
   def resources_loaded(processor)
