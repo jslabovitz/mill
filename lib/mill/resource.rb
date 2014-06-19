@@ -47,6 +47,7 @@ class Mill
     end
 
     def initialize(params={})
+      @date = DateTime.now
       params.each { |k, v| send("#{k}=", v) }
       load
     end
@@ -55,17 +56,20 @@ class Mill
       "<#{self.class}[#{'0x%08x' % self.object_id}]: " + instance_variables.map do |var|
         val = instance_variable_get(var)
         str = case var
-        when :@data, :@processor
+        when :@data
           "<#{val.class}>"
-        when :@date, :@src_path, :@path
-          val.to_s
-        when :@log
-          nil
         else
-          val.inspect
+          case val
+          when Logger, Processor
+            "<#{val.class}>"
+          when DateTime, Time, Path
+            val.to_s
+          else
+            val.inspect
+          end
         end
-        "#{var[1..-1]} = #{str}" if str
-      end.compact.join(', ') + '>'
+        "#{var[1..-1]} = #{str}"
+      end.join(', ') + '>'
     end
 
     def dest_path
