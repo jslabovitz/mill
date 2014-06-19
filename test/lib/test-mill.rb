@@ -40,13 +40,20 @@ require 'resource/markdown'
 
 class TestMill < Mill
 
-  process :content_images do
+  attr_accessor :max_image_size
+
+  def initialize(params={})
+    @max_image_size = 500
+    super
+  end
+
+  process :images do
     input 'content'
     output 'tmp'
     process :image, TestMill::Resource::Image
   end
 
-  process :content_markdown do
+  process :markdown do
     input 'content'
     output 'tmp'
     process :markdown, TestMill::Resource::Markdown
@@ -55,7 +62,7 @@ class TestMill < Mill
   process :html do
     input 'tmp'
     output 'site'
-    process :image, Mill::Resource::Generic
+    process :image, TestMill::Resource::Image
     process :html, TestMill::Resource::HTML
   end
 
@@ -64,7 +71,5 @@ class TestMill < Mill
     output 'site'
     process :any, Mill::Resource::Generic
   end
-
-  TestMill::Server::PublicDir = 'site'
 
 end

@@ -4,23 +4,21 @@ class TestMill < Mill
 
     class Image < Mill::Resource::Image
 
-      Size = 500
-
       def process
-        resize_image
+        resize_image(size: @processor.mill.max_image_size)
         super
       end
 
-      def resize_image
+      def resize_image(size: nil, format: 'JPEG', type: :jpeg, quality: 80)
         src_image ||= Magick::Image.read(src_path.to_s).first
-        log.debug(2) { "resizing image #{@src_path} to #{Size}px" }
+        log.debug(2) { "resizing image #{@src_path} to #{size}px" }
         dest_image = src_image.dup
-        dest_image.change_geometry!("#{Size}x#{Size}") { |cols, rows, img| img.resize!(cols, rows) }
+        dest_image.change_geometry!("#{size}x#{size}") { |cols, rows, img| img.resize!(cols, rows) }
         @data = dest_image.to_blob do
-          self.format = 'JPEG'
-          self.quality = 80
+          self.format = format
+          self.quality = quality
         end
-        @type = :jpeg
+        @type = type
       end
 
     end
