@@ -41,8 +41,8 @@ class Mill
     end
 
     def load_resources
+      return unless @src_dir && @src_dir.exist?
       log.debug(1) { "loading files from #{@src_dir}" }
-      return unless @src_dir.exist?
       @src_dir.find do |file|
         next if file.hidden? || file.directory?
         log.debug(2) { "loading file #{file}" }
@@ -56,6 +56,10 @@ class Mill
           end
         end
       end
+    end
+
+    def generate(resource_class, params={})
+      @resources << resource_class.new(params)
     end
 
     def process_resources
