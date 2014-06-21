@@ -110,7 +110,7 @@ class Mill
     end
 
     def load_file_metadata
-      @date ||= @src_path.mtime.to_datetime
+      @date = @src_path.mtime.to_datetime if @src_path
     end
 
     def read_file
