@@ -4,7 +4,7 @@ class Mill
 
     class SkipResource < Exception; end
 
-    attr_accessor :src_path
+    attr_accessor :src_file
     attr_accessor :path
     attr_accessor :type
     attr_accessor :title
@@ -15,7 +15,7 @@ class Mill
     def self.load_file(file, processor)
       begin
         resource = new(
-          src_path: file,
+          src_file: file,
           path: Path.new('/') / file.relative_to(processor.src_dir).without_extension,
           type: Mill.type_for_file(file),
           processor: processor)
@@ -72,7 +72,7 @@ class Mill
       end.join(', ') + '>'
     end
 
-    def dest_path
+    def dest_file
       @processor.dest_dir / (@path.relative_to('/').to_s + Mill.extensions_for_type(@type).first)
     end
 
@@ -104,31 +104,31 @@ class Mill
     def save
       if @data
         write_file
-      elsif @src_path
+      elsif @src_file
         copy_file
       end
     end
 
     def load_file_metadata
-      @date = @src_path.mtime.to_datetime if @src_path
+      @date = @src_file.mtime.to_datetime if @src_file
     end
 
     def read_file
-      log.debug(3) { "reading file #{@src_path.to_s.inspect}" }
-      @data ||= @src_path.read
+      log.debug(3) { "reading file #{@src_file.to_s.inspect}" }
+      @data ||= @src_file.read
     end
 
     def write_file
-      log.debug(3) { "writing file #{dest_path}" }
-      dest_path.dirname.mkpath unless dest_path.dirname.exist?
-      dest_path.open('w') { |io| io.write(@data) }
-      dest_path.utime(@date.to_time, @date.to_time)
+      log.debug(3) { "writing file #{dest_file}" }
+      dest_file.dirname.mkpath unless dest_file.dirname.exist?
+      dest_file.open('w') { |io| io.write(@data) }
+      dest_file.utime(@date.to_time, @date.to_time)
     end
 
     def copy_file
-      log.debug(3) { "copying file #{@src_path} to #{dest_path}" }
-      dest_path.dirname.mkpath unless dest_path.dirname.exist?
-      @src_path.cp(dest_path)
+      log.debug(3) { "copying file #{@src_file} to #{dest_file}" }
+      dest_file.dirname.mkpath unless dest_file.dirname.exist?
+      @src_file.cp(dest_file)
     end
 
   end

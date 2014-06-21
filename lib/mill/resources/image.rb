@@ -14,7 +14,7 @@ class Mill
       end
 
       def load_image_info
-        info = ImageSize.path(src_path.to_s)
+        info = ImageSize.path(@src_file.to_s)
         @format = info.format
         @width, @height = info.size
       end

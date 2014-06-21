@@ -20,7 +20,7 @@ class Mill
           log.debug(3) { "parsing HTML" }
           @data = Nokogiri::HTML(@data) { |config| config.strict }
           @data.errors.reject { |e| e.message =~ /Tag members? invalid/ }.each do |error|
-            log.error { "#{@src_path}: Error in HTML: #{error.line}:#{error.column}: #{error.message}" }
+            log.error { "#{@src_file}: Error in HTML: #{error.line}:#{error.column}: #{error.message}" }
           end
           @title = @data.at_xpath('/html/head/title').text
           @data.xpath('/html/head/meta[@name]').each do |meta_elem|

@@ -10,8 +10,8 @@ class TestMill < Mill
       end
 
       def resize_image(size: nil, format: 'JPEG', type: :jpeg, quality: 80)
-        src_image ||= Magick::Image.read(src_path.to_s).first
-        log.debug(2) { "resizing image #{@src_path} to #{size}px" }
+        src_image ||= Magick::Image.read(src_file.to_s).first
+        log.debug(2) { "resizing image #{@src_file} to #{size}px" }
         dest_image = src_image.dup
         dest_image.change_geometry!("#{size}x#{size}") { |cols, rows, img| img.resize!(cols, rows) }
         @data = dest_image.to_blob do
