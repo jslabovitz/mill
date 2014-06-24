@@ -84,6 +84,7 @@ class Mill
     def save(dir)
       file = dir / @path.relative_to('/').add_extension('.xml')
       log.debug(3) { "saving resource to #{file.to_s.inspect}" }
+      raise "resource already exists at #{file.to_s.inspect}" if file.exist?
       file.dirname.mkpath unless file.dirname.exist?
       file.open('w') { |io| io.write(to_xml) }
       file.utime(@date.to_time, @date.to_time) if @date
