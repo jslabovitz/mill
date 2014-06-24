@@ -101,8 +101,7 @@ class Mill
       end
 
       def decorate
-        add_image_sizes
-        add_external_link_targets
+        # implemented by subclass
       end
 
       def add_image_sizes
@@ -110,7 +109,7 @@ class Mill
         @html.xpath('//img').each do |img|
           img_link = Addressable::URI.parse(img['src'])
           next if img_link.host
-          img_path = Path.new((uri + img_link).path)
+          img_path = Path.new((uri + img_link).path).without_extension
           img_resource = @mill[img_path]
           log.debug(4) { "#{img_resource.path}: adding image size: #{img_resource.width}x#{img_resource.height}" }
           img[:width], img[:height] = img_resource.width, img_resource.height
