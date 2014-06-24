@@ -58,11 +58,12 @@ class Mill
   end
 
   def import
+    log.info "importing from #{@content_dir.to_s.inspect} to #{@resources_dir.to_s.inspect}"
     Importer.new(input_dir: @content_dir, output_dir: @resources_dir).import
   end
 
   def build
-    log.debug "building from #{@resources_dir} to #{@site_dir}"
+    log.info "building from #{@resources_dir.to_s.inspect} to #{@site_dir.to_s.inspect}"
     load_resources
     render_resources
   end
@@ -95,13 +96,14 @@ class Mill
   def clean
     [@resources_dir, @site_dir].each do |dir|
       if dir.exist?
-        log.info "Cleaning #{dir}"
+        log.info "cleaning #{dir.to_s.inspect}"
         dir.rmtree
       end
     end
   end
 
   def server
+    log.info "running server in #{@site_dir.to_s.inspect}"
     Server.run!(public_dir: @site_dir)
   end
 
