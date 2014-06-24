@@ -1,8 +1,6 @@
 $LOAD_PATH.unshift 'lib'
 
-require 'resource/html'
-require 'resource/image'
-require 'resource/markdown'
+require 'resources/page'
 
 =begin
 
@@ -45,31 +43,6 @@ class TestMill < Mill
   def initialize(params={})
     @max_image_size = 500
     super
-  end
-
-  process :images do
-    input 'content'
-    output 'tmp'
-    process :image, TestMill::Resource::Image
-  end
-
-  process :markdown do
-    input 'content'
-    output 'tmp'
-    process :markdown, TestMill::Resource::Markdown
-  end
-
-  process :html do
-    input 'tmp'
-    output 'site'
-    process :image, TestMill::Resource::Image
-    process :html, TestMill::Resource::HTML
-  end
-
-  process :static do
-    input 'static'
-    output 'site'
-    process :any, Mill::Resource::Generic
   end
 
 end

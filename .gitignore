@@ -9,6 +9,7 @@
 /test/tmp/
 /test/version_tmp/
 /test/site
+/test/resources
 /tmp/
 
 ## Specific to RubyMotion:

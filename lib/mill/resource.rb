@@ -4,131 +4,116 @@ class Mill
 
     class SkipResource < Exception; end
 
-    attr_accessor :src_file
+    attr_accessor :mill
+    attr_accessor :file
     attr_accessor :path
-    attr_accessor :type
-    attr_accessor :title
     attr_accessor :date
-    attr_accessor :data
-    attr_accessor :processor
 
-    def self.load_file(file, processor)
-      begin
-        resource = new(
-          src_file: file,
-          path: Path.new('/') / file.relative_to(processor.src_dir).without_extension,
-          type: Mill.type_for_file(file),
-          processor: processor)
-        [resource]
-      rescue SkipResource
-        []
-      end
+    @@resource_classes = []
+
+    def self.inherited(subclass)
+      @@resource_classes << subclass
     end
 
-    def self.load_path(path, processor, type=nil)
-      path = Path.new(path)
-      if path.extname.empty?
-        pattern = path.relative_to('/').add_extension('.*')
-        files = processor.src_dir.glob(pattern)
-        resources = files.map do |file|
-          load_file(file, processor)
-        end.flatten
-        resources.select! { |r| r.type == type } if type
-        raise "No resources for path #{path} (type = #{type.inspect}) in #{processor.src_dir}" if resources.empty?
-        resources
-      else
-        file = processor.dest_dir / Path.new(path).relative_to('/')
-        if type
-          extensions = Mill.extensions_for_type(type) or raise "Unknown file type: #{type.inspect}"
-          file.add_extension(extensions.first)
+    def self.resource_class_for_type(type)
+      unless defined?(@@resource_class_map)
+        @@resource_class_map = {}
+        @@resource_classes.each do |resource_class|
+          @@resource_class_map[resource_class.resource_type] = resource_class
         end
-        load_file(file, processor)
       end
+      @@resource_class_map[type]
+    end
+
+    def self.load(file, params={})
+      file = file.add_extension('.xml') unless file.exist?
+      raise "No resource: #{file}" unless file.exist?
+      xml = Nokogiri::XML(file.read)
+      root_elem = xml.root
+      resource_type = root_elem.name.to_sym
+      resource_class = resource_class_for_type(resource_type) \
+        or raise "Can't find resource class for #{resource_type.inspect}"
+      resource = resource_class.new(params)
+      resource.load(root_elem)
+      resource
+    end
+
+    def self.import(file, params={})
+      resource = new(params)
+      resource.import(file)
+      resource
     end
 
     def initialize(params={})
-      @date = DateTime.now
       params.each { |k, v| send("#{k}=", v) }
-      load
-    end
-
-    def inspect
-      "<#{self.class}[#{'0x%08x' % self.object_id}]: " + instance_variables.map do |var|
-        val = instance_variable_get(var)
-        str = case var
-        when :@data
-          "<#{val.class}>"
-        else
-          case val
-          when Logger, Processor
-            "<#{val.class}>"
-          when DateTime, Time, Path
-            val.to_s
-          else
-            val.inspect
-          end
-        end
-        "#{var[1..-1]} = #{str}"
-      end.join(', ') + '>'
-    end
-
-    def dest_file
-      @processor.dest_dir / (@path.relative_to('/').to_s + Mill.extensions_for_type(@type).first)
-    end
-
-    def uri
-      Addressable::URI.parse(@path.to_s)
-    end
-
-    def uri_with_extension
-      Addressable::URI.parse(@path.add_extension(Mill.extensions_for_type(@type).first).to_s)
     end
 
     def date=(date)
       @date = date.kind_of?(DateTime) ? date : DateTime.parse(date)
     end
 
-    def full_title
-      @title
+    def inspect
+      "<#{self.class}[#{'0x%08x' % self.object_id}]: " + instance_variables.map do |var|
+        val = instance_variable_get(var)
+        str = case val
+        when DateTime, Time
+          val.to_s
+        when Path
+          val.to_s.inspect
+        when Nokogiri::XML::Document, Nokogiri::XML::NodeSet
+          (val.to_xml[0..20] + '...').inspect
+        when Numeric, String, Symbol
+          val.inspect
+        else
+          "<#{val.class}>"
+        end
+        "#{var[1..-1]}=#{str}"
+      end.join(', ') + '>'
     end
 
-    def load
-      raise "Already loaded!" if @loaded
-      @loaded = true
-      load_file_metadata
+    def import(file)
+      @date = file.mtime.to_datetime
     end
 
-    def process
+    def load(root_elem, &block)
+      @path = Path.new(root_elem['path'])
+      @date = DateTime.parse(root_elem['date'])
+      yield(root_elem) if block_given?
     end
 
-    def save
-      if @data
-        write_file
-      elsif @src_file
-        copy_file
+    def save(dir)
+      file = dir / @path.relative_to('/').add_extension('.xml')
+      log.debug(3) { "saving resource to #{file.to_s.inspect}" }
+      file.dirname.mkpath unless file.dirname.exist?
+      file.open('w') { |io| io.write(to_xml) }
+      file.utime(@date.to_time, @date.to_time) if @date
+    end
+
+    def to_xml(&block)
+      builder = Nokogiri::XML::Builder.new do |builder|
+        yield(builder) if block_given?
       end
+      builder.doc
     end
 
-    def load_file_metadata
-      @date = @src_file.mtime.to_datetime if @src_file
+    def root_attributes
+      {
+        path: @path,
+        date: @date
+      }
     end
 
-    def read_file
-      log.debug(3) { "reading file #{@src_file.to_s.inspect}" }
-      @data ||= @src_file.read
+    def dest_file(dir, type)
+      dir / (@path.relative_to('/').to_s + FileTypeMapper.extensions_for_type(type).first)
     end
 
-    def write_file
-      log.debug(3) { "writing file #{dest_file}" }
-      dest_file.dirname.mkpath unless dest_file.dirname.exist?
-      dest_file.open('w') { |io| io.write(@data) }
-      dest_file.utime(@date.to_time, @date.to_time)
+    def uri
+      Addressable::URI.parse(@path.to_s)
     end
 
-    def copy_file
-      log.debug(3) { "copying file #{@src_file} to #{dest_file}" }
-      dest_file.dirname.mkpath unless dest_file.dirname.exist?
-      @src_file.cp(dest_file)
+    def uri_with_extension(extension=nil)
+      extension ||= FileTypeMapper.extensions_for_type(self.class.resource_type).first
+      Addressable::URI.parse(@path.add_extension(extension).to_s)
     end
 
   end

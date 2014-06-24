@@ -4,4 +4,5 @@ load 'mill/tasks.rake'
 
 $LOAD_PATH.unshift 'lib'
 require 'test-mill'
+
 $mill = TestMill.new

@@ -2,14 +2,10 @@ class TestMill < Mill
 
   class Resource
 
-    class HTML < Mill::Resource::HTML
+    class Page < Mill::Resource::Page
 
-      def process
-        decorate_html
+      def decorate
         super
-      end
-
-      def decorate_html
         add_stylesheet(href: '/stylesheet.css')
         set_title("Test: #{title}")
         wrap_body do |builder, body|
