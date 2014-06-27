@@ -178,6 +178,12 @@ class Mill
         body.replace(new_body)
       end
 
+      def replace_element(elem_name, &block)
+        @html.xpath("//#{elem_name}").each do |elem|
+          elem.replace(yield(elem))
+        end
+      end
+
     end
 
   end
