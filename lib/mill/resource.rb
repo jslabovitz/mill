@@ -15,21 +15,43 @@ class Mill
       @@resource_classes << subclass
     end
 
-    def self.resource_class_for_type(type)
-      unless defined?(@@resource_class_map)
-        @@resource_class_map = {}
-        @@resource_classes.each do |resource_class|
-          @@resource_class_map[resource_class.resource_type] = resource_class
+    def self.build_resource_maps
+      @@resource_type_map = {}
+      @@resource_import_map = {}
+      @@resource_classes.each do |resource_class|
+        @@resource_type_map[resource_class.resource_type] = resource_class
+        resource_class.import_types.each do |type|
+          FileTypeMapper.extensions_for_type(type).each do |extname|
+            @@resource_import_map[extname] = resource_class
+          end
         end
       end
-      @@resource_class_map[type]
+    end
+
+    def self.resource_class_for_type(type)
+      build_resource_maps unless defined?(@@resource_class_map)
+      @@resource_type_map[type]
+    end
+
+    def self.resource_class_for_import_type(type)
+      build_resource_maps unless defined?(@@resource_import_map)
+      @@resource_import_map[type]
+    end
+
+    def self.root_elem_name
+      # implemented by subclass
+    end
+
+    def self.root_attribute_names
+      %w{path date}
+      # additional implemented by subclass
     end
 
     def self.load(file, params={})
       file = file.add_extension('.xml') unless file.exist?
       raise "No resource: #{file}" unless file.exist?
       xml = Nokogiri::XML(file.read)
-      root_elem = xml.root
+      root_elem = xml.root or raise "No root in XML file: #{file}"
       resource_type = root_elem.name.to_sym
       resource_class = resource_class_for_type(resource_type) \
         or raise "Can't find resource class for #{resource_type.inspect}"
@@ -48,6 +70,10 @@ class Mill
       params.each { |k, v| send("#{k}=", v) }
     end
 
+    def path=(path)
+      @path = Path.new(path)
+    end
+
     def date=(date)
       @date = date.kind_of?(DateTime) ? date : DateTime.parse(date)
     end
@@ -62,8 +88,14 @@ class Mill
           val.to_s.inspect
         when Nokogiri::XML::Document, Nokogiri::XML::NodeSet
           (val.to_xml[0..20] + '...').inspect
-        when Numeric, String, Symbol
+        when Numeric, Symbol
           val.inspect
+        when String
+          if val.length > 20
+            val[0..20].inspect + '...'
+          else
+            val.inspect
+          end
         else
           "<#{val.class}>"
         end
@@ -75,10 +107,10 @@ class Mill
       @date = file.mtime.to_datetime
     end
 
-    def load(root_elem, &block)
-      @path = Path.new(root_elem['path'])
-      @date = DateTime.parse(root_elem['date'])
-      yield(root_elem) if block_given?
+    def load(root_elem)
+      self.class.root_attribute_names.each do |key|
+        send("#{key}=", root_elem[key])
+      end
     end
 
     def save(dir)
@@ -91,30 +123,25 @@ class Mill
     end
 
     def to_xml(&block)
-      builder = Nokogiri::XML::Builder.new do |builder|
-        yield(builder) if block_given?
-      end
-      builder.doc
+      xml = Nokogiri::XML::Document.new
+      root_elem = xml.create_element(self.class.root_elem_name, root_attributes)
+      xml << root_elem
+      root_elem << root_elem_content if root_elem_content
+      xml
+    end
+
+    def root_elem_content
+      # implemented by subclass
     end
 
     def root_attributes
-      {
-        path: @path,
-        date: @date
-      }
+      Hash[
+        self.class.root_attribute_names.map { |name| [name, send(name)] }
+      ]
     end
 
-    def dest_file(dir, type)
-      dir / (@path.relative_to('/').to_s + FileTypeMapper.extensions_for_type(type).first)
-    end
-
-    def uri
-      Addressable::URI.parse(@path.to_s)
-    end
-
-    def uri_with_extension(extension=nil)
-      extension ||= FileTypeMapper.extensions_for_type(self.class.resource_type).first
-      Addressable::URI.parse(@path.add_extension(extension).to_s)
+    def dest_file(dir)
+      dir / @path.relative_to('/')
     end
 
   end

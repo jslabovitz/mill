@@ -5,15 +5,7 @@ class Mill
     attr_accessor :input_dir
     attr_accessor :output_dir
 
-    HandlersMap = {
-      html:     Mill::Resource::Page,
-      markdown: Mill::Resource::Page,
-      image:    Mill::Resource::Image,
-      any:      Mill::Resource::File,
-    }
-
     def initialize(params={})
-      build_handlers
       params.each { |k, v| send("#{k}=", v) }
     end
 
@@ -23,15 +15,6 @@ class Mill
 
     def output_dir=(dir)
       @output_dir = Path.new(dir)
-    end
-
-    def build_handlers
-      @handlers = {}
-      HandlersMap.each do |type, resource_class|
-        FileTypeMapper.extensions_for_type(type).each do |extname|
-          @handlers[extname] = resource_class
-        end
-      end
     end
 
     def import
@@ -46,8 +29,8 @@ class Mill
     end
 
     def resource_for_file(file)
-      resource_class = @handlers[file.extname] || @handlers['*']
-      path = Path.new('/') / file.relative_to(@input_dir).without_extension
+      resource_class = Resource.resource_class_for_import_type(file.extname) || Resource.resource_class_for_import_type('*')
+      path = Path.new('/') / file.relative_to(@input_dir)
       resource_class.import(file, path: path)
     end
 

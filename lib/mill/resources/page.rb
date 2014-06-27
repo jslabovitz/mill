@@ -11,6 +11,18 @@ class Mill
         :page
       end
 
+      def self.import_types
+        [:html, :markdown]
+      end
+
+      def self.root_elem_name
+        'page'
+      end
+
+      def self.root_attribute_names
+        super + %w{title}
+      end
+
       def import(file)
         super
         if FileTypeMapper.extensions_for_type(:markdown).include?(file.extname)
@@ -20,6 +32,7 @@ class Mill
         else
           raise "Can't import file #{file}"
         end
+        @path = @path.replace_extension('.html')
       end
 
       def import_html(file)
@@ -57,26 +70,16 @@ class Mill
       end
 
       def load(root_elem)
-        super do |root_elem|
-          @title = root_elem['title']
-          @body = root_elem.children
-        end
+        super
+        @body = root_elem.children
       end
 
-      def root_attributes
-        super.merge(
-          title: @title,
-        )
-      end
-
-      def to_xml
-        super do |builder|
-          builder.page(root_attributes) { builder << @body }
-        end
+      def root_elem_content
+        @body
       end
 
       def render(output_dir: nil)
-        dest_file = dest_file(output_dir, :html)
+        dest_file = dest_file(output_dir)
         dest_file.dirname.mkpath unless dest_file.dirname.exist?
         log.debug(2) { "rendering HTML to #{dest_file}" }
         dest_file.open('w') { |io| io.write(to_html) }
@@ -109,9 +112,9 @@ class Mill
         @html.xpath('//img').each do |img|
           img_link = Addressable::URI.parse(img['src'])
           next if img_link.host
-          img_path = Path.new((uri + img_link).path).without_extension
+          img_path = Path.new((Addressable::URI.parse(path.to_s) + img_link).path)
+          log.debug(4) { "adding image size to #{img_path}" }
           img_resource = @mill[img_path]
-          log.debug(4) { "#{img_resource.path}: adding image size: #{img_resource.width}x#{img_resource.height}" }
           img[:width], img[:height] = img_resource.width, img_resource.height
         end
       end
