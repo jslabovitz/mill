@@ -1,8 +1,19 @@
-- validate generated HTML (rake task)
-  - use existing gem?
+- refactor class hierarchy
+  - make Mill module instead of class
+  - add Mill::Site class
+
+- normalize links
+  - /index.html -> /
+  - convert absolute to relative?
+
+- validate generated site
+  - add 'validate' rake task
   - check external links
     - redirects
     - 404s
+  - check internal links
+    - resources referenced by no other resource
+    - resources referenced but missing
 
 - add RSS feed
   - for all non-invisible pages
