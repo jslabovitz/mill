@@ -25,7 +25,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'kramdown'
   s.add_dependency 'nokogiri'
   s.add_dependency 'path'
-  s.add_dependency 'rmagick'
   s.add_dependency 'sinatra'
 
   s.add_development_dependency 'bundler'
