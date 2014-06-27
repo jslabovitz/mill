@@ -5,6 +5,22 @@
 - generalize use of @body in Page
   - any resource can have @content
 
+- treat entire site as single XML document
+  - add resources to doc when importing
+  - loading of individual XML files no longer necessary
+  - saving to individual XML files only for debugging
+  - use XPointer (XPath) for finding/navigating documents
+
+- make 'mill' binary to replace 'rake' usage
+  - make extensible for subclasses
+
+- separate Server into its own gem
+  - named 'simpler'
+  - use Rack instead of Sinatra
+  - make non-blocking
+  - recognize multiple sites
+  - proxy to backend servers
+
 - normalize links
   - /index.html -> /
   - convert absolute to relative?
@@ -20,8 +36,3 @@
 
 - add RSS feed
   - for all non-invisible pages
-
-EXPERIMENTS
-
-- treat entire site as single virtual XML document
-  - use XPointer (XPath) for finding/navigating documents
