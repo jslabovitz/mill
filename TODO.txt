@@ -2,6 +2,9 @@
   - make Mill module instead of class
   - add Mill::Site class
 
+- generalize use of @body in Page
+  - any resource can have @content
+
 - normalize links
   - /index.html -> /
   - convert absolute to relative?
