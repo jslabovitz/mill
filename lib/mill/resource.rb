@@ -103,13 +103,30 @@ class Mill
       end.join(', ') + '>'
     end
 
+  # subclass may override
+
+    def include_resource?
+      true
+    end
+
+    # subclass may override
+
+    def render_resource?
+      true
+    end
+
+    def resource_added
+      # implemented by subclass
+    end
+
     def import(file)
       @date = file.mtime.to_datetime
     end
 
     def load(root_elem)
       self.class.root_attribute_names.each do |key|
-        send("#{key}=", root_elem[key])
+        value = root_elem[key]
+        send("#{key}=", value) if value && !value.empty?
       end
     end
 

@@ -76,7 +76,12 @@ class Mill
       log.debug(2) { "loading file #{file}" }
       resource = Resource.load(file, mill: self)
       log.debug(3) { "loaded resource: #{resource.inspect}" }
-      @resources << resource
+      if resource.include_resource?
+        @resources << resource
+        resource.resource_added
+      else
+        ;;warn "ignoring resource: #{resource.inspect}"
+      end
     end
   end
 
@@ -89,7 +94,7 @@ class Mill
     log.debug(1) { "rendering resources"}
     @resources.each do |resource|
       log.debug(2) { "rendering resource #{resource.inspect}" }
-      resource.render(output_dir: @site_dir)
+      resource.render(output_dir: @site_dir) if resource.render_resource?
     end
   end
 
