@@ -111,7 +111,7 @@ class Mill
         log.debug(3) { "adding image sizes" }
         @html.xpath('//img').each do |img|
           img_link = Addressable::URI.parse(img['src'])
-          next if img_link.host
+          next if img_link.host || img[:width] || img[:height]
           img_path = Path.new((Addressable::URI.parse(path.to_s) + img_link).path)
           log.debug(4) { "adding image size to #{img_path}" }
           img_resource = @mill[img_path]
