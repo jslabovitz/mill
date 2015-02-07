@@ -36,7 +36,7 @@ class Mill
       end
 
       def import_html(file)
-        html = Nokogiri::HTML(file.read) { |config| config.strict }
+        html = Nokogiri::HTML(file.read, nil, 'UTF-8') { |config| config.strict }
         html.errors.reject { |e| e.message =~ /Tag members? invalid/ }.each do |error|
           log.error { "#{file}: Error in HTML: #{error.line}:#{error.column}: #{error.message}" }
         end
@@ -114,7 +114,7 @@ class Mill
           next if img_link.host || img[:width] || img[:height]
           img_path = Path.new((Addressable::URI.parse(path.to_s) + img_link).path)
           log.debug(4) { "adding image size to #{img_path}" }
-          img_resource = @mill[img_path]
+          img_resource = @mill[img_path] or raise "Can't find image resource for path: #{img_path}"
           img[:width], img[:height] = img_resource.width, img_resource.height
         end
       end
