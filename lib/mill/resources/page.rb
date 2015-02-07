@@ -37,8 +37,12 @@ class Mill
 
       def import_html(file)
         html = Nokogiri::HTML(file.read, nil, 'UTF-8') { |config| config.strict }
-        html.errors.reject { |e| e.message =~ /Tag members? invalid/ }.each do |error|
-          log.error { "#{file}: Error in HTML: #{error.line}:#{error.column}: #{error.message}" }
+        errors = html.errors.reject { |e| e.message =~ /Tag members? invalid/ }
+        unless errors.empty?
+          errors.each do |error|
+            log.error { "#{file}: Error in HTML: #{error.line}:#{error.column}: #{error.message}" }
+          end
+          exit(1)
         end
         @title = html.at_xpath('/html/head/title').text
         html.xpath('/html/head/meta[@name]').each do |meta_elem|
