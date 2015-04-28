@@ -1,21 +1,26 @@
 $LOAD_PATH.unshift 'lib'
 
-desc 'Clean resources and site directories.'
+desc 'Clean site directories.'
 task :clean do
   $mill.clean
 end
 
-desc 'Import files into resources.'
-task :import => :clean do
-  $mill.import
+desc 'Load site.'
+task :load => :clean do
+  $mill.load
 end
 
-desc 'Build resources into site.'
-task :build => :import do
+desc 'Process site.'
+task :process => :load do
+  $mill.process
+end
+
+desc 'Build site.'
+task :build => :process do
   $mill.build
 end
 
-desc 'Run web server on site directory.'
-task :server => :build do
-  $mill.server
+desc 'Publish site.'
+task :publish do
+  $mill.publish
 end

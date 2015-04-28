@@ -1,115 +1,185 @@
+require 'addressable/uri'
+require 'image_size'
 require 'kramdown'
 require 'nokogiri'
-require 'pp'
-require 'webrick'
-require 'image_size'
 require 'path'
-require 'logger'
-require 'date'
-require 'addressable/uri'
-require 'hashstruct'
-require 'rmagick'
+require 'pp'
+require 'time'
+require 'tidy_ffi'
+require 'term/ansicolor'
 
-require 'mill/version'
-
-require 'mill/extensions/path'
-require 'mill/extensions/string'
-require 'mill/extensions/time'
-
-require 'mill/file_type_mapper'
-require 'mill/logging'
-# require 'mill/feed'
-
+require 'mill/navigator'
 require 'mill/resource'
-require 'mill/resources/file'
+require 'mill/resources/feed'
+require 'mill/resources/generic'
+require 'mill/resources/html'
 require 'mill/resources/image'
-require 'mill/resources/page'
-
-require 'mill/server'
-require 'mill/importer'
-
-include Logging
+require 'mill/resources/markdown'
+require 'mill/resources/robots'
+require 'mill/resources/sitemap'
+require 'mill/version'
 
 class Mill
 
-  attr_accessor :content_dir
-  attr_accessor :site_dir
-  attr_accessor :resources_dir
+  attr_accessor :input_dir
+  attr_accessor :output_dir
+  attr_accessor :site_title
+  attr_accessor :site_uri
+  attr_accessor :feed_uri
+  attr_accessor :sitemap_uri
+  attr_accessor :ssh_location
   attr_accessor :resources
+  attr_accessor :shorten_uris
+  attr_accessor :navigator
 
   def initialize(params={})
-    self.content_dir = 'content'
-    self.resources_dir = 'resources'
-    self.site_dir = 'site'
-    @resources = []
+    @resources = {}
+    @shorten_uris = true
+    make_resource_classes
     params.each { |k, v| send("#{k}=", v) }
   end
 
-  def content_dir=(dir)
-    @content_dir = Path.new(dir)
+  def self.resource_classes
+    [
+      Resource::Generic,
+      Resource::HTML,
+      Resource::Image,
+      Resource::Markdown,
+    ]
   end
 
-  def resources_dir=(dir)
-    @resources_dir = Path.new(dir)
-  end
-
-  def site_dir=(dir)
-    @site_dir = Path.new(dir)
-  end
-
-  def import
-    log.info "importing from #{@content_dir.to_s.inspect} to #{@resources_dir.to_s.inspect}"
-    Importer.new(input_dir: @content_dir, output_dir: @resources_dir).import
-  end
-
-  def build
-    log.info "building from #{@resources_dir.to_s.inspect} to #{@site_dir.to_s.inspect}"
-    load_resources
-    render_resources
-  end
-
-  def load_resources
-    return unless @resources_dir && @resources_dir.exist?
-    log.debug(1) { "loading files from #{@resources_dir}" }
-    @resources_dir.find do |file|
-      next if file.hidden? || file.directory? || file.extname != '.xml'
-      log.debug(2) { "loading file #{file}" }
-      resource = Resource.load(file, mill: self)
-      log.debug(3) { "loaded resource: #{resource.inspect}" }
-      if resource.include_resource?
-        @resources << resource
-        resource.resource_added
-      else
-        ;;warn "ignoring resource: #{resource.inspect}"
+  def make_resource_classes
+    @resource_classes = {}
+    self.class.resource_classes.each do |resource_class|
+      resource_class.file_extensions.each do |file_extension|
+        @resource_classes[file_extension] = resource_class
       end
     end
   end
 
-  def [](path)
-    path = Path.new(path)
-    @resources.find { |r| r.path == path } or raise "Can't find resource for path #{path.inspect}"
+  def input_dir=(path)
+    @input_dir = Path.new(path).realpath
   end
 
-  def render_resources
-    log.debug(1) { "rendering resources"}
-    @resources.each do |resource|
-      log.debug(2) { "rendering resource #{resource.inspect}" }
-      resource.render(output_dir: @site_dir) if resource.render_resource?
+  def output_dir=(path)
+    @output_dir = Path.new(path).realpath
+  end
+
+  def site_uri=(uri)
+    @site_uri = Addressable::URI.parse(uri)
+  end
+
+  def add_resource(resource)
+    @resources[resource.uri] = resource
+    ;;warn "%s: adding as %s from %s" % [
+      resource.uri,
+      resource.class,
+      resource.input_file ? resource.input_file.relative_to(@input_dir) : '(dynamic)',
+    ]
+  end
+
+  def find_resource(uri)
+    uri = Addressable::URI.parse(uri)
+    resource = @resources[uri]
+    if resource.nil? && @shorten_uris
+      uri.path = uri.path.sub(%r{\.html$}, '')
+      resource = @resources[uri]
     end
+    resource
+  end
+
+  def <<(resource)
+    add_resource(resource)
+  end
+
+  def [](uri)
+    find_resource(uri)
+  end
+
+  def public_resources
+    @resources.values.select(&:public)
   end
 
   def clean
-    [@resources_dir, @site_dir].each do |dir|
-      if dir.exist?
-        log.info "cleaning #{dir.to_s.inspect}"
-        dir.rmtree
-      end
+    @output_dir.rmtree if @output_dir.exist?
+    @output_dir.mkpath
+  end
+
+  def load
+    raise "Input path not found: #{@input_dir}" unless @input_dir.exist?
+    @input_dir.find do |input_file|
+      input_file = Path.new(input_file).realpath
+      next if input_file.directory? || input_file.basename.to_s[0] == '.'
+      output_file = @output_dir / input_file.relative_to(@input_dir)
+      resource_class = @resource_classes[input_file.extname.downcase] or raise "No resource class for #{input_file}"
+      resource = resource_class.new(
+        input_file: input_file,
+        output_file: output_file,
+        mill: self)
+      resource.load
+      add_resource(resource)
+    end
+    load_feed
+    load_sitemap
+    load_robots
+  end
+
+  def load_feed
+    feed = Resource::Feed.new(
+      output_file: @output_dir / 'feed.xml',
+      mill: self)
+    feed.load
+    add_resource(feed)
+    @feed_uri = feed.uri
+  end
+
+  def load_sitemap
+    sitemap = Resource::Sitemap.new(
+      output_file: @output_dir / 'sitemap.xml',
+      mill: self)
+    sitemap.load
+    add_resource(sitemap)
+    @sitemap_uri = sitemap.uri
+  end
+
+  def load_robots
+    robots = Resource::Robots.new(
+      output_file: @output_dir / 'robots.txt',
+      mill: self)
+    robots.load
+    add_resource(robots)
+  end
+
+  def process
+    @resources.values.each do |resource|
+      ;;warn "%s: processing" % [
+        resource.uri,
+      ]
+      resource.process
     end
   end
 
-  def server
-    log.info "running server in #{@site_dir.to_s.inspect}"
-    Server.run!(public_dir: @site_dir)
+  def build
+    @resources.values.each do |resource|
+      ;;warn "%s: building to %s" % [
+        resource.uri,
+        resource.output_file.relative_to(@output_dir),
+      ]
+      resource.build
+    end
+  end
+
+  def publish
+    raise "Must specify SSH location" unless @ssh_location
+    system('rsync',
+      # '--dry-run',
+      '--archive',
+      '--delete-after',
+      '--progress',
+      # '--verbose',
+      @output_dir.to_s + '/',
+      @ssh_location,
+    )
   end
 
 end

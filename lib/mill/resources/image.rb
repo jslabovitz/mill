@@ -2,38 +2,23 @@ class Mill
 
   class Resource
 
-    class Image < File
+    class Image < Resource
 
       attr_accessor :width
       attr_accessor :height
 
-      def self.resource_type
-        :image
+      def self.file_extensions
+        %w{
+          .jpeg .jpg
+          .gif
+          .tiff .tif
+          .png
+        }
       end
 
-      def self.import_types
-        [:image]
-      end
-
-      def self.root_elem_name
-        'image'
-      end
-
-      def self.root_attribute_names
-        super + %w{width height}
-      end
-
-      def width=(n)
-        @width = n.to_i
-      end
-
-      def height=(n)
-        @height = n.to_i
-      end
-
-      def import(file)
-        super
-        info = ImageSize.path(file.to_s)
+      def load
+        load_date
+        info = ImageSize.path(@input_file.to_s)
         @width, @height = *info.size
       end
 
