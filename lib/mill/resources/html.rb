@@ -6,6 +6,11 @@ class Mill
 
       class HTMLError < Exception; end
 
+      IgnoreErrors = [
+        '<table> lacks "summary" attribute',
+        '<img> lacks "alt" attribute',
+      ]
+
       attr_accessor :title
 
       def self.file_extensions
@@ -45,35 +50,46 @@ class Mill
 
       def tidy
         html_str = @content.to_s
-        tidy = TidyFFI::Tidy.new(html_str)
-        if (str = tidy.errors)
+        errors = parse_tidy_errors(TidyFFI::Tidy.new(html_str)).reject do |error|
+          IgnoreErrors.include?(error[:error])
+        end
+        unless errors.empty?
           warn "#{uri}: invalid HTML:"
           html_lines = html_str.split(/\n/)
-          str.split(/\n/).each do |error|
-            if error =~ /^line (\d+) column (\d+) - (Error|Warning): (.*)$/
-              line, column, type, msg = $1.to_i - 1, $2.to_i - 1, $3, $4
-              warn "\t#{error}:"
-              html_lines.each_with_index do |html_line, i|
-                if i >= [0, line - 2].max && i <= [line + 2, html_lines.length].min
-                  if i == line
-                    output = [
-                      column > 0 ? (html_line[0 .. column - 1]) : '',
-                      Term::ANSIColor.negative,
-                      html_line[column],
-                      Term::ANSIColor.clear,
-                      html_line[column + 1 .. -1],
-                    ]
-                  else
-                    output = [html_line]
-                  end
-                  warn "\t\t%3s: %s" % [i + 1, output.join]
+          errors.each do |error|
+            warn "\t#{error[:msg]}:"
+            html_lines.each_with_index do |html_line, i|
+              if i >= [0, error[:line] - 2].max && i <= [error[:line] + 2, html_lines.length].min
+                if i == error[:line]
+                  output = [
+                    error[:column] > 0 ? (html_line[0 .. error[:column] - 1]) : '',
+                    Term::ANSIColor.negative,
+                    html_line[error[:column]],
+                    Term::ANSIColor.clear,
+                    html_line[error[:column] + 1 .. -1],
+                  ]
+                else
+                  output = [html_line]
                 end
+                warn "\t\t%3s: %s" % [i + 1, output.join]
               end
-              raise "HTML error" if type == 'Error'
-            else
-              warn "\t" + error
             end
+            raise "HTML error" if error[:type] == :error
           end
+        end
+      end
+
+      def parse_tidy_errors(tidy)
+        return [] unless tidy.errors
+        tidy.errors.split(/\n/).map do |error_str|
+          error_str =~ /^line (\d+) column (\d+) - (.*?): (.*)$/ or raise "Can't parse error: #{error_str}"
+          {
+            msg: error_str,
+            line: $1.to_i - 1,
+            column: $2.to_i - 1,
+            type: $3.downcase.to_sym,
+            error: $4.strip,
+          }
         end
       end
 
