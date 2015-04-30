@@ -71,11 +71,11 @@ class Mill
 
   def add_resource(resource)
     @resources[resource.uri] = resource
-    ;;warn "%s: adding as %s from %s" % [
-      resource.uri,
-      resource.class,
-      resource.input_file ? resource.input_file.relative_to(@input_dir) : '(dynamic)',
-    ]
+    # ;;warn "%s: adding as %s from %s" % [
+    #   resource.uri,
+    #   resource.class,
+    #   resource.input_file ? resource.input_file.relative_to(@input_dir) : '(dynamic)',
+    # ]
   end
 
   def find_resource(uri)
@@ -152,19 +152,19 @@ class Mill
 
   def process
     @resources.values.each do |resource|
-      ;;warn "%s: processing" % [
-        resource.uri,
-      ]
+      # ;;warn "%s: processing" % [
+      #   resource.uri,
+      # ]
       resource.process
     end
   end
 
   def build
     @resources.values.each do |resource|
-      ;;warn "%s: building to %s" % [
-        resource.uri,
-        resource.output_file.relative_to(@output_dir),
-      ]
+      # ;;warn "%s: building to %s" % [
+      #   resource.uri,
+      #   resource.output_file.relative_to(@output_dir),
+      # ]
       resource.build
     end
   end
