@@ -34,7 +34,12 @@ class Mill
 
       def load
         load_date
-        @content = parse_html(@input_file.read)
+        begin
+          @content = parse_html(@input_file.read)
+        rescue => e
+          warn "failed to parse #{@input_file}: #{e}"
+          raise e
+        end
         load_html_header
       end
 
