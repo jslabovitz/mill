@@ -8,7 +8,7 @@ class Mill
 
       def process
         info = {
-          'Sitemap' => @mill.site_uri + @mill.sitemap_uri,
+          'Sitemap' => @mill.site_uri + @mill.sitemap_resource.uri,
         }
         @content = info.map { |key, value| "#{key}: #{value}" }.join("\n")
       end

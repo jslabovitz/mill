@@ -13,7 +13,7 @@ class Mill
             xml.generator(@mill.site_uri)
             xml.title(@mill.site_title)
             xml.link(rel: 'alternate', type: 'text/html',             href: @mill.site_uri)
-            xml.link(rel: 'self',      type: 'application/atom+xml',  href: @mill.feed_uri)
+            xml.link(rel: 'self',      type: 'application/atom+xml',  href: uri)
             xml.author do
               xml.name(@author_name) if @author_name
               xml.uri(@author_link) if @author_url
@@ -38,6 +38,14 @@ class Mill
           end
         end
         @content = builder.doc
+      end
+
+      def link_html
+        html = Nokogiri::HTML.fragment('')
+        builder = Nokogiri::HTML::Builder.with(html) do |builder|
+          builder.link(href: uri, rel: 'alternate', type: 'application/atom+xml')
+        end
+        html
       end
 
     end

@@ -25,8 +25,9 @@ class Mill
   attr_accessor :output_dir
   attr_accessor :site_title
   attr_accessor :site_uri
-  attr_accessor :feed_uri
-  attr_accessor :sitemap_uri
+  attr_accessor :feed_resource
+  attr_accessor :sitemap_resource
+  attr_accessor :robots_resource
   attr_accessor :ssh_location
   attr_accessor :resources
   attr_accessor :shorten_uris
@@ -125,29 +126,27 @@ class Mill
   end
 
   def load_feed
-    feed = Resource::Feed.new(
+    @feed_resource = Resource::Feed.new(
       output_file: @output_dir / 'feed.xml',
       mill: self)
-    feed.load
-    add_resource(feed)
-    @feed_uri = feed.uri
+    @feed_resource.load
+    add_resource(@feed_resource)
   end
 
   def load_sitemap
-    sitemap = Resource::Sitemap.new(
+    @sitemap_resource = Resource::Sitemap.new(
       output_file: @output_dir / 'sitemap.xml',
       mill: self)
-    sitemap.load
-    add_resource(sitemap)
-    @sitemap_uri = sitemap.uri
+    @sitemap_resource.load
+    add_resource(@sitemap_resource)
   end
 
   def load_robots
-    robots = Resource::Robots.new(
+    @robots_resource = Resource::Robots.new(
       output_file: @output_dir / 'robots.txt',
       mill: self)
-    robots.load
-    add_resource(robots)
+    @robots_resource.load
+    add_resource(@robots_resource)
   end
 
   def process
