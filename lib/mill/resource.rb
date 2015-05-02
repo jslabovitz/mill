@@ -79,11 +79,16 @@ class Mill
       # implemented in subclass
     end
 
+    def render_content
+      @content.to_s
+    end
+
     def build
       @output_file.dirname.mkpath
       if @content
-        # ;;warn "#{uri}: writing content #{(@content.to_s[0..20] + '...').inspect} to #{@output_file}"
-        @output_file.write(@content)
+        content_str = render_content
+        # ;;warn "#{uri}: writing content #{(@content_str[0..20] + '...').inspect} to #{@output_file}"
+        @output_file.write(content_str)
       else
         # ;;warn "#{uri}: copying file #{@input_file} to #{@output_file}"
         @input_file.copy(@output_file)

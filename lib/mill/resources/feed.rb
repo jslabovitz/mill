@@ -22,16 +22,20 @@ class Mill
             resources = @mill.public_resources.sort_by(&:date)
             xml.updated(resources.last.date)
             resources.each do |resource|
-              content_html = resource.content.xpath('//p[1]').children
               xml.entry do
                 xml.title(resource.title) if resource.title
                 xml.id(@mill.site_uri + resource.uri)
-                # xml.summary do
-                # end
                 xml.updated(resource.date)
                 xml.published(resource.date)
-                xml.content(type: 'html') do
-                  xml.cdata(content_html.to_html)
+                if resource.respond_to?(:feed_summary)
+                  xml.summary(type: resource.feed_summary_type) do
+                    xml.cdata(resource.feed_summary)
+                  end
+                end
+                if resource.respond_to?(:feed_content)
+                  xml.content(type: resource.feed_content_type) do
+                    xml.cdata(resource.feed_content)
+                  end
                 end
               end
             end

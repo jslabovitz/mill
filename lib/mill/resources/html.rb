@@ -49,8 +49,9 @@ class Mill
       end
 
       def tidy
-        html_str = @content.to_s
-        errors = parse_tidy_errors(TidyFFI::Tidy.new(html_str)).reject do |error|
+        html_str = to_html.to_s
+        tidy = TidyFFI::Tidy.new(html_str, char_encoding: 'UTF8')
+        errors = parse_tidy_errors(tidy).reject do |error|
           IgnoreErrors.include?(error[:error])
         end
         unless errors.empty?
@@ -94,9 +95,16 @@ class Mill
       end
 
       def build
-        @content = @content.to_html(encoding: 'US-ASCII')
         tidy
         super
+      end
+
+      def to_html
+        @content.to_html
+      end
+
+      def render_content
+        to_html
       end
 
       def load_html_header
@@ -136,6 +144,22 @@ class Mill
           img_resource = @mill[img_uri] or raise "Can't find image for #{img_uri}"
           img[:width], img[:height] = img_resource.width, img_resource.height
         end
+      end
+
+      def feed_summary_type
+        'html'
+      end
+
+      def feed_summary
+        @content.xpath('//p[1]').children.to_html
+      end
+
+      def feed_content_type
+        'html'
+      end
+
+      def feed_content
+        @content.xpath('//body').children.to_html
       end
 
     end
