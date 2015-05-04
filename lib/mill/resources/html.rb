@@ -6,10 +6,13 @@ class Mill
 
       class HTMLError < Exception; end
 
-      IgnoreErrors = [
-        '<table> lacks "summary" attribute',
-        '<img> lacks "alt" attribute',
-      ]
+      IgnoreErrors = %Q{
+        <table> lacks "summary" attribute
+        <img> lacks "alt" attribute
+        <form> proprietary attribute "novalidate"
+        <input> attribute "type" has invalid value "email"
+        <input> attribute "tabindex" has invalid value "-1"
+      }.split(/\n/).map(&:strip)
 
       attr_accessor :title
 
