@@ -24,17 +24,18 @@ class Mill
             resources.each do |resource|
               xml.entry do
                 xml.title(resource.title) if resource.title
+                xml.link(rel: 'alternate', href: @mill.site_uri + resource.uri)
                 xml.id(@mill.site_uri + resource.uri)
                 xml.updated(resource.date)
                 xml.published(resource.date)
-                if resource.respond_to?(:feed_summary)
+                if (resource.respond_to?(:feed_summary) && (summary = resource.feed_summary))
                   xml.summary(type: resource.feed_summary_type) do
-                    xml.cdata(resource.feed_summary)
+                    xml.cdata(summary)
                   end
                 end
-                if resource.respond_to?(:feed_content)
+                if (resource.respond_to?(:feed_content) && (content = resource.feed_content))
                   xml.content(type: resource.feed_content_type) do
-                    xml.cdata(resource.feed_content)
+                    xml.cdata(content)
                   end
                 end
               end

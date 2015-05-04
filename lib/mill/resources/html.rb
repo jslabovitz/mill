@@ -154,7 +154,9 @@ class Mill
       end
 
       def feed_summary
-        @content.xpath('//p[1]').children.to_html
+        if (summary = @content.at_xpath('/html/body/p[1]'))
+          summary.children.to_html
+        end
       end
 
       def feed_content_type
@@ -162,7 +164,9 @@ class Mill
       end
 
       def feed_content
-        @content.xpath('//body').children.to_html
+        if (content = @content.at_xpath('/html/body'))
+          content.children.to_html
+        end
       end
 
     end
