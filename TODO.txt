@@ -1,3 +1,2 @@
-- Rename back to Mill (no 3).
-- Push to Github.
 - Add Google Analytics ID & generator.
+- Add MailChimp signup form generator.
