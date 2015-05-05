@@ -63,6 +63,10 @@ class Mill
       @mill.site_uri + uri
     end
 
+    def tag_uri
+      @mill.tag_uri + uri
+    end
+
     def change_frequency
       :weekly
     end

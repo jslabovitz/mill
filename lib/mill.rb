@@ -25,6 +25,8 @@ class Mill
   attr_accessor :output_dir
   attr_accessor :site_title
   attr_accessor :site_uri
+  attr_accessor :site_email
+  attr_accessor :site_control_date
   attr_accessor :feed_resource
   attr_accessor :sitemap_resource
   attr_accessor :robots_resource
@@ -70,6 +72,14 @@ class Mill
     @site_uri = Addressable::URI.parse(uri)
   end
 
+  def site_control_date=(date)
+    begin
+      @site_control_date = Date.parse(date)
+    rescue ArgumentError => e
+      raise "bad control date #{date.inspect}: #{e}"
+    end
+  end
+
   def add_resource(resource)
     @resources[resource.uri] = resource
     # ;;warn "%s: adding as %s from %s" % [
@@ -97,8 +107,42 @@ class Mill
     find_resource(uri)
   end
 
+  def tag_uri
+    "tag:#{@site_uri.host.downcase},#{@site_control_date}:"
+  end
+
+  def feed_generator
+    [
+      'Mill',
+      {
+        uri: Addressable::URI.parse('http://github.com/jslabovitz/mill'),
+        version: Mill::VERSION,
+      }
+    ]
+  end
+
+  def feed_home_uri
+    @site_uri + find_resource('/').uri
+  end
+
+  def feed_author_name
+    @site_title
+  end
+
+  def feed_author_uri
+    @site_uri
+  end
+
+  def feed_author_email
+    Addressable::URI.parse("mailto:#{@site_email}")
+  end
+
   def public_resources
     @resources.values.select(&:public)
+  end
+
+  def resource_class_for_file(file)
+    @resource_classes[file.extname.downcase]
   end
 
   def clean
@@ -112,7 +156,7 @@ class Mill
       input_file = Path.new(input_file).realpath
       next if input_file.directory? || input_file.basename.to_s[0] == '.'
       output_file = @output_dir / input_file.relative_to(@input_dir)
-      resource_class = @resource_classes[input_file.extname.downcase] or raise "No resource class for #{input_file}"
+      resource_class = resource_class_for_file(input_file) or raise "No resource class for #{input_file}"
       resource = resource_class.new(
         input_file: input_file,
         output_file: output_file,
