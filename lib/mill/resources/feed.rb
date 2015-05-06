@@ -11,7 +11,6 @@ class Mill
         builder = Nokogiri::XML::Builder.new do |xml|
           xml.feed(xmlns: 'http://www.w3.org/2005/Atom') do
             xml.id(@mill.tag_uri)
-            xml.base(@mill.site_uri)
             xml.generator(*@mill.feed_generator)
             xml.title(@mill.site_title)
             xml.link(rel: 'alternate', type: 'text/html',             href: @mill.feed_home_uri)
