@@ -24,3 +24,8 @@ desc 'Publish site.'
 task :publish do
   $mill.publish
 end
+
+desc 'Run a test server.'
+task :server do
+  $mill.server
+end

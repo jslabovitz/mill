@@ -225,4 +225,11 @@ class Mill
     )
   end
 
+  def server
+    SimpleServer.run!(
+      root: @output_dir,
+      multihosting: false,
+    )
+  end
+
 end
