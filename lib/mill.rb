@@ -298,8 +298,12 @@ class Mill
   def make_navigator
     if @navigator_items
       @navigator.items = @navigator_items.map do |uri, title|
-        resource = find_resource(uri) or raise "Can't find navigation resource for #{uri.inspect}"
-        Navigator::Item.new(resource: resource, title: title || resource.title)
+        uri = Addressable::URI.parse(uri)
+        if title.nil? && uri.relative?
+          resource = find_resource(uri) or raise "Can't find navigation resource for URI #{uri}"
+          title = resource.title
+        end
+        Navigator::Item.new(uri: uri, title: title)
       end
     end
   end

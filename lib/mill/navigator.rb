@@ -4,12 +4,16 @@ class Mill
 
     class Item
 
-      attr_accessor :resource
+      attr_accessor :uri
       attr_accessor :title
       attr_accessor :state
 
       def initialize(params={})
         params.each { |k, v| send("#{k}=", v) }
+      end
+
+      def uri=(uri)
+        @uri = Addressable::URI.parse(uri)
       end
 
     end
@@ -23,18 +27,18 @@ class Mill
 
     def state_for_resource(resource, &block)
       states = @items.dup
-      states.each { |s| s.state = :other }
-      if (item = states.find { |s| s.resource.uri == resource.uri })
+      states.each { |item| item.state = :other }
+      if (item = states.find { |item| item.uri.relative? && item.uri == resource.uri })
         item.state = :current
       else
         within_items = []
         states.each do |item|
-          if resource.uri.path.start_with?(item.resource.uri.path)
+          if item.uri.relative? && resource.uri.path.start_with?(item.uri.path)
             within_items << item
           end
         end
         if !within_items.empty?
-          within_item = within_items.sort_by { |item| item.resource.uri.path.count('/') }.last
+          within_item = within_items.sort_by { |item| item.uri.path.count('/') }.last
           within_item.state = :within
         end
       end
@@ -49,8 +53,8 @@ class Mill
       @items.last
     end
 
-    def previous_item(resource)
-      index = find_item_index_by_resource(resource)
+    def previous_item(uri)
+      index = find_item_index_by_uri(uri)
       if index && index > 0
         @items[index - 1]
       else
@@ -58,8 +62,8 @@ class Mill
       end
     end
 
-    def next_item(resource)
-      index = find_item_index_by_resource(resource)
+    def next_item(uri)
+      index = find_item_index_by_uri(uri)
       if index && index < @items.length - 1
         @items[index + 1]
       else
@@ -67,9 +71,10 @@ class Mill
       end
     end
 
-    def find_item_index_by_resource(resource)
-      item = @items.find { |item| item.resource == resource }
-      @items.index(item)
+    def find_item_index_by_uri(uri)
+      if (item = @items.find { |item| item.uri == uri })
+        @items.index(item)
+      end
     end
 
   end
