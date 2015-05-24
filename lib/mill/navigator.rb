@@ -6,7 +6,6 @@ class Mill
 
       attr_accessor :uri
       attr_accessor :title
-      attr_accessor :state
 
       def initialize(params={})
         params.each { |k, v| send("#{k}=", v) }
@@ -25,24 +24,27 @@ class Mill
       params.each { |k, v| send("#{k}=", v) }
     end
 
-    def state_for_resource(resource, &block)
-      states = @items.dup
-      states.each { |item| item.state = :other }
-      if (item = states.find { |item| item.uri.relative? && item.uri == resource.uri })
-        item.state = :current
+    def item_states_for_uri(uri, &block)
+      current_item = within_item = nil
+      if (item = @items.find { |item| item.uri.relative? && item.uri == uri })
+        current_item = item
       else
-        within_items = []
-        states.each do |item|
-          if item.uri.relative? && resource.uri.path.start_with?(item.uri.path)
-            within_items << item
-          end
-        end
-        if !within_items.empty?
-          within_item = within_items.sort_by { |item| item.uri.path.count('/') }.last
-          within_item.state = :within
-        end
+        within_item = @items.select do |item|
+          item.uri.relative? && uri.path.start_with?(item.uri.path)
+        end.sort_by do |item|
+          item.uri.path.count('/')
+        end.last
       end
-      states
+      @items.each do |item|
+        if item == current_item
+          state = :current
+        elsif item == within_item
+          state = :within
+        else
+          state = :other
+        end
+        yield(item, state)
+      end
     end
 
     def first_item
