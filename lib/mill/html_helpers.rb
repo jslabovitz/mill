@@ -158,11 +158,7 @@ module HTMLHelpers
   class ::String
 
     def to_html
-      if empty?
-        self
-      else
-        Nokogiri::HTML::DocumentFragment.parse(Kramdown::Document.new(self).to_html).at_xpath('p').children.to_html
-      end
+      Nokogiri::HTML::DocumentFragment.parse(RubyPants.new(self).to_html).to_html
     end
 
   end

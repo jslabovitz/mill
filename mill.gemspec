@@ -27,6 +27,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'nokogiri'
   s.add_dependency 'path'
   s.add_dependency 'RedCloth'
+  s.add_dependency 'rubypants'
   s.add_dependency 'simple-server'
   s.add_dependency 'term-ansicolor'
   s.add_dependency 'tidy_ffi'
