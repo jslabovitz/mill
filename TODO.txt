@@ -1,2 +1,6 @@
-- Add Google Analytics ID & generator.
-- Add MailChimp signup form generator.
+- Rationalize resource URI usage:
+    + #shorten_uris should only apply to writing final files.
+    + In original content/etc., URIs should be more flexible.
+    + A #convert_uris method should convert all references to proper type.
+
+- Add MailChimp signup form generator to HTMLHelpers.

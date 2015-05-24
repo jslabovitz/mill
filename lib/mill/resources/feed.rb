@@ -6,6 +6,8 @@ class Mill
 
     class Feed < Resource
 
+      include HTMLHelpers
+
       def process
         resources = @mill.public_resources.sort_by(&:date)
         builder = Nokogiri::XML::Builder.new do |xml|
@@ -13,7 +15,7 @@ class Mill
             xml.id(@mill.tag_uri)
             xml.generator(*@mill.feed_generator)
             xml.title(@mill.site_title)
-            xml.link(rel: 'alternate', type: 'text/html',             href: @mill.feed_home_uri)
+            xml.link(rel: 'alternate', type: 'text/html',             href: @mill.home_resource.uri)
             xml.link(rel: 'self',      type: 'application/atom+xml',  href: absolute_uri)
             xml.author do
               xml.name(@mill.feed_author_name)
@@ -27,15 +29,13 @@ class Mill
                 xml.link(rel: 'alternate', href: resource.absolute_uri)
                 xml.id(resource.tag_uri)
                 xml.updated(resource.date.iso8601)
-                if (resource.respond_to?(:feed_summary) && (summary = resource.feed_summary))
-                  xml.summary(type: resource.feed_summary_type) do
-                    xml.cdata(summary)
+                if (resource.respond_to?(:summary) && (summary = resource.summary))
+                  xml.summary(type: 'html') do
+                    xml.cdata(summary.to_html)
                   end
                 end
-                if (resource.respond_to?(:feed_content) && (content = resource.feed_content))
-                  xml.content(type: resource.feed_content_type) do
-                    xml.cdata(content)
-                  end
+                xml.content(type: 'html') do
+                  xml.cdata(resource.content.to_html)
                 end
               end
             end
@@ -45,11 +45,9 @@ class Mill
       end
 
       def link_html
-        html = Nokogiri::HTML.fragment('')
-        builder = Nokogiri::HTML::Builder.with(html) do |builder|
-          builder.link(href: uri, rel: 'alternate', type: 'application/atom+xml')
+        html_fragment do |html|
+          html.link(href: uri, rel: 'alternate', type: 'application/atom+xml')
         end
-        html
       end
 
     end

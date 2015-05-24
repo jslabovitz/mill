@@ -8,15 +8,15 @@ class Mill
     attr_accessor :public
     attr_accessor :content
     attr_accessor :mill
+    attr_accessor :processed
 
-    def self.file_extensions
-      # implemented in subclass
-      []
+    def self.default_params
+      {}
     end
 
     def initialize(params={})
-      @date = DateTime.now
-      params.each { |k, v| send("#{k}=", v) }
+      self.class.default_params.merge(params).each { |k, v| send("#{k}=", v) }
+      load
     end
 
     def input_file=(p)
@@ -71,32 +71,33 @@ class Mill
       :weekly
     end
 
-    def load
-      # implemented by subclass
+    def final_content
+      @content
     end
 
-    def load_date
-      @date = DateTime.parse(@input_file.mtime.to_s) if @input_file
+    def load
+      @mill.add_resource(self)
     end
 
     def process
-      # implemented in subclass
-    end
-
-    def render_content
-      @content.to_s
+      @processed = true
     end
 
     def build
       @output_file.dirname.mkpath
-      if @content
-        content_str = render_content
-        # ;;warn "#{uri}: writing content #{(@content_str[0..20] + '...').inspect} to #{@output_file}"
-        @output_file.write(content_str)
-      else
+      if (c = final_content)
+        @output_file.write(c.to_s)
+      elsif @input_file
         # ;;warn "#{uri}: copying file #{@input_file} to #{@output_file}"
         @input_file.copy(@output_file)
+      else
+        raise "Can't build resource without content or input file: #{uri}"
       end
+      verify
+    end
+
+    def verify
+      # implemented in subclass
     end
 
   end
