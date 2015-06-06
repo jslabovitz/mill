@@ -59,7 +59,11 @@
 			</xs:documentation>
 		</xs:annotation>
 		<xs:restriction base="xs:normalizedString">
+<!--
 			<xs:pattern value="\w+@(\w+\.)+\w+" />
+-->
+      <xs:maxLength value="254"/>
+      <xs:pattern value="[_\-a-zA-Z0-9\.\+]+@[a-zA-Z0-9](\.?[\-a-zA-Z0-9]*[a-zA-Z0-9])*"/>
 		</xs:restriction>
 	</xs:simpleType>
 	<xs:complexType name="feedType">
