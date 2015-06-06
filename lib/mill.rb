@@ -41,6 +41,7 @@ class Mill
   attr_accessor :navigator
   attr_accessor :navigator_items
   attr_accessor :resource_classes
+  attr_accessor :schema_types
 
   DefaultResourceClasses = [
     Resource::Text,
@@ -48,10 +49,19 @@ class Mill
     Resource::Generic,
   ]
 
+  SchemasDir = Path.new(__FILE__).dirname / 'mill' / 'schemas'
+
+  DefaultSchemaTypes = {
+    feed: SchemasDir / 'atom.xsd',
+    sitemap: SchemasDir / 'sitemap.xsd',
+  }
+
   def initialize(params={})
     @resource_classes = {}
     @resources = []
     @resources_by_uri = {}
+    @schema_types = {}
+    @schemas = {}
     @shorten_uris = true
     params.each { |k, v| send("#{k}=", v) }
   end
@@ -108,6 +118,10 @@ class Mill
     find_resource('/') or raise "Can't find home"
   end
 
+  def schema_for_type(type)
+    @schemas[type]
+  end
+
   def tag_uri
     "tag:#{@site_uri.host.downcase},#{@site_control_date}:"
   end
@@ -131,7 +145,7 @@ class Mill
   end
 
   def feed_author_email
-    Addressable::URI.parse("mailto:#{@site_email}")
+    @site_email
   end
 
   def public_resources
@@ -146,6 +160,7 @@ class Mill
   def load
     build_file_types
     build_resource_classes
+    build_schemas
     load_files
     load_others
   end
@@ -256,6 +271,12 @@ class Mill
         end
         Navigator::Item.new(uri: uri, title: title)
       end
+    end
+  end
+
+  def build_schemas
+    DefaultSchemaTypes.merge(@schema_types).each do |type, file|
+      @schemas[type] = Nokogiri::XML::Schema(file.open)
     end
   end
 
