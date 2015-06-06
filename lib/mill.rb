@@ -13,20 +13,15 @@ require 'term/ansicolor'
 
 require 'mill/file_types'
 require 'mill/html_helpers'
-require 'mill/importer'
-require 'mill/importers/generic'
-require 'mill/importers/html'
-require 'mill/importers/image'
-require 'mill/importers/text'
 require 'mill/navigator'
 require 'mill/resource'
 require 'mill/resources/feed'
 require 'mill/resources/generic'
-require 'mill/resources/html'
 require 'mill/resources/image'
 require 'mill/resources/redirect'
 require 'mill/resources/robots'
 require 'mill/resources/sitemap'
+require 'mill/resources/text'
 require 'mill/version'
 
 class Mill
@@ -45,40 +40,20 @@ class Mill
   attr_accessor :shorten_uris
   attr_accessor :navigator
   attr_accessor :navigator_items
+  attr_accessor :resource_classes
 
-  DefaultImporterClasses = {
-    html: Importers::HTML,
-    text: Importers::Text,
-    image: Importers::Image,
-    stylesheet: Importers::Generic,
-    font: Importers::Generic,
-    javascript: Importers::Generic,
-    pdf: Importers::Generic,
-  }
-
-  DefaultResourceClasses = {
-    html: Resource::HTML,
-    image: Resource::Image,
-    stylesheet: Resource::Generic,
-    font: Resource::Generic,
-    javascript: Resource::Generic,
-    pdf: Resource::Generic,
-  }
-
-  def self.default_params
-    {}
-  end
+  DefaultResourceClasses = [
+    Resource::Text,
+    Resource::Image,
+    Resource::Generic,
+  ]
 
   def initialize(params={})
-    @importer_classes = {}
     @resource_classes = {}
-    @resources = {}
+    @resources = []
+    @resources_by_uri = {}
     @shorten_uris = true
-    @navigator = Navigator.new
-    build_file_types
-    set_importer_classes(DefaultImporterClasses)
-    set_resource_classes(DefaultResourceClasses)
-    self.class.default_params.merge(params).each { |k, v| send("#{k}=", v) }
+    params.each { |k, v| send("#{k}=", v) }
   end
 
   def input_dir=(path)
@@ -101,59 +76,30 @@ class Mill
     end
   end
 
-  def build_file_types
-    @file_types = {}
-    FileTypes.each do |file_type, mime_types|
-      mime_types.each do |mime_type|
-        MIME::Types[mime_type].each do |t|
-          @file_types[t.content_type] = file_type
-        end
-      end
-    end
-  end
-
   def file_type(file)
     MIME::Types.of(file.to_s).each do |mime_type|
-      if (file_type = @file_types[mime_type.content_type])
-        return file_type
+      if (type = @file_types[mime_type.content_type])
+        return type
       end
     end
     nil
   end
 
-  def set_importer_classes(info)
-    @importer_classes.merge!(info)
-  end
-
-  def importer_class_for_file(file)
-    type = file_type(file) or raise "Can't determine file type of #{file}"
-    @importer_classes[type]
-  end
-
-  def set_resource_classes(info)
-    @resource_classes.merge!(info)
-  end
-
-  def resource_class_for_file(file)
-    type = file_type(file) or raise "Can't determine file type of #{file}"
-    @resource_classes[type]
-  end
-
   def add_resource(resource)
-    @resources[resource.uri] = resource
-    # ;;warn "%s: adding as %s from %s" % [
-    #   resource.uri,
-    #   resource.class,
-    #   resource.input_file ? resource.input_file.relative_to(@input_dir) : '(dynamic)',
-    # ]
+    resource.mill = self
+    @resources << resource
+  end
+
+  def update_resource(resource)
+    @resources_by_uri[resource.uri] = resource
   end
 
   def find_resource(uri)
-    uri = Addressable::URI.parse(uri)
-    resource = @resources[uri]
+    uri = Addressable::URI.parse(uri.to_s) unless uri.kind_of?(Addressable::URI)
+    resource = @resources_by_uri[uri]
     if resource.nil? && @shorten_uris
       uri.path = uri.path.sub(%r{\.html$}, '')
-      resource = @resources[uri]
+      resource = @resources_by_uri[uri]
     end
     resource
   end
@@ -189,7 +135,7 @@ class Mill
   end
 
   def public_resources
-    @resources.values.select(&:public)
+    @resources.select(&:public)
   end
 
   def clean
@@ -198,78 +144,38 @@ class Mill
   end
 
   def load
-    raise "Input path not found: #{@input_dir}" unless @input_dir.exist?
-    import_files
+    build_file_types
+    build_resource_classes
+    load_files
+    load_others
+  end
+
+  def load_others
     make_feed
     make_sitemap
     make_robots
+    make_navigator
   end
 
-  def import_files
-    @input_dir.find do |file_path|
-      input_file = (@input_dir / file_path).expand_path
-      output_file = (@output_dir / file_path.relative_to(@input_dir)).expand_path
-      if input_file.directory?
-        next
-      elsif input_file.basename.to_s[0] == '.'
-        next
-      elsif (importer_class = importer_class_for_file(input_file))
-        importer = importer_class.new(
-          input_file: input_file,
-          output_file: output_file,
-          mill: self)
-        importer.import
-      else
-        warn "No importer for #{input_file} -- ignoring"
+  def process
+    @resources.reject { |r| r.processed? }.each do |resource|
+      begin
+        resource.process
+      rescue => e
+        warn "failed to process #{resource.uri} (#{resource.class}): #{e}"
+        raise
       end
     end
   end
 
-  def make_feed
-    @feed_resource = Resource::Feed.new(
-      output_file: @output_dir / 'feed.xml',
-      mill: self)
-  end
-
-  def make_sitemap
-    @sitemap_resource = Resource::Sitemap.new(
-      output_file: @output_dir / 'sitemap.xml',
-      mill: self)
-  end
-
-  def make_robots
-    @robots_resource = Resource::Robots.new(
-      output_file: @output_dir / 'robots.txt',
-      mill: self)
-  end
-
-  def process
-    make_navigator
-    @resources.values.reject(&:processed).each do |resource|
-      # ;;warn "%s: processing" % [
-      #   resource.uri,
-      # ]
-      resource.process
-    end
-  end
-
   def build
-    @resources.values.each do |resource|
-      # ;;warn "%s: building to %s" % [
-      #   resource.uri,
-      #   resource.output_file.relative_to(@output_dir),
-      # ]
-      resource.build
-    end
-  end
-
-  def verify
-    @resources.values.each do |resource|
-      # ;;warn "%s: verifing %s" % [
-      #   resource.uri,
-      #   resource.output_file.relative_to(@output_dir),
-      # ]
-      resource.verify
+    @resources.reject { |r| r.built? }.each do |resource|
+      begin
+        resource.build
+      rescue => e
+        warn "failed to build #{resource.uri} (#{resource.class}): #{e}"
+        raise
+      end
     end
   end
 
@@ -295,8 +201,53 @@ class Mill
 
   private
 
+  def load_files
+    raise "Input path not found: #{@input_dir}" unless @input_dir.exist?
+    @input_dir.find do |file_path|
+      input_file = (@input_dir / file_path).expand_path
+      output_file = (@output_dir / file_path.relative_to(@input_dir)).expand_path
+      next if input_file.directory? || input_file.basename.to_s[0] == '.'
+      type = file_type(input_file) or raise "Can't determine file type of #{input_file}"
+      resource_class = @resource_classes[type] or raise "No resource class for #{input_file}"
+      resource = resource_class.new(
+        input_file: input_file,
+        output_file: output_file)
+      add_resource(resource)
+    end
+    @resources.reject { |r| r.loaded? }.each do |resource|
+      begin
+        resource.load
+      rescue => e
+        warn "failed to load #{resource.uri} (#{resource.class}): #{e}"
+        raise
+      end
+    end
+  end
+
+  def make_feed
+    @feed_resource = Resource::Feed.new(
+      output_file: @output_dir / 'feed.xml')
+    add_resource(@feed_resource)
+    @feed_resource.load
+  end
+
+  def make_sitemap
+    @sitemap_resource = Resource::Sitemap.new(
+      output_file: @output_dir / 'sitemap.xml')
+    add_resource(@sitemap_resource)
+    @sitemap_resource.load
+  end
+
+  def make_robots
+    @robots_resource = Resource::Robots.new(
+      output_file: @output_dir / 'robots.txt')
+    add_resource(@robots_resource)
+    @robots_resource.load
+  end
+
   def make_navigator
     if @navigator_items
+      @navigator = Navigator.new
       @navigator.items = @navigator_items.map do |uri, title|
         uri = Addressable::URI.parse(uri)
         if title.nil? && uri.relative?
@@ -306,6 +257,23 @@ class Mill
         Navigator::Item.new(uri: uri, title: title)
       end
     end
+  end
+
+  def build_file_types
+    @file_types = {}
+    FileTypes.each do |type, mime_types|
+      mime_types.each do |mime_type|
+        MIME::Types[mime_type].each do |t|
+          @file_types[t.content_type] = type
+        end
+      end
+    end
+  end
+
+  def build_resource_classes
+    @resource_classes = Hash[
+      (DefaultResourceClasses + @resource_classes).map { |rc| [rc.type, rc] }
+    ]
   end
 
 end

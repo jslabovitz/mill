@@ -7,6 +7,16 @@ class Mill
       attr_accessor :width
       attr_accessor :height
 
+      def self.type
+        :image
+      end
+
+      def load
+        info = ImageSize.path(@input_file.to_s)
+        @width, @height = *info.size
+        super
+      end
+
     end
 
   end

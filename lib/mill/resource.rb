@@ -8,15 +8,15 @@ class Mill
     attr_accessor :public
     attr_accessor :content
     attr_accessor :mill
-    attr_accessor :processed
 
-    def self.default_params
-      {}
+    def self.type
+      # implemented by subclass
     end
 
     def initialize(params={})
-      self.class.default_params.merge(params).each { |k, v| send("#{k}=", v) }
-      load
+      @date = DateTime.now
+      @public = false
+      params.each { |k, v| send("#{k}=", v) }
     end
 
     def input_file=(p)
@@ -33,7 +33,7 @@ class Mill
         DateTime.parse(x)
       when Time
         DateTime.parse(x.to_s)
-      when DateTime
+      when Date, DateTime
         x
       else
         raise "Can't assign date: #{x.inspect}"
@@ -75,25 +75,44 @@ class Mill
       @content
     end
 
+    def loaded?
+      @loaded
+    end
+
+    def processed?
+      @processed
+    end
+
+    def built?
+      @built
+    end
+
     def load
-      @mill.add_resource(self)
+      ;;raise "#{uri} (#{self.class}): no content" unless @input_file || @content
+      @loaded = true
+      @mill.update_resource(self)
+      ;;warn "[loaded #{uri}]"
     end
 
     def process
       @processed = true
+      ;;warn "[processed #{uri}]"
     end
 
     def build
       @output_file.dirname.mkpath
       if (c = final_content)
+        # ;;warn "#{uri}: writing #{@input_file} to #{@output_file}"
         @output_file.write(c.to_s)
       elsif @input_file
-        # ;;warn "#{uri}: copying file #{@input_file} to #{@output_file}"
+        # ;;warn "#{uri}: copying #{@input_file} to #{@output_file}"
         @input_file.copy(@output_file)
       else
         raise "Can't build resource without content or input file: #{uri}"
       end
       verify
+      ;;warn "[built #{uri}]"
+      @built = true
     end
 
     def verify

@@ -7,10 +7,16 @@ class Mill
       attr_accessor :redirect_uri
       attr_accessor :redirect_code
 
-      def self.default_params
-        {
-          redirect_code: 303,
-        }
+      def self.type
+        :redirect
+      end
+
+      def initialize(params={})
+        super(
+          {
+            redirect_code: 303,
+          }.merge(params)
+        )
       end
 
       def load

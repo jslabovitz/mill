@@ -8,7 +8,11 @@ class Mill
 
       include HTMLHelpers
 
-      def process
+      def self.type
+        :feed
+      end
+
+      def load
         resources = @mill.public_resources.sort_by(&:date)
         builder = Nokogiri::XML::Builder.new do |xml|
           xml.feed(xmlns: 'http://www.w3.org/2005/Atom') do
@@ -29,19 +33,20 @@ class Mill
                 xml.link(rel: 'alternate', href: resource.absolute_uri)
                 xml.id(resource.tag_uri)
                 xml.updated(resource.date.iso8601)
-                if (resource.respond_to?(:summary) && (summary = resource.summary))
-                  xml.summary(type: 'html') do
-                    xml.cdata(summary.to_html)
-                  end
+                if (resource.respond_to?(:feed_summary))
+                  type, data = resource.feed_summary
+                  xml.summary(type: type) { xml.cdata(data) } if type && data
                 end
-                xml.content(type: 'html') do
-                  xml.cdata(resource.content.to_html)
+                if (resource.respond_to?(:feed_content))
+                  type, data = resource.feed_content
+                  xml.content(type: type) { xml.cdata(data) }
                 end
               end
             end
           end
         end
         @content = builder.doc
+        super
       end
 
       def link_html

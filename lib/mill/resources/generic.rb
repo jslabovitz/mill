@@ -4,6 +4,10 @@ class Mill
 
     class Generic < Resource
 
+      def self.type
+        :generic
+      end
+
     end
 
   end

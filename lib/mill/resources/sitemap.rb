@@ -6,7 +6,11 @@ class Mill
 
     class Sitemap < Resource
 
-      def process
+      def self.type
+        :sitemap
+      end
+
+      def load
         builder = Nokogiri::XML::Builder.new do |xml|
           xml.urlset('xmlns' => 'http://www.sitemaps.org/schemas/sitemap/0.9',
                      'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance',
@@ -21,6 +25,7 @@ class Mill
           end
         end
         @content = builder.doc
+        super
       end
 
     end

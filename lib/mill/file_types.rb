@@ -1,11 +1,9 @@
 class Mill
 
   FileTypes = {
-    html: %w{
-      text/html
-    },
     text: %w{
       text/plain
+      text/html
     },
     image: %w{
       image/gif
@@ -15,22 +13,16 @@ class Mill
       image/vnd.microsoft.icon
       image/x-icon
     },
-    stylesheet: %w{
+    generic: %w{
       text/css
-    },
-    font: %w{
       application/font-sfnt
       application/x-font-opentype
       application/x-font-otf
       application/x-font-truetype
       application/x-font-ttf
-    },
-    javascript: %w{
       application/javascript
       application/x-javascript
       text/javascript
-    },
-    pdf: %w{
       application/pdf
     },
   }

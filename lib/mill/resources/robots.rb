@@ -6,11 +6,16 @@ class Mill
 
     class Robots < Resource
 
-      def process
+      def self.type
+        :robots
+      end
+
+      def load
         info = {
           'Sitemap' => @mill.sitemap_resource.absolute_uri,
         }
         @content = info.map { |key, value| "#{key}: #{value}" }.join("\n")
+        super
       end
 
     end
