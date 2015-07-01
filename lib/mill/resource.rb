@@ -78,7 +78,7 @@ class Mill
     def load
       raise "#{uri} (#{self.class}): no content" unless @input_file || @content
       @mill.update_resource(self)
-      ;;warn "[loaded #{uri}]"
+      ;;warn "[loaded #{uri} (#{self.class.type}: #{self.class})]"
     end
 
     def build
