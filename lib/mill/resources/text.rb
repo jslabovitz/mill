@@ -45,6 +45,8 @@ class Mill
           end
           parse_html_header
         end
+        add_image_sizes
+        convert_relative_links
         super
       end
 
@@ -113,6 +115,23 @@ class Mill
           img_uri = uri + img_link
           img_resource = @mill.find_resource(img_uri) or raise "Can't find image for #{img_uri}"
           img[:width], img[:height] = img_resource.width, img_resource.height
+        end
+      end
+
+      def convert_relative_links
+        @mill.link_elem_attrs.each do |xpath|
+          convert_relative_link(xpath)
+        end
+      end
+
+      def convert_relative_link(elem_attr)
+        @content.xpath("//#{elem_attr}").each do |attribute|
+          elem = attribute.parent
+          link_uri = Addressable::URI.parse(attribute.value) or raise "Can't parse #{attribute.value.inspect} from #{xpath.inspect}"
+          if !link_uri.path.empty? && link_uri.path[0] != '/'
+            attribute.value = uri + link_uri
+            # ;;warn "[#{uri}] absolutized #{elem.name}/@#{attribute.name}: #{link_uri} => #{attribute.value}"
+          end
         end
       end
 

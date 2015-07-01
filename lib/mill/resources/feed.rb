@@ -20,7 +20,7 @@ class Mill
             xml.generator(*@mill.feed_generator)
             xml.title(@mill.site_title)
             xml.link(rel: 'alternate', type: 'text/html',             href: @mill.home_resource.uri)
-            xml.link(rel: 'self',      type: 'application/atom+xml',  href: absolute_uri)
+            xml.link(rel: 'self',      type: 'application/atom+xml',  href: uri)
             xml.author do
               xml.name(@mill.feed_author_name)
               xml.uri(@mill.feed_author_uri)
@@ -30,7 +30,7 @@ class Mill
             resources.each do |resource|
               xml.entry do
                 xml.title(resource.title) if resource.title
-                xml.link(rel: 'alternate', href: resource.absolute_uri)
+                xml.link(rel: 'alternate', href: resource.uri)
                 xml.id(resource.tag_uri)
                 xml.updated(resource.date.iso8601)
                 if (resource.respond_to?(:feed_summary))

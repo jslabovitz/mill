@@ -75,28 +75,10 @@ class Mill
       @content
     end
 
-    def loaded?
-      @loaded
-    end
-
-    def processed?
-      @processed
-    end
-
-    def built?
-      @built
-    end
-
     def load
-      ;;raise "#{uri} (#{self.class}): no content" unless @input_file || @content
-      @loaded = true
+      raise "#{uri} (#{self.class}): no content" unless @input_file || @content
       @mill.update_resource(self)
       ;;warn "[loaded #{uri}]"
-    end
-
-    def process
-      @processed = true
-      ;;warn "[processed #{uri}]"
     end
 
     def build

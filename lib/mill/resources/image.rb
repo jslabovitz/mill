@@ -17,6 +17,16 @@ class Mill
         super
       end
 
+      def img_html
+        html_fragment do |html|
+          html.img(
+            src: uri,
+            alt: @title,
+            height: @height,
+            width: @width)
+        end
+      end
+
     end
 
   end

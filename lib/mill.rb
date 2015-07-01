@@ -42,6 +42,9 @@ class Mill
   attr_accessor :navigator_items
   attr_accessor :resource_classes
   attr_accessor :schema_types
+  attr_accessor :redirects
+  attr_accessor :input_file_type_order
+  attr_accessor :link_elem_attrs
 
   DefaultResourceClasses = [
     Resource::Text,
@@ -63,6 +66,14 @@ class Mill
     @schema_types = {}
     @schemas = {}
     @shorten_uris = true
+    @input_file_type_order = [:generic, :image, :text]
+    @link_elem_attrs = %w{
+      img/@src
+      script/@src
+      a/@href
+      link/@href
+      stylesheet/@href
+    }
     params.each { |k, v| send("#{k}=", v) }
   end
 
@@ -87,9 +98,13 @@ class Mill
   end
 
   def file_type(file)
-    MIME::Types.of(file.to_s).each do |mime_type|
-      if (type = @file_types[mime_type.content_type])
-        return type
+    if file.directory? || file.basename.to_s[0] == '.'
+      return :ignore
+    else
+      MIME::Types.of(file.to_s).each do |mime_type|
+        if (type = @file_types[mime_type.content_type])
+          return type
+        end
       end
     end
     nil
@@ -166,31 +181,16 @@ class Mill
   end
 
   def load_others
+    make_redirects
     make_feed
     make_sitemap
     make_robots
     make_navigator
   end
 
-  def process
-    @resources.reject { |r| r.processed? }.each do |resource|
-      begin
-        resource.process
-      rescue => e
-        warn "failed to process #{resource.uri} (#{resource.class}): #{e}"
-        raise
-      end
-    end
-  end
-
   def build
-    @resources.reject { |r| r.built? }.each do |resource|
-      begin
-        resource.build
-      rescue => e
-        warn "failed to build #{resource.uri} (#{resource.class}): #{e}"
-        raise
-      end
+    @resources.each do |resource|
+      resource.build
     end
   end
 
@@ -218,23 +218,23 @@ class Mill
 
   def load_files
     raise "Input path not found: #{@input_dir}" unless @input_dir.exist?
-    @input_dir.find do |file_path|
-      input_file = (@input_dir / file_path).expand_path
-      output_file = (@output_dir / file_path.relative_to(@input_dir)).expand_path
-      next if input_file.directory? || input_file.basename.to_s[0] == '.'
+    input_files_by_type = {}
+    @input_dir.find do |input_file|
+      input_file = @input_dir / input_file
       type = file_type(input_file) or raise "Can't determine file type of #{input_file}"
-      resource_class = @resource_classes[type] or raise "No resource class for #{input_file}"
-      resource = resource_class.new(
-        input_file: input_file,
-        output_file: output_file)
-      add_resource(resource)
+      unless type == :ignore
+        input_files_by_type[type] ||= []
+        input_files_by_type[type] << input_file
+      end
     end
-    @resources.reject { |r| r.loaded? }.each do |resource|
-      begin
+    input_files_by_type.sort_by { |t, f| @input_file_type_order.index(t) || 999 }.each do |type, input_files|
+      input_files.each do |input_file|
+        resource_class = @resource_classes[type] or raise "No resource class for #{input_file}"
+        resource = resource_class.new(
+          input_file: input_file,
+          output_file: @output_dir / input_file.relative_to(@input_dir))
+        add_resource(resource)
         resource.load
-      rescue => e
-        warn "failed to load #{resource.uri} (#{resource.class}): #{e}"
-        raise
       end
     end
   end
@@ -274,9 +274,22 @@ class Mill
     end
   end
 
+  def make_redirects
+    return unless @redirects
+    @redirects.each do |from, to|
+      output_file = @output_dir / Path.new(from).relative_to('/')
+      resource = Resource::Redirect.new(
+        output_file: output_file,
+        redirect_uri: to)
+      add_resource(resource)
+      resource.load
+    end
+  end
+
   def build_schemas
     DefaultSchemaTypes.merge(@schema_types).each do |type, file|
-      @schemas[type] = Nokogiri::XML::Schema(file.open)
+      ;;warn "[loading schema #{type} from #{file}]"
+      @schemas[type] = Nokogiri::XML::Schema(file.open) { |c| c.strict.nonet }
     end
   end
 
