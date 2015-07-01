@@ -217,17 +217,7 @@ class Mill
   private
 
   def load_files
-    raise "Input path not found: #{@input_dir}" unless @input_dir.exist?
-    input_files_by_type = {}
-    @input_dir.find do |input_file|
-      input_file = @input_dir / input_file
-      type = file_type(input_file) or raise "Can't determine file type of #{input_file}"
-      unless type == :ignore
-        input_files_by_type[type] ||= []
-        input_files_by_type[type] << input_file
-      end
-    end
-    input_files_by_type.sort_by { |t, f| @input_file_type_order.index(t) || 999 }.each do |type, input_files|
+    input_files_by_type.each do |type, input_files|
       input_files.each do |input_file|
         resource_class = @resource_classes[type] or raise "No resource class for #{input_file}"
         resource = resource_class.new(
@@ -237,6 +227,20 @@ class Mill
         resource.load
       end
     end
+  end
+
+  def input_files_by_type
+    hash = {}
+    raise "Input path not found: #{@input_dir}" unless @input_dir.exist?
+    @input_dir.find do |input_file|
+      input_file = @input_dir / input_file
+      type = file_type(input_file) or raise "Can't determine file type of #{input_file}"
+      unless type == :ignore
+        hash[type] ||= []
+        hash[type] << input_file
+      end
+    end
+    hash.sort_by { |t, f| @input_file_type_order.index(t) || @input_file_type_order.length }
   end
 
   def make_feed
