@@ -112,6 +112,13 @@ class Mill
 
   def add_resource(resource)
     resource.mill = self
+    begin
+      ;;warn "loading #{resource.class.type} resource #{resource.uri} as #{resource.class}"
+      resource.load
+    rescue => e
+      warn "Failed to load resource #{resource.uri} (#{resource.class}): #{e}"
+      raise
+    end
     @resources << resource
   end
 
@@ -190,7 +197,12 @@ class Mill
 
   def build
     @resources.each do |resource|
-      resource.build
+      begin
+        resource.build
+      rescue => e
+        warn "Failed to build resource #{resource.uri}: #{e}"
+        raise
+      end
     end
   end
 
@@ -224,7 +236,6 @@ class Mill
           input_file: input_file,
           output_file: @output_dir / input_file.relative_to(@input_dir))
         add_resource(resource)
-        resource.load
       end
     end
   end
@@ -247,21 +258,18 @@ class Mill
     @feed_resource = Resource::Feed.new(
       output_file: @output_dir / 'feed.xml')
     add_resource(@feed_resource)
-    @feed_resource.load
   end
 
   def make_sitemap
     @sitemap_resource = Resource::Sitemap.new(
       output_file: @output_dir / 'sitemap.xml')
     add_resource(@sitemap_resource)
-    @sitemap_resource.load
   end
 
   def make_robots
     @robots_resource = Resource::Robots.new(
       output_file: @output_dir / 'robots.txt')
     add_resource(@robots_resource)
-    @robots_resource.load
   end
 
   def make_navigator
@@ -286,13 +294,12 @@ class Mill
         output_file: output_file,
         redirect_uri: to)
       add_resource(resource)
-      resource.load
     end
   end
 
   def build_schemas
     DefaultSchemaTypes.merge(@schema_types).each do |type, file|
-      ;;warn "[loading schema #{type} from #{file}]"
+      ;;warn "loading schema #{type} from #{file}"
       @schemas[type] = Nokogiri::XML::Schema(file.open) { |c| c.strict.nonet }
     end
   end
