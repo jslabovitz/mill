@@ -33,6 +33,7 @@ class Mill
                 xml.link(rel: 'alternate', href: resource.uri)
                 xml.id(resource.tag_uri)
                 xml.updated(resource.date.iso8601)
+                xml.published(resource.date.iso8601)
                 if (resource.respond_to?(:feed_summary))
                   type, data = resource.feed_summary
                   xml.summary(type: type) { xml.cdata(data) } if type && data
