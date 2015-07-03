@@ -14,8 +14,6 @@ class Mill
     end
 
     def initialize(params={})
-      @date = DateTime.now
-      @public = false
       params.each { |k, v| send("#{k}=", v) }
     end
 
@@ -77,8 +75,8 @@ class Mill
 
     def load
       raise "#{uri} (#{self.class}): no content" unless @input_file || @content
+      self.date ||= @input_file ? @input_file.mtime : DateTime.now
       @mill.update_resource(self)
-      ;;warn "[loaded #{uri} (#{self.class.type}: #{self.class})]"
     end
 
     def build
@@ -86,6 +84,7 @@ class Mill
       if (c = final_content)
         # ;;warn "#{uri}: writing #{@input_file} to #{@output_file}"
         @output_file.write(c.to_s)
+        @output_file.utime(@date.to_time, @date.to_time)
       elsif @input_file
         # ;;warn "#{uri}: copying #{@input_file} to #{@output_file}"
         @input_file.copy(@output_file)
@@ -93,8 +92,6 @@ class Mill
         raise "Can't build resource without content or input file: #{uri}"
       end
       validate
-      ;;warn "[built #{uri}]"
-      @built = true
     end
 
     def validate
