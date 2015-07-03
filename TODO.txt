@@ -1,3 +1,6 @@
+- split Resource#date into Resource#published & Resource#updated
+    + add <published> element to feed
+
 - refactor MIME type usage
     + allow specified type as regexp or glob (use File.fnmatch?)
     + convert to MIME::Type object(s)
