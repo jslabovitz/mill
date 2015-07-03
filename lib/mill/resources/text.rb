@@ -35,6 +35,7 @@ class Mill
           end
           if markup_class
             parse_text_header
+            raise "#{uri}: Content is empty" unless @content
             @content = markup_class.new(@content).to_html
             @output_file = @output_file.replace_extension('.html')
           end
@@ -145,8 +146,8 @@ class Mill
       end
 
       def feed_content
-        ;;raise "#{uri} has no content" unless @content
-        ['html', @content.at_xpath('/html/body').children.to_html]
+        body = @content.at_xpath('/html/body') or raise "#{uri} has no content"
+        ['html', body.children.to_html]
       end
 
     end
