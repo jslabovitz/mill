@@ -4,6 +4,8 @@ class Mill
 
     class Image < Resource
 
+      include HTMLHelpers
+
       attr_accessor :width
       attr_accessor :height
 
