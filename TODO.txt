@@ -1,5 +1,12 @@
+- resolve confusion between content-generation in #load vs. #final_content
+    + who does what?
+    + replacement/modification of HTML elements (image sizing, etc.) only happens in #load
+    + maybe #final_content should have option to fully qualify URIs, etc., to handle feed content
+
 - split Resource#date into Resource#published & Resource#updated
     + add <published> element to feed
+    + #published should be stated date (e.g., from header)
+    + #updated should be mtime of source file
 
 - refactor MIME type usage
     + allow specified type as regexp or glob (use File.fnmatch?)
