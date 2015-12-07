@@ -113,7 +113,7 @@ class Mill
   def add_resource(resource)
     resource.mill = self
     begin
-      ;;warn "loading #{resource.class.type} resource #{resource.uri} as #{resource.class}"
+      # ;;warn "loading #{resource.class.type} resource #{resource.uri} as #{resource.class}"
       resource.load
     rescue => e
       warn "Failed to load resource #{resource.uri} (#{resource.class}): #{e}"
@@ -180,6 +180,7 @@ class Mill
   end
 
   def load
+    warn "loading resources..."
     build_file_types
     build_resource_classes
     build_schemas
@@ -196,6 +197,7 @@ class Mill
   end
 
   def build
+    warn "building #{@resources.length} resources..."
     @resources.each do |resource|
       begin
         resource.build
