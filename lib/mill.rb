@@ -1,4 +1,4 @@
-require 'addressable/uri'
+require 'addressable'
 require 'image_size'
 require 'kramdown'
 require 'mime/types'
