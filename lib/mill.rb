@@ -253,7 +253,7 @@ class Mill
         hash[type] << input_file
       end
     end
-    hash.sort_by { |t, f| @input_file_type_order.index(t) || @input_file_type_order.length }
+    hash.sort_by { |t, f| input_file_type_order.index(t) || input_file_type_order.length }
   end
 
   def make_feed
