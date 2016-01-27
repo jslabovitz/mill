@@ -36,6 +36,7 @@ class Mill
   attr_accessor :sitemap_resource
   attr_accessor :robots_resource
   attr_accessor :ssh_location
+  attr_accessor :beta_ssh_location
   attr_accessor :resources
   attr_accessor :shorten_uris
   attr_accessor :navigator
@@ -208,8 +209,16 @@ class Mill
     end
   end
 
-  def publish
-    raise "Must specify SSH location" unless @ssh_location
+  def publish(mode=:final)
+    location = case mode
+               when :final
+                 @ssh_location
+               when :beta
+                 @beta_ssh_location
+               else
+                 raise "Unknown publish mode: #{mode.inspect}"
+               end
+    raise "Must specify SSH location" unless location
     system('rsync',
       # '--dry-run',
       '--archive',
@@ -217,7 +226,7 @@ class Mill
       '--progress',
       # '--verbose',
       @output_dir.to_s + '/',
-      @ssh_location,
+      location,
     )
   end
 

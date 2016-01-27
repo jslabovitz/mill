@@ -15,9 +15,14 @@ task :build => :load do
   $mill.build
 end
 
-desc 'Publish site.'
+desc 'Publish site (final).'
 task :publish do
-  $mill.publish
+  $mill.publish(:final)
+end
+
+desc 'Publish site (beta).'
+task 'publish:beta' do
+  $mill.publish(:beta)
 end
 
 desc 'Run a test server.'
