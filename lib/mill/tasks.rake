@@ -16,16 +16,16 @@ task :build => :load do
 end
 
 desc 'Publish site (final).'
-task :publish do
+task :publish => :build do
   $mill.publish(:final)
 end
 
 desc 'Publish site (beta).'
-task 'publish:beta' do
+task 'publish:beta' => :build do
   $mill.publish(:beta)
 end
 
 desc 'Run a test server.'
-task :server do
+task :server => :build do
   $mill.server
 end
