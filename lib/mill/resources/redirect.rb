@@ -20,15 +20,11 @@ class Mill
       end
 
       def load
-        @content = {
-          uri: @redirect_uri,
-          code: @redirect_code,
-        }.to_yaml
+        @content = "%s %d" % [@redirect_uri, @redirect_code]
         super
       end
 
       def build
-        #FIXME: this is a hack
         @output_file = @output_file.add_extension('.redirect')
         super
       end
