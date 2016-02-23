@@ -7,7 +7,6 @@ require 'path'
 require 'pp'
 require 'RedCloth'
 require 'rubypants'
-require 'simple-server'
 require 'time'
 require 'tidy_ffi'
 require 'term/ansicolor'
@@ -232,9 +231,10 @@ class Mill
   end
 
   def server
-    SimpleServer.run(
-      root: @output_dir.to_s,
-      multihosting: false)
+    SimpleServer.run!(
+      root: @output_dir,
+      multihosting: false,
+    )
   end
 
   private
