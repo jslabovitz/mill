@@ -46,7 +46,6 @@ class Mill
   attr_accessor :schema_types
   attr_accessor :redirects
   attr_accessor :input_file_type_order
-  attr_accessor :link_elem_attrs
 
   DefaultResourceClasses = [
     Resource::Text,
@@ -69,13 +68,6 @@ class Mill
     @schemas = {}
     @shorten_uris = true
     @input_file_type_order = [:generic, :image, :text]
-    @link_elem_attrs = %w{
-      img/@src
-      script/@src
-      a/@href
-      link/@href
-      stylesheet/@href
-    }
     params.each { |k, v| send("#{k}=", v) }
   end
 

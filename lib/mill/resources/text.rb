@@ -6,6 +6,14 @@ class Mill
 
       include HTMLHelpers
 
+      LinkElementsXPaths = %w{
+        img/@src
+        script/@src
+        a/@href
+        link/@href
+        stylesheet/@href
+      }
+
       attr_accessor :title
 
       def self.type
@@ -120,7 +128,7 @@ class Mill
       end
 
       def convert_relative_links
-        @mill.link_elem_attrs.each do |xpath|
+        LinkElementsXPaths.each do |xpath|
           convert_relative_link(xpath)
         end
       end
