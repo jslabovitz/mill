@@ -15,17 +15,22 @@ task :build => :load do
   $mill.build
 end
 
+desc 'Check for syntax, links, etc.'
+task :check => :build do
+  $mill.check
+end
+
 desc 'Publish site (final).'
-task :publish => :build do
+task :publish => :check do
   $mill.publish(:final)
 end
 
 desc 'Publish site (beta).'
-task 'publish:beta' => :build do
+task 'publish:beta' => :check do
   $mill.publish(:beta)
 end
 
 desc 'Run a test server.'
-task :server => :build do
+task :server => :check do
   $mill.server
 end

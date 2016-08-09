@@ -2,13 +2,13 @@ module HTMLHelpers
 
   class HTMLError < Exception; end
 
-  IgnoreErrors = %Q{
-    <table> lacks "summary" attribute
-    <img> lacks "alt" attribute
-    <form> proprietary attribute "novalidate"
-    <input> attribute "type" has invalid value "email"
-    <input> attribute "tabindex" has invalid value "-1"
-  }.split(/\n/).map(&:strip)
+  LinkElementsXPaths = %w{
+    //img/@src
+    //script/@src
+    //a/@href
+    //link/@href
+    //stylesheet/@href
+  }
 
   def html_document(&block)
     builder = Nokogiri::HTML::Builder.new(encoding: 'utf-8') do |doc|
@@ -32,58 +32,6 @@ module HTMLHelpers
       raise HTMLError, "HTML error at line #{error.line}, column #{error.column}: #{error.message}"
     end
     html
-  end
-
-  def tidy_html(html, &block)
-    html_str = html.to_s
-    tidy = TidyFFI::Tidy.new(html_str, char_encoding: 'UTF8')
-    errors = parse_tidy_errors(tidy).reject do |error|
-      IgnoreErrors.include?(error[:error])
-    end
-    unless errors.empty?
-      full_error = StringIO.new('')
-      full_error.puts "invalid HTML:"
-      html_lines = html_str.split(/\n/)
-      errors.each do |error|
-        full_error.puts "\t#{error[:msg]}:"
-        html_lines.each_with_index do |html_line, i|
-          if i >= [0, error[:line] - 2].max && i <= [error[:line] + 2, html_lines.length].min
-            if i == error[:line]
-              output = [
-                error[:column] > 0 ? (html_line[0 .. error[:column] - 1]) : '',
-                Term::ANSIColor.negative,
-                html_line[error[:column]],
-                Term::ANSIColor.clear,
-                html_line[error[:column] + 1 .. -1],
-              ]
-            else
-              output = [html_line]
-            end
-            full_error.puts "\t\t%3s: %s" % [i + 1, output.join]
-          end
-        end
-        if block_given?
-          yield(full_error.string)
-        else
-          STDERR.print(full_error.string)
-        end
-        raise HTMLError, "HTML error: #{error[:msg]}" if error[:type] == :error
-      end
-    end
-  end
-
-  def parse_tidy_errors(tidy)
-    return [] unless tidy.errors
-    tidy.errors.split(/\n/).map do |error_str|
-      error_str =~ /^line (\d+) column (\d+) - (.*?): (.*)$/ or raise "Can't parse error: #{error_str}"
-      {
-        msg: error_str,
-        line: $1.to_i - 1,
-        column: $2.to_i - 1,
-        type: $3.downcase.to_sym,
-        error: $4.strip,
-      }
-    end
   end
 
   def replace_element(html, xpath, &block)

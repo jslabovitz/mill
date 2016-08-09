@@ -6,14 +6,6 @@ class Mill
 
       include HTMLHelpers
 
-      LinkElementsXPaths = %w{
-        img/@src
-        script/@src
-        a/@href
-        link/@href
-        stylesheet/@href
-      }
-
       attr_accessor :title
 
       def self.type
@@ -100,12 +92,6 @@ class Mill
         @content.at_xpath('/html/body').children
       end
 
-      def verify
-        tidy_html(@output_file.read) do |error_str|
-          warn "#{uri}: #{error_str}"
-        end
-      end
-
       def add_external_link_targets
         @content.xpath('//a').each do |a|
           if a['href'] && a['href'] =~ /^\w+:/
@@ -129,17 +115,13 @@ class Mill
 
       def convert_relative_links
         LinkElementsXPaths.each do |xpath|
-          convert_relative_link(xpath)
-        end
-      end
-
-      def convert_relative_link(elem_attr)
-        @content.xpath("//#{elem_attr}").each do |attribute|
-          elem = attribute.parent
-          link_uri = Addressable::URI.parse(attribute.value) or raise "Can't parse #{attribute.value.inspect} from #{xpath.inspect}"
-          if !link_uri.path.empty? && link_uri.path[0] != '/'
-            attribute.value = uri + link_uri
-            # ;;warn "[#{uri}] absolutized #{elem.name}/@#{attribute.name}: #{link_uri} => #{attribute.value}"
+          @content.xpath(xpath).each do |attribute|
+            elem = attribute.parent
+            link_uri = Addressable::URI.parse(attribute.value) or raise "Can't parse #{attribute.value.inspect} from #{xpath.inspect}"
+            if !link_uri.path.empty? && link_uri.path[0] != '/'
+              attribute.value = uri + link_uri
+              # ;;warn "[#{uri}] absolutized #{elem.name}/@#{attribute.name}: #{link_uri} => #{attribute.value}"
+            end
           end
         end
       end

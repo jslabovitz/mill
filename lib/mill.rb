@@ -5,12 +5,13 @@ require 'mime/types'
 require 'nokogiri'
 require 'path'
 require 'pp'
+require 'rack'
 require 'RedCloth'
 require 'rubypants'
-require 'simple-server'
 require 'time'
 require 'tidy_ffi'
 require 'term/ansicolor'
+require 'webrick'
 
 require 'mill/file_types'
 require 'mill/html_helpers'
@@ -23,6 +24,8 @@ require 'mill/resources/redirect'
 require 'mill/resources/robots'
 require 'mill/resources/sitemap'
 require 'mill/resources/text'
+require 'mill/checker'
+require 'mill/server'
 require 'mill/version'
 
 class Mill
@@ -168,6 +171,10 @@ class Mill
     @resources.select(&:public)
   end
 
+  def private_resources
+    @resources.select { |r| r.kind_of?(Resource::Text) && !r.public }
+  end
+
   def clean
     @output_dir.rmtree if @output_dir.exist?
     @output_dir.mkpath
@@ -202,6 +209,24 @@ class Mill
     end
   end
 
+  def check
+    warn "checking site..."
+    checker = Checker.new(@output_dir)
+    uris = [
+      home_resource,
+      *private_resources,
+      feed_resource,
+      sitemap_resource,
+      robots_resource,
+    ].map(&:uri)
+    uris += @redirects.keys if @redirects
+    uris.each do |uri|
+      uri = Addressable::URI.parse('http://' + uri)
+      checker.check(uri)
+    end
+    checker.report
+  end
+
   def publish(mode=:final)
     location = case mode
                when :final
@@ -224,10 +249,11 @@ class Mill
   end
 
   def server
-    SimpleServer.run!(
+    server = Server.new(
       root: @output_dir,
       multihosting: false,
     )
+    server.run
   end
 
   private
@@ -291,13 +317,14 @@ class Mill
   end
 
   def make_redirects
-    return unless @redirects
-    @redirects.each do |from, to|
-      output_file = @output_dir / Path.new(from).relative_to('/')
-      resource = Resource::Redirect.new(
-        output_file: output_file,
-        redirect_uri: to)
-      add_resource(resource)
+    if @redirects
+      @redirects.each do |from, to|
+        output_file = @output_dir / Path.new(from).relative_to('/')
+        resource = Resource::Redirect.new(
+          output_file: output_file,
+          redirect_uri: to)
+        add_resource(resource)
+      end
     end
   end
 
