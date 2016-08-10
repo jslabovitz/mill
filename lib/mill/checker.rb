@@ -39,6 +39,7 @@ class Mill
       request = make_request(uri)
       response = @server.handle_request(request)
       # ;;pp(request: request, response: response)
+      links = []
       case response.status
       when 200...300
         file_path = Path.new(response.headers['X-Sendfile'])
@@ -46,27 +47,26 @@ class Mill
         case (type = response.headers['Content-Type'])
         when 'text/html'
           html = file_path.read
-          tidy_html(html, label: file_path) or raise "Invalid HTML"
-          html_links(html).each do |link|
-            check(uri + link, level + 1)
-          end
+          tidy_html(html, label: file_path) or raise HTMLError, "Invalid HTML"
+          links += html_links(html)
         when 'text/css'
-          css_links(file_path.read).each do |link|
-            check(uri + link, level + 1)
-          end
+          links += css_links(file_path.read)
         when 'application/xml'
-          #FIXME -- parse XML
+          links += xml_links(file_path.read)
+        when %r{^(image|video|audio|text|application)/}
+          # ignore
         else
-          # ;;warn ('  ' * level) + "SKIPPING: #{type}"
+          ;;warn ('  ' * level) + "SKIPPING: #{uri} (#{type})"
         end
       when 300...400
         redirect_uri = Addressable::URI.parse(response.headers['Location'])
-        check(uri + redirect_uri, level + 1)
+        links << uri + redirect_uri
       when 404
         raise "URI not found: #{uri}" unless uri.path == '/favicon.ico'
       else
         raise "Bad status: #{response.inspect}"
       end
+      links.each { |link| check(uri + link, level + 1) }
     end
 
     def html_links(html)
