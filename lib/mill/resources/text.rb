@@ -114,14 +114,12 @@ class Mill
       end
 
       def convert_relative_links
-        LinkElementsXPaths.each do |xpath|
-          @content.xpath(xpath).each do |attribute|
-            elem = attribute.parent
-            link_uri = Addressable::URI.parse(attribute.value) or raise "Can't parse #{attribute.value.inspect} from #{xpath.inspect}"
-            if !link_uri.path.empty? && link_uri.path[0] != '/'
-              attribute.value = uri + link_uri
-              # ;;warn "[#{uri}] absolutized #{elem.name}/@#{attribute.name}: #{link_uri} => #{attribute.value}"
-            end
+        find_link_elements(@content).each do |attribute|
+          elem = attribute.parent
+          link_uri = Addressable::URI.parse(attribute.value) or raise "Can't parse #{attribute.value.inspect} from #{xpath.inspect}"
+          if !link_uri.path.empty? && link_uri.path[0] != '/'
+            attribute.value = uri + link_uri
+            # ;;warn "[#{uri}] absolutized #{elem.name}/@#{attribute.name}: #{link_uri} => #{attribute.value}"
           end
         end
       end

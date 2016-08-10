@@ -2,13 +2,7 @@ module HTMLHelpers
 
   class HTMLError < Exception; end
 
-  LinkElementsXPaths = %w{
-    //img/@src
-    //script/@src
-    //a/@href
-    //link/@href
-    //stylesheet/@href
-  }
+  LinkElementsXPath = '//@href | //@src'
 
   def html_document(&block)
     builder = Nokogiri::HTML::Builder.new(encoding: 'utf-8') do |doc|
@@ -32,6 +26,10 @@ module HTMLHelpers
       raise HTMLError, "HTML error at line #{error.line}, column #{error.column}: #{error.message}"
     end
     html
+  end
+
+  def find_link_elements(html)
+    html.xpath(LinkElementsXPath)
   end
 
   def replace_element(html, xpath, &block)
