@@ -24,12 +24,12 @@ module Mill
 
     def handle_request(request)
       unless request.get? || request.head? || request.options?
-        return error_response(WEBrick::HTTPStatus::MethodNotAllowed)
+        return error_response(:method_not_allowed)
       end
       uri, filename = parse_uri(request.url)
       # ;;warn "#{request.url} => #{filename}"
       unless filename_is_public?(filename)
-        return error_response(WEBrick::HTTPStatus::Forbidden)
+        return error_response(:forbidden)
       end
       redirect_path = filename.add_extension('.redirect')
       if redirect_path.exist?
@@ -39,15 +39,15 @@ module Mill
         return redirect_response(uri + '/')
       end
       unless (filename = find_filename(filename))
-        return error_response(WEBrick::HTTPStatus::NotFound)
+        return error_response(:not_found)
       end
       unless filename.readable?
-        return error_response(WEBrick::HTTPStatus::Forbidden)
+        return error_response(:forbidden)
       end
       if request.get_header('HTTP_IF_MODIFIED_SINCE') == filename.mtime.httpdate
-        return redirect_response(nil, WEBrick::HTTPStatus::NotModified)
+        return redirect_response(nil, :not_modified)
       end
-      send_file_response(filename, 200, request.get?)
+      send_file_response(filename, :ok, request.get?)
     end
 
     private
@@ -83,22 +83,21 @@ module Mill
     def redirect_response_from_file(redirect_path, base_uri)
       uri, status = redirect_path.read.split(/\s+/)
       uri = Addressable::URI.parse(uri)
-      status = status ? status.to_i : nil
       redirect_response((base_uri + uri).to_s, status)
     end
 
     def redirect_response(uri, status=nil)
-      response = Rack::Response.new([], 303)
-      response.redirect(uri.to_s) if uri
+      status_code = Rack::Utils.status_code(status || :see_other)
+      response = Rack::Response.new([], status_code)
+      response.redirect(uri.to_s, status_code) if uri
       response
     end
 
     def error_response(status)
-      status = WEBrick::HTTPStatus[status] if status.kind_of?(Numeric)
       if @error_filename
-        send_file_response(@error_filename, status.code)
+        send_file_response(@error_filename, status)
       else
-        Rack::Response.new([status.reason_phrase], status.code)
+        Rack::Response.new([], Rack::Utils.status_code(status))
       end
     end
 
@@ -116,7 +115,7 @@ module Mill
           body = filename.open('rb')
         end
       end
-      Rack::Response.new(body, status, headers)
+      Rack::Response.new(body, Rack::Utils.status_code(status), headers)
     end
 
   end
