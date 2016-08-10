@@ -1,4 +1,4 @@
-class Mill
+module Mill
 
   VERSION = '0.1'
 

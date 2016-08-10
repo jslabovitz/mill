@@ -1,6 +1,6 @@
 # see http://www.robotstxt.org/robotstxt.html
 
-class Mill
+module Mill
 
   class Resource
 

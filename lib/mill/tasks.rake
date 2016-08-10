@@ -2,35 +2,35 @@ $LOAD_PATH.unshift 'lib'
 
 desc 'Clean site directories.'
 task :clean do
-  $mill.clean
+  $site.clean
 end
 
 desc 'Load site.'
 task :load => :clean do
-  $mill.load
+  $site.load
 end
 
 desc 'Build site.'
 task :build => :load do
-  $mill.build
+  $site.build
 end
 
 desc 'Check for syntax, links, etc.'
 task :check => :build do
-  $mill.check
+  $site.check
 end
 
 desc 'Publish site (final).'
 task :publish => :check do
-  $mill.publish(:final)
+  $site.publish(:final)
 end
 
 desc 'Publish site (beta).'
 task 'publish:beta' => :check do
-  $mill.publish(:beta)
+  $site.publish(:beta)
 end
 
 desc 'Run a test server.'
 task :server => :check do
-  $mill.server
+  $site.server
 end
