@@ -93,9 +93,9 @@ class Mill
 
     def report
       unless @files.empty?
-        puts; puts "ORPHAN FILES:"
+        puts "\t" + "unreferenced files:"
         @files.sort.each do |path|
-          puts "\t" + path.to_s
+          puts "\t\t" + path.to_s
         end
       end
     end
