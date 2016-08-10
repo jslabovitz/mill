@@ -71,7 +71,18 @@ class Mill
 
     def html_links(html)
       html_doc = parse_html(html)
-      LinkElementsXPaths.map { |x| html_doc.xpath(x).map(&:value) }.flatten
+      find_link_elements(html_doc).map(&:value)
+    end
+
+    def xml_links(xml)
+      xml_doc = Nokogiri::XML::Document.parse(xml) { |config| config.strict }
+      unless xml_doc.errors.empty?
+        xml_doc.errors.each do |error|
+          warn "#{error.line}:#{error.column}: #{error.message}"
+        end
+        raise "XML invalid"
+      end
+      find_link_elements(xml_doc).map(&:value)
     end
 
     def css_links(css)
