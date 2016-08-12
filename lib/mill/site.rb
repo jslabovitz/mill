@@ -326,7 +326,7 @@ module Mill
       system(*command.compact)
     end
 
-    def build_rsync_command(uri, auth_info: nil, dry_run: false, verbose: false, delete: true)
+    def build_rsync_command(uri, dry_run: false, verbose: false, delete: true)
       [
         'rsync',
         '--archive',
@@ -339,7 +339,7 @@ module Mill
       ]
     end
 
-    def build_ftp_command(uri, auth_info: nil, dry_run: false, verbose: false, delete: true)
+    def build_ftp_command(uri, dry_run: false, verbose: false, delete: true)
       commands =  [
         %w{debug 5},
         %w{set cmd:fail-exit yes},
