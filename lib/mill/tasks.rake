@@ -22,12 +22,12 @@ end
 
 desc 'Publish site (final).'
 task :publish => :check do
-  $site.publish(:final)
+  $site.publish_final
 end
 
 desc 'Publish site (beta).'
 task 'publish:beta' => :check do
-  $site.publish(:beta)
+  $site.publish_beta
 end
 
 desc 'Run a test server.'

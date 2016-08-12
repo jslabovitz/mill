@@ -11,8 +11,8 @@ module Mill
     attr_accessor :feed_resource
     attr_accessor :sitemap_resource
     attr_accessor :robots_resource
-    attr_accessor :ssh_location
-    attr_accessor :beta_ssh_location
+    attr_accessor :final_destination
+    attr_accessor :beta_destination
     attr_accessor :resources
     attr_accessor :shorten_uris
     attr_accessor :navigator
@@ -199,32 +199,20 @@ module Mill
       checker.report
     end
 
-    def publish(mode=:final)
-      location = case mode
-                 when :final
-                   @ssh_location
-                 when :beta
-                   @beta_ssh_location
-                 else
-                   raise "Unknown publish mode: #{mode.inspect}"
-                 end
-      raise "Must specify SSH location" unless location
-      system('rsync',
-        # '--dry-run',
-        '--archive',
-        '--delete-after',
-        '--progress',
-        # '--verbose',
-        @output_dir.to_s + '/',
-        location,
-      )
+    def publish_beta
+      raise "No beta destination configured" unless @beta_destination
+      publish(@beta_destination)
+    end
+
+    def publish_final
+      raise "No final destination configured" unless @final_destination
+      publish(@final_destination)
     end
 
     def server
       server = Server.new(
         root: @output_dir,
-        multihosting: false,
-      )
+        multihosting: false)
       server.run
     end
 
@@ -321,6 +309,65 @@ module Mill
     def build_resource_classes
       @resource_classes = Hash[
         (DefaultResourceClasses + @resource_classes).map { |rc| [rc.type, rc] }
+      ]
+    end
+
+    def publish(uri, **options)
+      uri = Addressable::URI.parse(uri)
+      command = case uri.scheme
+      when 'rsync'
+        build_rsync_command(uri, **options)
+      when 'ftp'
+        build_ftp_command(uri, **options)
+      else
+        raise "Unknown publishing destination scheme: #{uri}"
+      end
+      warn "* #{command.compact.join(' ')}"
+      system(*command.compact)
+    end
+
+    def build_rsync_command(uri, auth_info: nil, dry_run: false, verbose: false, delete: true)
+      [
+        'rsync',
+        '--archive',
+        '--progress',
+        (dry_run ? '--dry-run' : nil),
+        (delete ? '--delete-after' : nil),
+        (verbose ? '--verbose' : nil),
+        @output_dir.to_s + '/',
+        uri.to_s,
+      ]
+    end
+
+    def build_ftp_command(uri, auth_info: nil, dry_run: false, verbose: false, delete: true)
+      commands =  [
+        %w{debug 5},
+        %w{set cmd:fail-exit yes},
+        %w{set ssl:verify-certificate no},
+        %w{set ftp:ssl-allow no},
+        ['lcd', @output_dir],
+        ['open', uri],
+        [
+          'mirror',
+          (verbose ? '--verbose=3' : nil),
+          '--reverse',
+          (dry_run ? '--dry-run' : nil),
+          (delete ? '--delete' : nil),
+          '--no-perms',
+          '--no-umask',
+          '--exclude-glob', '.htaccess',
+          '--exclude-glob', 'cgi-bin/',
+          '--exclude-glob', 'php.ini',
+        ].compact
+      ]
+      cmd_file = Path.new('/tmp/lftp.cmd')
+      cmd_file.open('w') do |out|
+        out.puts(commands.map { |c| c.map(&:to_s).join(' ') }.join(";\n"))
+      end
+      [
+        'lftp',
+        '-f',
+        cmd_file.to_s,
       ]
     end
 
