@@ -147,57 +147,28 @@ module Mill
       @output_dir.mkpath
     end
 
-    def import
-      warn "importing resources..."
+    def build
       add_files
       add_redirects
       add_feed
       add_sitemap
       add_robots
-    end
-
-    def load
-      warn "loading #{@resources.length} resources..."
-      @resources.each do |resource|
-        # ;;warn "loading resource: #{resource.uri}"
-        old_uri = resource.uri.dup
-        begin
-          resource.load
-        rescue => e
-          warn "Failed to load resource #{resource.uri}: #{e}"
-          raise
-        end
-        if resource.uri != old_uri
-          # ;;warn "updating resource URI: #{old_uri} => #{resource.uri}"
-          @resources_by_uri.delete(old_uri)
-          @resources_by_uri[resource.uri] = resource
-        end
-      end
-    end
-
-    def build
-      warn "building #{@resources.length} resources..."
-      make_navigator
-      @resources.each do |resource|
-        # ;;warn "building resource: #{resource.uri}"
-        begin
-          resource.build
-        rescue => e
-          warn "Failed to build resource #{resource.uri}: #{e}"
-          raise
-        end
-      end
-    end
-
-    def save
-      warn "saving #{@resources.length} resources..."
-      @resources.each do |resource|
-        # ;;warn "saving resource: #{resource.uri}"
-        begin
-          resource.save
-        rescue => e
-          warn "Failed to save resource #{resource.uri}: #{e}"
-          raise
+      [:load, :build, :save].each do |phase|
+        warn "phase: #{phase}..."
+        @resources.each do |resource|
+          # ;;warn "#{phase}: #{resource.uri}"
+          old_uri = resource.uri.dup
+          begin
+            resource.send(phase)
+          rescue => e
+            warn "Failed to #{phase} resource #{resource.uri}: #{e}"
+            raise
+          end
+          if resource.uri != old_uri
+            # ;;warn "updating resource URI: #{old_uri} => #{resource.uri}"
+            @resources_by_uri.delete(old_uri)
+            @resources_by_uri[resource.uri] = resource
+          end
         end
       end
     end

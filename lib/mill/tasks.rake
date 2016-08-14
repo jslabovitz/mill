@@ -7,10 +7,7 @@ end
 
 desc 'Build site.'
 task :build => :clean do
-  $site.import
-  $site.load
   $site.build
-  $site.save
 end
 
 desc 'Check for syntax, links, etc.'
