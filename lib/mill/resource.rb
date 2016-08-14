@@ -70,7 +70,6 @@ module Mill
     end
 
     def load
-      raise "#{uri} (#{self.class}): no content" unless @input_file || @content
       self.date ||= @input_file ? @input_file.mtime : DateTime.now
     end
 
