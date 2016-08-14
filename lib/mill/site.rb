@@ -290,7 +290,7 @@ module Mill
 
     def build_schemas
       DefaultSchemaTypes.merge(@schema_types).each do |type, file|
-        ;;warn "loading schema #{type} from #{file}"
+        ;;warn "loading #{type} schema from #{file}"
         @schemas[type] = Nokogiri::XML::Schema(file.open) { |c| c.strict.nonet }
       end
     end

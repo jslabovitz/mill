@@ -35,7 +35,6 @@ module Mill
           end
           if markup_class
             parse_text_header
-            raise "#{uri}: Content is empty" unless @content
             @content = markup_class.new(@content).to_html
             @output_file = @output_file.replace_extension('.html')
           end
