@@ -46,7 +46,8 @@ module Mill
       params.each { |k, v| send("#{k}=", v) }
       build_file_types
       build_resource_classes
-      build_schemas
+      load_schemas
+      make_navigator
     end
 
     def input_dir=(path)
@@ -286,11 +287,6 @@ module Mill
       if @navigator_items
         @navigator = Navigator.new
         @navigator.items = @navigator_items.map do |uri, title|
-          uri = Addressable::URI.parse(uri)
-          if title.nil? && uri.relative?
-            resource = find_resource(uri) or raise "Can't find navigation resource for URI #{uri}"
-            title = resource.title
-          end
           Navigator::Item.new(uri: uri, title: title)
         end
       end
@@ -308,7 +304,7 @@ module Mill
       end
     end
 
-    def build_schemas
+    def load_schemas
       DefaultSchemaTypes.merge(@schema_types).each do |type, file|
         ;;warn "loading #{type} schema from #{file}"
         @schemas[type] = Nokogiri::XML::Schema(file.open) { |c| c.strict.nonet }

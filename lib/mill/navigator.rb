@@ -43,7 +43,7 @@ module Mill
         else
           state = :other
         end
-        yield(item, state)
+        yield(state, item)
       end
     end
 
