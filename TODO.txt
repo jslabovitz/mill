@@ -1,7 +1,11 @@
-- resolve confusion between content-generation in #load vs. #final_content
-    + who does what?
-    + replacement/modification of HTML elements (image sizing, etc.) only happens in #load
-    + maybe #final_content should have option to fully qualify URIs, etc., to handle feed content
+- rename @mill attr to @site
+
+- move XML validation into checker
+    - guess type for mapping to schema
+
+- move import/load/build/save logic into Builder
+
+- move publish logic into Publisher
 
 - split Resource#date into Resource#published & Resource#updated
     + add <published> element to feed
