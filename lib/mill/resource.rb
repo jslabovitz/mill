@@ -69,21 +69,20 @@ module Mill
       :weekly
     end
 
-    def final_content
-      @content
-    end
-
     def load
       raise "#{uri} (#{self.class}): no content" unless @input_file || @content
       self.date ||= @input_file ? @input_file.mtime : DateTime.now
-      @mill.update_resource(self)
     end
 
     def build
+      # implemented in subclass
+    end
+
+    def save
       @output_file.dirname.mkpath
-      if (c = final_content)
+      if @content
         # ;;warn "#{uri}: writing #{@input_file} to #{@output_file}"
-        @output_file.write(c.to_s)
+        @output_file.write(@content.to_s)
         @output_file.utime(@date.to_time, @date.to_time)
       elsif @input_file
         # ;;warn "#{uri}: copying #{@input_file} to #{@output_file}"

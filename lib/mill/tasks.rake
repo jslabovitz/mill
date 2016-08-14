@@ -5,14 +5,12 @@ task :clean do
   $site.clean
 end
 
-desc 'Load site.'
-task :load => :clean do
-  $site.load
-end
-
 desc 'Build site.'
-task :build => :load do
+task :build => :clean do
+  $site.import
+  $site.load
   $site.build
+  $site.save
 end
 
 desc 'Check for syntax, links, etc.'

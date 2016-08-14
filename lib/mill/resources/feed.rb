@@ -12,7 +12,7 @@ module Mill
         :feed
       end
 
-      def load
+      def build
         resources = @mill.public_resources.sort_by(&:date)
         builder = Nokogiri::XML::Builder.new do |xml|
           xml.feed(xmlns: 'http://www.w3.org/2005/Atom') do
@@ -34,13 +34,8 @@ module Mill
                 xml.id(resource.tag_uri)
                 xml.updated(resource.date.iso8601)
                 xml.published(resource.date.iso8601)
-                if (resource.respond_to?(:feed_summary))
-                  type, data = resource.feed_summary
-                  xml.summary(type: type) { xml.cdata(data) } if type && data
-                end
-                if (resource.respond_to?(:feed_content))
-                  type, data = resource.feed_content
-                  xml.content(type: type) { xml.cdata(data) }
+                if (html = resource.feed_content)
+                  xml.content(type: 'html') { xml.cdata(html.to_html) }
                 end
               end
             end

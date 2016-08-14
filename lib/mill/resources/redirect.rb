@@ -19,12 +19,12 @@ module Mill
         )
       end
 
-      def load
+      def build
         @content = "%s %d" % [@redirect_uri, @redirect_code]
         super
       end
 
-      def build
+      def save
         @output_file = @output_file.add_extension('.redirect')
         super
       end

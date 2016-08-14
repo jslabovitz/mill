@@ -10,7 +10,7 @@ module Mill
         :robots
       end
 
-      def load
+      def build
         info = {
           'Sitemap' => @mill.sitemap_resource.absolute_uri,
         }

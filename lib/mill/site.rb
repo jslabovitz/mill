@@ -44,6 +44,9 @@ module Mill
       @shorten_uris = true
       @input_file_type_order = [:generic, :image, :text]
       params.each { |k, v| send("#{k}=", v) }
+      build_file_types
+      build_resource_classes
+      build_schemas
     end
 
     def input_dir=(path)
@@ -81,18 +84,9 @@ module Mill
 
     def add_resource(resource)
       resource.mill = self
-      begin
-        # ;;warn "loading #{resource.class.type} resource #{resource.uri} as #{resource.class}"
-        resource.load
-      rescue => e
-        warn "Failed to load resource #{resource.uri} (#{resource.class}): #{e}"
-        raise
-      end
       @resources << resource
-    end
-
-    def update_resource(resource)
       @resources_by_uri[resource.uri] = resource
+      # ;;warn "added #{resource} as #{resource.uri}"
     end
 
     def find_resource(uri)
@@ -152,30 +146,56 @@ module Mill
       @output_dir.mkpath
     end
 
-    def load
-      warn "loading resources..."
-      build_file_types
-      build_resource_classes
-      build_schemas
-      load_files
-      load_others
+    def import
+      warn "importing resources..."
+      add_files
+      add_redirects
+      add_feed
+      add_sitemap
+      add_robots
     end
 
-    def load_others
-      make_redirects
-      make_feed
-      make_sitemap
-      make_robots
-      make_navigator
+    def load
+      warn "loading #{@resources.length} resources..."
+      @resources.each do |resource|
+        # ;;warn "loading resource: #{resource.uri}"
+        old_uri = resource.uri.dup
+        begin
+          resource.load
+        rescue => e
+          warn "Failed to load resource #{resource.uri}: #{e}"
+          raise
+        end
+        if resource.uri != old_uri
+          # ;;warn "updating resource URI: #{old_uri} => #{resource.uri}"
+          @resources_by_uri.delete(old_uri)
+          @resources_by_uri[resource.uri] = resource
+        end
+      end
     end
 
     def build
       warn "building #{@resources.length} resources..."
+      make_navigator
       @resources.each do |resource|
+        # ;;warn "building resource: #{resource.uri}"
         begin
           resource.build
         rescue => e
           warn "Failed to build resource #{resource.uri}: #{e}"
+          raise
+        end
+      end
+    end
+
+    def save
+      warn "saving #{@resources.length} resources..."
+      @resources.each do |resource|
+        # ;;warn "saving resource: #{resource.uri}"
+        begin
+          resource.save
+        rescue => e
+          warn "Failed to save resource #{resource.uri}: #{e}"
           raise
         end
       end
@@ -218,7 +238,7 @@ module Mill
 
     private
 
-    def load_files
+    def add_files
       input_files_by_type.each do |type, input_files|
         input_files.each do |input_file|
           resource_class = @resource_classes[type] or raise "No resource class for #{input_file}"
@@ -244,19 +264,19 @@ module Mill
       hash.sort_by { |t, f| input_file_type_order.index(t) || input_file_type_order.length }
     end
 
-    def make_feed
+    def add_feed
       @feed_resource = Resource::Feed.new(
         output_file: @output_dir / 'feed.xml')
       add_resource(@feed_resource)
     end
 
-    def make_sitemap
+    def add_sitemap
       @sitemap_resource = Resource::Sitemap.new(
         output_file: @output_dir / 'sitemap.xml')
       add_resource(@sitemap_resource)
     end
 
-    def make_robots
+    def add_robots
       @robots_resource = Resource::Robots.new(
         output_file: @output_dir / 'robots.txt')
       add_resource(@robots_resource)
@@ -276,7 +296,7 @@ module Mill
       end
     end
 
-    def make_redirects
+    def add_redirects
       if @redirects
         @redirects.each do |from, to|
           output_file = @output_dir / Path.new(from).relative_to('/')

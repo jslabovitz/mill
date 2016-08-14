@@ -21,6 +21,7 @@ module Mill
       end
 
       def load
+        super
         if @input_file
           @content = @input_file.read
           markup_class = case @input_file.extname
@@ -45,6 +46,19 @@ module Mill
           end
           parse_html_header
         end
+      end
+
+      def build
+        @content = html_document do |doc|
+          doc.html(lang: 'en') do |html|
+            html.head do
+              html << head.to_html
+            end
+            html.body do
+              html << body.to_html
+            end
+          end
+        end
         add_image_sizes
         convert_relative_links
         super
@@ -66,19 +80,6 @@ module Mill
             key, value = line.strip.split(/:\s+/, 2)
             key = key.gsub('-', '_').downcase.to_sym
             send("#{key}=", value)
-          end
-        end
-      end
-
-      def final_content
-        html_document do |doc|
-          doc.html(lang: 'en') do |html|
-            html.head do
-              html << head.to_html
-            end
-            html.body do
-              html << body.to_html
-            end
           end
         end
       end
@@ -123,18 +124,20 @@ module Mill
         end
       end
 
-      def feed_summary
-        ;;raise "#{uri} has no content" unless @content
-        if (p = @content.at_xpath('/html/body/p[1]'))
-          ['html', p.to_html]
-        else
-          nil
-        end
-      end
-
       def feed_content
-        body = @content.at_xpath('/html/body') or raise "#{uri} has no content"
-        ['html', body.children.to_html]
+        # If we have a "main" div, use that. Otherwise, use the body, but delete "header" and "footer" div's.
+        if (main = @content.at_xpath('//div[@id="main"]'))
+          main.children
+        else
+          html = parse_html(@content.to_html)
+          body = html.at_xpath('/html/body') or raise "No body in HTML content"
+          %w{header nav masthead footer}.each do |name|
+            if (elem = body.at_xpath("//div[@id=\"#{name}\"]"))
+              elem.remove
+            end
+          end
+          body.children
+        end
       end
 
     end
