@@ -19,7 +19,7 @@ module Mill
         )
       end
 
-      def build
+      def load
         @content = "%s %d" % [@redirect_uri, @redirect_code]
         super
       end
