@@ -60,7 +60,7 @@ module Mill
           end
         end
         add_image_sizes
-        convert_relative_links
+        # convert_relative_links
         super
       end
 
