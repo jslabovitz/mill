@@ -33,7 +33,7 @@ module Mill
 
     def check(uri, level=0)
       uri = Addressable::URI.parse(uri)
-      return if !uri.host.to_s.empty? || @visited[uri]
+      return if (!uri.scheme.nil? && uri.scheme != 'http') || !uri.host.to_s.empty? || @visited[uri]
       # ;;warn ('  ' * level) + "CHECKING: #{uri}"
       @visited[uri] = true
       request = make_request(uri)
