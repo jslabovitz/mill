@@ -154,6 +154,8 @@ module Mill
       add_sitemap
       add_robots
       [:load, :build, :save].each do |phase|
+        before_method = "before_#{phase}".to_sym
+        send(before_method) if respond_to?(before_method)
         warn "phase: #{phase}..."
         @resources.each do |resource|
           # ;;warn "#{phase}: #{resource.uri}"
