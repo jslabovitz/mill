@@ -12,7 +12,7 @@ module Mill
 
       def build
         info = {
-          'Sitemap' => @mill.sitemap_resource.absolute_uri,
+          'Sitemap' => @site.sitemap_resource.absolute_uri,
         }
         @content = info.map { |key, value| "#{key}: #{value}" }.join("\n")
         super

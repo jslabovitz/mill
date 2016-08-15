@@ -13,18 +13,18 @@ module Mill
       end
 
       def build
-        resources = @mill.public_resources.sort_by(&:date)
+        resources = @site.public_resources.sort_by(&:date)
         builder = Nokogiri::XML::Builder.new do |xml|
           xml.feed(xmlns: 'http://www.w3.org/2005/Atom') do
-            xml.id(@mill.tag_uri)
-            xml.generator(*@mill.feed_generator)
-            xml.title(@mill.site_title)
-            xml.link(rel: 'alternate', type: 'text/html',             href: @mill.home_resource.uri)
+            xml.id(@site.tag_uri)
+            xml.generator(*@site.feed_generator)
+            xml.title(@site.site_title)
+            xml.link(rel: 'alternate', type: 'text/html',             href: @site.home_resource.uri)
             xml.link(rel: 'self',      type: 'application/atom+xml',  href: uri)
             xml.author do
-              xml.name(@mill.feed_author_name)
-              xml.uri(@mill.feed_author_uri)
-              xml.email(@mill.feed_author_email)
+              xml.name(@site.feed_author_name)
+              xml.uri(@site.feed_author_uri)
+              xml.email(@site.feed_author_email)
             end
             xml.updated(resources.last.date.iso8601)
             resources.each do |resource|

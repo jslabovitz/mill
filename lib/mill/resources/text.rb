@@ -108,7 +108,7 @@ module Mill
           raise "no link in <img> element: #{img.to_s}" if img_link.nil? || img_link.empty?
           next if img_link.host
           img_uri = uri + img_link
-          img_resource = @mill.find_resource(img_uri) or raise "Can't find image for #{img_uri}"
+          img_resource = @site.find_resource(img_uri) or raise "Can't find image for #{img_uri}"
           img[:width], img[:height] = img_resource.width, img_resource.height
         end
       end

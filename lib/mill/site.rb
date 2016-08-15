@@ -84,7 +84,7 @@ module Mill
     end
 
     def add_resource(resource)
-      resource.mill = self
+      resource.site = self
       @resources << resource
       @resources_by_uri[resource.uri] = resource
       # ;;warn "added #{resource} as #{resource.uri}"

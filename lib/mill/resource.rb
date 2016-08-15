@@ -7,7 +7,7 @@ module Mill
     attr_accessor :date
     attr_accessor :public
     attr_accessor :content
-    attr_accessor :mill
+    attr_accessor :site
 
     def self.type
       # implemented by subclass
@@ -51,18 +51,18 @@ module Mill
 
     def uri
       raise "#{@input_file}: No output file defined for #{self.class}" unless @output_file
-      path = '/' + @output_file.relative_to(@mill.output_dir).to_s
+      path = '/' + @output_file.relative_to(@site.output_dir).to_s
       path.sub!(%r{/index\.html$}, '/')
-      path.sub!(%r{\.html$}, '') if @mill.shorten_uris
+      path.sub!(%r{\.html$}, '') if @site.shorten_uris
       Addressable::URI.parse(path)
     end
 
     def absolute_uri
-      @mill.site_uri + uri
+      @site.site_uri + uri
     end
 
     def tag_uri
-      @mill.tag_uri + uri
+      @site.tag_uri + uri
     end
 
     def change_frequency
@@ -93,7 +93,7 @@ module Mill
     end
 
     def validate
-      if (schema = @mill.schema_for_type(self.class.type))
+      if (schema = @site.schema_for_type(self.class.type))
         validate_xml(schema)
       end
     end
