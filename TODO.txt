@@ -1,4 +1,4 @@
-- rename @mill attr to @site
+- update initializer to keyword style
 
 - move XML validation into checker
     - guess type for mapping to schema
@@ -6,6 +6,16 @@
 - move import/load/build/save logic into Builder
 
 - move publish logic into Publisher
+
+- formalize widget creation & access
+    - object that is used across site
+    - possibly with different states or parameters (eg, navigation)
+    - built from current html_fragment use
+    - eg:
+        - navigation
+        - buy buttons
+        - link to resource (<a ...>)
+        - sidebars
 
 - split Resource#date into Resource#published & Resource#updated
     + add <published> element to feed
