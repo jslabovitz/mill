@@ -19,7 +19,6 @@ module Mill
     attr_accessor :navigator_items
     attr_accessor :resource_classes
     attr_accessor :redirects
-    attr_accessor :input_file_type_order
 
     DefaultResourceClasses = [
       Resource::Text,
@@ -32,7 +31,6 @@ module Mill
       @resources = []
       @resources_by_uri = {}
       @shorten_uris = true
-      @input_file_type_order = [:generic, :image, :text]
       params.each { |k, v| send("#{k}=", v) }
       build_file_types
       build_resource_classes
@@ -220,7 +218,7 @@ module Mill
           hash[type] << input_file
         end
       end
-      hash.sort_by { |t, f| input_file_type_order.index(t) || input_file_type_order.length }
+      hash
     end
 
     def add_feed
