@@ -15,8 +15,15 @@ module Mill
       <iframe> proprietary attribute "allowfullscreen"
     }.split(/\n/).map(&:strip)
 
+    SchemasDir = Path.new(__FILE__).dirname / 'schemas'
+    Schemas = {
+      'feed' => SchemasDir / 'atom.xsd',
+      'urlset' => SchemasDir / 'sitemap.xsd',
+    }
+
     def initialize(root)
       @root = Path.new(root)
+      @schemas = {}
       find_files
       @visited = {}
       @server = Server.new(root: @root, use_x_sendfile: true)
@@ -46,13 +53,11 @@ module Mill
         @files.delete(file_path.relative_path_from(@root))
         case (type = response.headers['Content-Type'])
         when 'text/html'
-          html = file_path.read
-          tidy_html(html, label: file_path) or raise HTMLError, "Invalid HTML"
-          links += html_links(html)
+          links = check_html(file_path)
         when 'text/css'
-          links += css_links(file_path.read)
+          links = check_css(file_path)
         when 'application/xml'
-          links += xml_links(file_path.read)
+          links = check_xml(file_path)
         when %r{^(image|video|audio|text|application)/}
           # ignore
         else
@@ -69,25 +74,65 @@ module Mill
       links.each { |link| check(uri + link, level + 1) }
     end
 
-    def html_links(html)
-      html_doc = parse_html(html)
-      find_link_elements(html_doc).map(&:value)
+    def check_html(html_file)
+      html = html_file.read
+      tidy = TidyFFI::Tidy.new(html, char_encoding: 'UTF8')
+      unless (errors = tidy_errors(tidy)).empty?
+        warn "#{html_file} has invalid HTML"
+        errors.each do |error|
+          warn "\t#{error[:msg]}"
+        end
+        raise HTMLError
+      end
+      doc = parse_html(html)
+      find_link_elements(doc).map(&:value)
     end
 
-    def xml_links(xml)
-      xml_doc = Nokogiri::XML::Document.parse(xml) { |config| config.strict }
+    def tidy_errors(tidy)
+      return [] unless tidy.errors
+      tidy.errors.split(/\n/).map { |str|
+        str =~ /^line (\d+) column (\d+) - (.*?): (.*)$/ or raise "Can't parse error: #{str.inspect}"
+        {
+          msg: str,
+          line: $1.to_i,
+          column: $2.to_i,
+          type: $3.downcase.to_sym,
+          error: $4.strip,
+        }
+      }.reject { |e|
+        IgnoreErrors.include?(e[:error])
+      }
+    end
+
+    def check_xml(xml_file)
+      xml_doc = Nokogiri::XML::Document.parse(xml_file.read) { |config| config.strict }
       unless xml_doc.errors.empty?
-        xml_doc.errors.each do |error|
-          warn "#{error.line}:#{error.column}: #{error.message}"
-        end
-        raise "XML invalid"
+        show_xml_errors(xml_doc.errors)
+        raise 'XML parsing failed'
+      end
+      root_name = xml_doc.root.name
+      schema_file = Schemas[root_name] or raise "Can't find schema for XML root element <#{root_name}>"
+      unless (schema = @schemas[schema_file])
+        ;;warn "loading schema for <#{root_name}> element"
+        schema = @schemas[schema_file] = Nokogiri::XML::Schema((SchemasDir / schema_file).open) { |c| c.strict.nonet }
+      end
+      validation_errors = schema.validate(xml_doc)
+      unless validation_errors.empty?
+        show_xml_errors(validation_errors)
+        raise 'XML validation failed'
       end
       find_link_elements(xml_doc).map(&:value)
     end
 
-    def css_links(css)
+    def show_xml_errors(errors)
+      errors.each do |error|
+        warn "#{error} [line #{error.line}, column #{error.column}]"
+      end
+    end
+
+    def check_css(css_file)
       links = []
-      css.gsub(/\burl\(\s*'(.*?)'\s*\)/) { links << $1 }
+      css_file.read.gsub(/\burl\(\s*'(.*?)'\s*\)/) { links << $1 }
       links
     end
 
@@ -109,49 +154,6 @@ module Mill
         'SERVER_PORT' => uri.port,
         'rack.url_scheme' => uri.scheme,
       )
-    end
-
-    def tidy_html(html, label=nil)
-      html_str = html.to_s
-      tidy = TidyFFI::Tidy.new(html_str, char_encoding: 'UTF8')
-      return true unless tidy.errors
-      errors = tidy.errors.split(/\n/).map do |error_str|
-        error_str =~ /^line (\d+) column (\d+) - (.*?): (.*)$/ or raise "Can't parse error: #{error_str}"
-        {
-          msg: error_str,
-          line: $1.to_i - 1,
-          column: $2.to_i - 1,
-          type: $3.downcase.to_sym,
-          error: $4.strip,
-        }
-      end.reject do |error|
-        IgnoreErrors.include?(error[:error])
-      end
-      return true if errors.empty?
-      fatal_error = false
-      warn (label ? "#{label}: " : '') + "invalid HTML:"
-      html_lines = html_str.split(/\n/)
-      errors.each do |error|
-        warn "\t#{error[:msg]}:"
-        html_lines.each_with_index do |html_line, i|
-          if i >= [0, error[:line] - 2].max && i <= [error[:line] + 2, html_lines.length].min
-            if i == error[:line]
-              output = [
-                error[:column] > 0 ? (html_line[0 .. error[:column] - 1]) : '',
-                Term::ANSIColor.negative,
-                html_line[error[:column]],
-                Term::ANSIColor.clear,
-                html_line[error[:column] + 1 .. -1],
-              ].join
-            else
-              output = html_line
-            end
-            warn "\t\t%3s: %s" % [i + 1, output]
-          end
-        end
-        fatal_error ||= (error[:type] == :error)
-      end
-      !fatal_error
     end
 
   end

@@ -1,8 +1,5 @@
 - update initializer to keyword style
 
-- move XML validation into checker
-    - guess type for mapping to schema
-
 - move import/load/build/save logic into Builder
 
 - move publish logic into Publisher

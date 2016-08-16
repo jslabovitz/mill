@@ -29,7 +29,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'rack'
   s.add_dependency 'RedCloth'
   s.add_dependency 'rubypants'
-  s.add_dependency 'term-ansicolor'
   s.add_dependency 'tidy_ffi'
 
   s.add_development_dependency 'bundler'

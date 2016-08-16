@@ -10,7 +10,6 @@ require 'RedCloth'
 require 'rubypants'
 require 'time'
 require 'tidy_ffi'
-require 'term/ansicolor'
 
 require 'mill/file_types'
 require 'mill/html_helpers'

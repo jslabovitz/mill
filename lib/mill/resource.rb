@@ -89,24 +89,6 @@ module Mill
       else
         raise "Can't build resource without content or input file: #{uri}"
       end
-      validate
-    end
-
-    def validate
-      if (schema = @site.schema_for_type(self.class.type))
-        validate_xml(schema)
-      end
-    end
-
-    def validate_xml(schema)
-      doc = Nokogiri::XML::Document.parse(@output_file.open)
-      errors = doc.errors + schema.validate(doc)
-      unless errors.empty?
-        errors.each do |error|
-          warn "[#{error.file}:#{error.line}:#{error.column}] #{error}"
-        end
-        raise "#{uri}: Validation failed"
-      end
     end
 
   end

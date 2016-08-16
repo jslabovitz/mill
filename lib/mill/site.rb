@@ -18,7 +18,6 @@ module Mill
     attr_accessor :navigator
     attr_accessor :navigator_items
     attr_accessor :resource_classes
-    attr_accessor :schema_types
     attr_accessor :redirects
     attr_accessor :input_file_type_order
 
@@ -28,25 +27,15 @@ module Mill
       Resource::Generic,
     ]
 
-    SchemasDir = Path.new(__FILE__).dirname / 'schemas'
-
-    DefaultSchemaTypes = {
-      feed: SchemasDir / 'atom.xsd',
-      sitemap: SchemasDir / 'sitemap.xsd',
-    }
-
     def initialize(params={})
       @resource_classes = {}
       @resources = []
       @resources_by_uri = {}
-      @schema_types = {}
-      @schemas = {}
       @shorten_uris = true
       @input_file_type_order = [:generic, :image, :text]
       params.each { |k, v| send("#{k}=", v) }
       build_file_types
       build_resource_classes
-      load_schemas
       make_navigator
     end
 
@@ -102,10 +91,6 @@ module Mill
 
     def home_resource
       find_resource('/') or raise "Can't find home"
-    end
-
-    def schema_for_type(type)
-      @schemas[type]
     end
 
     def tag_uri
@@ -274,13 +259,6 @@ module Mill
             redirect_uri: to)
           add_resource(resource)
         end
-      end
-    end
-
-    def load_schemas
-      DefaultSchemaTypes.merge(@schema_types).each do |type, file|
-        ;;warn "loading #{type} schema from #{file}"
-        @schemas[type] = Nokogiri::XML::Schema(file.open) { |c| c.strict.nonet }
       end
     end
 
