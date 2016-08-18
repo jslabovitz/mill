@@ -4,9 +4,18 @@ module Mill
 
     class Generic < Resource
 
-      def self.type
-        :generic
-      end
+      FileTypes = %w{
+        text/css
+        application/font-sfnt
+        application/x-font-opentype
+        application/x-font-otf
+        application/x-font-truetype
+        application/x-font-ttf
+        application/javascript
+        application/x-javascript
+        text/javascript
+        application/pdf
+      }
 
     end
 

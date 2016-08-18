@@ -6,10 +6,6 @@ module Mill
 
     class Sitemap < Resource
 
-      def self.type
-        :sitemap
-      end
-
       def build
         builder = Nokogiri::XML::Builder.new do |xml|
           xml.urlset('xmlns' => 'http://www.sitemaps.org/schemas/sitemap/0.9',

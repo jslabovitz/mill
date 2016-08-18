@@ -11,7 +11,6 @@ require 'rubypants'
 require 'time'
 require 'tidy_ffi'
 
-require 'mill/file_types'
 require 'mill/html_helpers'
 require 'mill/navigator'
 require 'mill/resource'

@@ -6,10 +6,6 @@ module Mill
 
     class Robots < Resource
 
-      def self.type
-        :robots
-      end
-
       def build
         info = {
           'Sitemap' => @site.sitemap_resource.absolute_uri,

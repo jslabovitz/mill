@@ -8,10 +8,6 @@ module Mill
 
       include HTMLHelpers
 
-      def self.type
-        :feed
-      end
-
       def build
         resources = @site.public_resources.sort_by(&:date)
         builder = Nokogiri::XML::Builder.new do |xml|

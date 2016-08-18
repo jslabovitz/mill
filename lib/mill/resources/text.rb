@@ -6,11 +6,12 @@ module Mill
 
       include HTMLHelpers
 
-      attr_accessor :title
+      FileTypes = %w{
+        text/plain
+        text/html
+      }
 
-      def self.type
-        :text
-      end
+      attr_accessor :title
 
       def initialize(params={})
         super(

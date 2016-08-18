@@ -27,13 +27,12 @@ module Mill
     ]
 
     def initialize(params={})
-      @resource_classes = {}
+      @resource_classes = []
       @resources = []
       @resources_by_uri = {}
       @shorten_uris = true
       params.each { |k, v| send("#{k}=", v) }
       build_file_types
-      build_resource_classes
       make_navigator
     end
 
@@ -57,17 +56,23 @@ module Mill
       end
     end
 
-    def file_type(file)
-      if file.directory? || file.basename.to_s[0] == '.'
-        return :ignore
-      else
-        MIME::Types.of(file.to_s).each do |mime_type|
-          if (type = @file_types[mime_type.content_type])
-            return type
-          end
+    def build_file_types
+      @file_types = {}
+      (DefaultResourceClasses + @resource_classes).each do |resource_class|
+        resource_class.const_get(:FileTypes).each do |type|
+          @file_types[type] = resource_class
         end
       end
-      nil
+    end
+
+    def file_type(file)
+      return nil if file.directory? || file.basename.to_s[0] == '.'
+      MIME::Types.of(file.to_s).each do |mime_type|
+        if (klass = @file_types[mime_type.content_type])
+          return klass
+        end
+      end
+      raise "Can't determine type of file: #{file}"
     end
 
     def add_resource(resource)
@@ -196,29 +201,16 @@ module Mill
     private
 
     def add_files
-      input_files_by_type.each do |type, input_files|
-        input_files.each do |input_file|
-          resource_class = @resource_classes[type] or raise "No resource class for #{input_file}"
+      raise "Input path not found: #{@input_dir}" unless @input_dir.exist?
+      @input_dir.find do |input_file|
+        input_file = @input_dir / input_file
+        if (resource_class = file_type(input_file))
           resource = resource_class.new(
             input_file: input_file,
             output_file: @output_dir / input_file.relative_to(@input_dir))
           add_resource(resource)
         end
       end
-    end
-
-    def input_files_by_type
-      hash = {}
-      raise "Input path not found: #{@input_dir}" unless @input_dir.exist?
-      @input_dir.find do |input_file|
-        input_file = @input_dir / input_file
-        type = file_type(input_file) or raise "Can't determine file type of #{input_file}"
-        unless type == :ignore
-          hash[type] ||= []
-          hash[type] << input_file
-        end
-      end
-      hash
     end
 
     def add_feed
@@ -258,23 +250,6 @@ module Mill
           add_resource(resource)
         end
       end
-    end
-
-    def build_file_types
-      @file_types = {}
-      FileTypes.each do |type, mime_types|
-        mime_types.each do |mime_type|
-          MIME::Types[mime_type].each do |t|
-            @file_types[t.content_type] = type
-          end
-        end
-      end
-    end
-
-    def build_resource_classes
-      @resource_classes = Hash[
-        (DefaultResourceClasses + @resource_classes).map { |rc| [rc.type, rc] }
-      ]
     end
 
     def publish(uri, **options)

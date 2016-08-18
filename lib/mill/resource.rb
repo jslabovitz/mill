@@ -2,16 +2,14 @@ module Mill
 
   class Resource
 
+    FileTypes = []
+
     attr_accessor :input_file
     attr_accessor :output_file
     attr_accessor :date
     attr_accessor :public
     attr_accessor :content
     attr_accessor :site
-
-    def self.type
-      # implemented by subclass
-    end
 
     def initialize(params={})
       params.each { |k, v| send("#{k}=", v) }

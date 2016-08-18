@@ -6,12 +6,17 @@ module Mill
 
       include HTMLHelpers
 
+      FileTypes = %w{
+        image/gif
+        image/jpeg
+        image/png
+        image/tiff
+        image/vnd.microsoft.icon
+        image/x-icon
+      }
+
       attr_accessor :width
       attr_accessor :height
-
-      def self.type
-        :image
-      end
 
       def load
         info = ImageSize.path(@input_file.to_s)

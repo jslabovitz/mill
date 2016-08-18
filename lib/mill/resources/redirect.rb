@@ -7,10 +7,6 @@ module Mill
       attr_accessor :redirect_uri
       attr_accessor :redirect_code
 
-      def self.type
-        :redirect
-      end
-
       def initialize(params={})
         super(
           {
