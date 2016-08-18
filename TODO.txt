@@ -19,31 +19,27 @@
     + #published should be stated date (e.g., from header)
     + #updated should be mtime of source file
 
-- refactor MIME type usage
-    + allow specified type as regexp or glob (use File.fnmatch?)
-    + convert to MIME::Type object(s)
-
 - make Navigator into more generic Collection
     + include Enumerable
 
 - make Resource::External for external links?
     + add on import of HTML (by examining href/src/etc attributes)
 
-- Rationalize resource URI usage:
+- rationalize resource URI usage
     + #shorten_uris should only apply to writing final files.
     + In original content/etc., URIs should be more flexible.
     + A #convert_uris method should convert all references to proper type.
 
-- Compress/minify Javascript, CSS, and HTML
+- compress/minify Javascript, CSS, and HTML
     + https://remino.net/rails-html-css-js-gzip-compression/
     + http://sass-lang.com/documentation/file.SASS_REFERENCE.html#_16
     + JS: https://github.com/lautis/uglifier
     + HTML: https://github.com/paolochiodi/htmlcompressor
     + CSS: https://github.com/matthiassiegel/cssminify
 
-- Write compressed versions along with non-compressed
-    + Modify SimpleServer to use compressed versions if asked by client
+- write compressed versions along with non-compressed
+    + serve compressed versions if asked by client
 
-- Add MailChimp signup form generator to HTMLHelpers.
+- add MailChimp signup form generator to HTMLHelpers
 
-- Add Google Analytics bug generator to HTMLHelpers and Mill setup.
+- add Google Analytics bug generator to HTMLHelpers and Mill setup
