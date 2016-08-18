@@ -20,11 +20,7 @@ module Mill
     attr_accessor :resource_classes
     attr_accessor :redirects
 
-    DefaultResourceClasses = [
-      Resource::Text,
-      Resource::Image,
-      Resource::Generic,
-    ]
+    DefaultResourceClasses = ObjectSpace.each_object(Class).select { |c| c < Resource }
 
     def initialize(params={})
       @resource_classes = []
