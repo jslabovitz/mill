@@ -123,6 +123,7 @@ module Mill
       end
 
       def feed_content
+        raise "Resource #{uri} has no content" unless @content
         # If we have a "main" div, use that. Otherwise, use the body, but delete "header" and "footer" div's.
         if (main = @content.at_xpath('//div[@id="main"]'))
           main.children
