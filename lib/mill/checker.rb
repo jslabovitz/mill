@@ -149,10 +149,8 @@ module Mill
       Rack::Request.new(
         'GATEWAY_INTERFACE' => 'CGI/1.1',
         'REQUEST_METHOD' => 'GET',
+        'rack.url_scheme' => 'http',
         'PATH_INFO' => uri.path,
-        'SERVER_NAME' => uri.host,
-        'SERVER_PORT' => uri.port,
-        'rack.url_scheme' => uri.scheme,
       )
     end
 

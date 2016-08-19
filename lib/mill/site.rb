@@ -165,17 +165,15 @@ module Mill
     def check
       warn "checking site..."
       checker = Checker.new(@output_dir)
-      uris = [
+      [
         home_resource,
         *private_resources,
         *redirect_resources,
         feed_resource,
         sitemap_resource,
         robots_resource,
-      ].map(&:uri)
-      uris.each do |uri|
-        uri = Addressable::URI.parse('http://' + uri)
-        checker.check(uri)
+      ].each do |resource|
+        checker.check(resource.uri)
       end
       checker.report
     end
