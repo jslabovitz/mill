@@ -202,7 +202,6 @@ module Mill
     def add_files
       raise "Input path not found: #{@input_dir}" unless @input_dir.exist?
       @input_dir.find do |input_file|
-        input_file = @input_dir / input_file
         if (resource_class = file_type(input_file))
           resource = resource_class.new(
             input_file: input_file,
