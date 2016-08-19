@@ -13,43 +13,42 @@ module Mill
     attr_accessor :robots_resource
     attr_accessor :final_destination
     attr_accessor :beta_destination
-    attr_accessor :resources
     attr_accessor :shorten_uris
     attr_accessor :navigator
-    attr_accessor :navigator_items
     attr_accessor :resource_classes
     attr_accessor :redirects
 
     DefaultResourceClasses = ObjectSpace.each_object(Class).select { |c| c < Resource }
 
-    def initialize(params={})
-      @resource_classes = []
+    def initialize(input_dir:,
+                   output_dir:,
+                   site_title:,
+                   site_uri:,
+                   site_email:,
+                   site_control_date:,
+                   final_destination: nil,
+                   beta_destination: nil,
+                   shorten_uris: true,
+                   navigator: nil,
+                   resource_classes: [],
+                   redirects: {})
+
+      @input_dir = Path.new(input_dir)
+      @output_dir = Path.new(output_dir)
+      @site_title = site_title
+      @site_uri = Addressable::URI.parse(site_uri)
+      @site_email = Addressable::URI.parse(site_email)
+      @site_control_date = Date.parse(site_control_date)
+      @final_destination = Addressable::URI.parse(final_destination) if final_destination
+      @beta_destination = Addressable::URI.parse(beta_destination) if beta_destination
+      @shorten_uris = shorten_uris
+      @resource_classes = resource_classes
+      @navigator = navigator
+      @redirects = redirects
+
       @resources = []
       @resources_by_uri = {}
-      @shorten_uris = true
-      params.each { |k, v| send("#{k}=", v) }
       build_file_types
-      make_navigator
-    end
-
-    def input_dir=(path)
-      @input_dir = Path.new(path).expand_path
-    end
-
-    def output_dir=(path)
-      @output_dir = Path.new(path).expand_path
-    end
-
-    def site_uri=(uri)
-      @site_uri = Addressable::URI.parse(uri)
-    end
-
-    def site_control_date=(date)
-      begin
-        @site_control_date = Date.parse(date)
-      rescue ArgumentError => e
-        raise "bad control date #{date.inspect}: #{e}"
-      end
     end
 
     def build_file_types
@@ -225,15 +224,6 @@ module Mill
       @robots_resource = Resource::Robots.new(
         output_file: @output_dir / 'robots.txt')
       add_resource(@robots_resource)
-    end
-
-    def make_navigator
-      if @navigator_items
-        @navigator = Navigator.new
-        @navigator.items = @navigator_items.map do |uri, title|
-          Navigator::Item.new(uri: uri, title: title)
-        end
-      end
     end
 
     def add_redirects

@@ -7,12 +7,10 @@ module Mill
       attr_accessor :redirect_uri
       attr_accessor :redirect_code
 
-      def initialize(params={})
-        super(
-          {
-            redirect_code: 303,
-          }.merge(params)
-        )
+      def initialize(redirect_uri:, redirect_code: 303, **args)
+        @redirect_uri = redirect_uri
+        @redirect_code = redirect_code
+        super(**args)
       end
 
       def load

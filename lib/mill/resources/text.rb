@@ -13,12 +13,9 @@ module Mill
 
       attr_accessor :title
 
-      def initialize(params={})
-        super(
-          {
-            public: true,
-          }.merge(params)
-        )
+      def initialize(title: nil, **args)
+        @title = title
+        super(**args, public: true)
       end
 
       def load

@@ -11,39 +11,39 @@ module Mill
     attr_accessor :content
     attr_accessor :site
 
-    def initialize(params={})
-      params.each { |k, v| send("#{k}=", v) }
+    def initialize(input_file: nil,
+                   output_file: nil,
+                   date: nil,
+                   public: false,
+                   content: nil,
+                   site: nil)
+      @input_file = Path.new(input_file) if input_file
+      @output_file = Path.new(output_file) if output_file
+      self.date = date
+      self.public = public
+      @content = content
+      @site = site
     end
 
-    def input_file=(p)
-      @input_file = Path.new(p)
-    end
-
-    def output_file=(p)
-      @output_file = Path.new(p)
-    end
-
-    def date=(x)
-      @date = case x
-      when String
-        DateTime.parse(x)
-      when Time
-        DateTime.parse(x.to_s)
-      when Date, DateTime
-        x
+    def date=(date)
+      @date = case date
+      when String, Time
+        DateTime.parse(date.to_s)
+      when Date, DateTime, nil
+        date
       else
-        raise "Can't assign date: #{x.inspect}"
+        raise "Can't assign 'date' attribute: #{date.inspect}"
       end
     end
 
-    def public=(x)
-      @public = case x
+    def public=(public)
+      @public = case public
       when 'false', FalseClass
         false
       when 'true', TrueClass
         true
       else
-        raise "Can't assign public: #{x.inspect}"
+        raise "Can't assign 'public' attribute: #{public.inspect}"
       end
     end
 
