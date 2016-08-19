@@ -58,7 +58,7 @@ module Mill
           end
         end
         add_image_sizes
-        # convert_relative_links
+        # shorten_links
         super
       end
 
@@ -111,13 +111,17 @@ module Mill
         end
       end
 
-      def convert_relative_links
+      def shorten_links
         find_link_elements(@content).each do |attribute|
           elem = attribute.parent
           link_uri = Addressable::URI.parse(attribute.value) or raise "Can't parse #{attribute.value.inspect} from #{xpath.inspect}"
-          if !link_uri.path.empty? && link_uri.path[0] != '/'
-            attribute.value = uri + link_uri
-            # ;;warn "[#{uri}] absolutized #{elem.name}/@#{attribute.name}: #{link_uri} => #{attribute.value}"
+          link_uri = uri + link_uri
+          if link_uri.relative?
+            self_uri = uri.normalize
+            self_uri.scheme = 'http'
+            link_uri.scheme = 'http'
+            attribute.value = self_uri.route_to(link_uri)
+            # ;;warn "[#{uri}] shortened link #{elem.name}/@#{attribute.name}: #{link_uri} => #{attribute.value}"
           end
         end
       end
