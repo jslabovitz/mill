@@ -125,6 +125,10 @@ module Mill
       @resources.select { |r| r.kind_of?(Resource::Text) && !r.public }
     end
 
+    def redirect_resources
+      @resources.select { |r| r.kind_of?(Resource::Redirect) }
+    end
+
     def clean
       @output_dir.rmtree if @output_dir.exist?
       @output_dir.mkpath
@@ -164,11 +168,11 @@ module Mill
       uris = [
         home_resource,
         *private_resources,
+        *redirect_resources,
         feed_resource,
         sitemap_resource,
         robots_resource,
       ].map(&:uri)
-      uris += @redirects.keys if @redirects
       uris.each do |uri|
         uri = Addressable::URI.parse('http://' + uri)
         checker.check(uri)
