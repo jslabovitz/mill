@@ -7,21 +7,17 @@ module Mill
       attr_accessor :uri
       attr_accessor :title
 
-      def initialize(params={})
-        params.each { |k, v| send("#{k}=", v) }
-      end
-
-      def uri=(uri)
+      def initialize(uri:, title: nil)
         @uri = Addressable::URI.parse(uri)
+        @title = title
       end
 
     end
 
     attr_accessor :items
 
-    def initialize(params={})
-      @items = []
-      params.each { |k, v| send("#{k}=", v) }
+    def initialize(items: [])
+      @items = items.map { |uri, title| Item.new(uri: uri, title: title) }
     end
 
     def item_states_for_uri(uri, &block)
