@@ -21,6 +21,7 @@ Gem::Specification.new do |s|
   s.require_path  = 'lib'
 
   s.add_dependency 'addressable'
+  s.add_dependency 'cssminify'
   s.add_dependency 'image_size'
   s.add_dependency 'kramdown'
   s.add_dependency 'mime-types'

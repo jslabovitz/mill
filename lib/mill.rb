@@ -1,4 +1,5 @@
 require 'addressable'
+require 'cssminify'
 require 'image_size'
 require 'kramdown'
 require 'mime/types'
