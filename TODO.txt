@@ -1,6 +1,10 @@
-- move import/load/build/save logic into Builder
+- remove HTML comments on build
 
-- move publish logic into Publisher
+- initialize site by setting ivars directly, not by passing params to super's initialize()
+
+- create alternate sites (beta, final, etc.) by subclassing site, and changing @output or @location
+
+- create bin/mill tool to replace Rake
 
 - formalize widget creation & access
     - object that is used across site
@@ -28,16 +32,10 @@
     + In original content/etc., URIs should be more flexible.
     + A #convert_uris method should convert all references to proper type.
 
-- compress/minify Javascript, CSS, and HTML
+- compress/minify
+    - write compressed versions along with non-compressed
+        + serve compressed versions if asked by client
     + https://remino.net/rails-html-css-js-gzip-compression/
     + http://sass-lang.com/documentation/file.SASS_REFERENCE.html#_16
-    + JS: https://github.com/lautis/uglifier
-    + HTML: https://github.com/paolochiodi/htmlcompressor
-    + CSS: https://github.com/matthiassiegel/cssminify
-
-- write compressed versions along with non-compressed
-    + serve compressed versions if asked by client
 
 - add MailChimp signup form generator to HTMLHelpers
-
-- add Google Analytics bug generator to HTMLHelpers and Mill setup
