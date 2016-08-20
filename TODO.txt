@@ -30,9 +30,8 @@
     + In original content/etc., URIs should be more flexible.
     + A #convert_uris method should convert all references to proper type.
 
-- compress/minify
+- save compressed versions of files
     - write compressed versions along with non-compressed
     - serve compressed versions if asked by client
-    + http://sass-lang.com/documentation/file.SASS_REFERENCE.html#_16
 
 - add MailChimp signup form generator to HTMLHelpers
