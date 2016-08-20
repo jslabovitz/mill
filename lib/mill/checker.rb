@@ -132,7 +132,7 @@ module Mill
 
     def check_css(css_file)
       links = []
-      css_file.read.gsub(/\burl\(\s*'(.*?)'\s*\)/) { links << $1 }
+      css_file.read.gsub(/\burl\(\s*["'](.*?)["']\s*\)/) { links << $1 }
       links
     end
 
