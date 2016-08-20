@@ -57,6 +57,7 @@ module Mill
             end
           end
         end
+        remove_comments
         add_image_sizes
         # shorten_links
         super
@@ -95,6 +96,12 @@ module Mill
           if a['href'] && a['href'] =~ /^\w+:/
             a['target'] = '_blank'
           end
+        end
+      end
+
+      def remove_comments
+        @content.xpath('//comment()').each do |comment|
+          comment.remove
         end
       end
 
