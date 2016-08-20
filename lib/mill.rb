@@ -1,5 +1,4 @@
 require 'addressable'
-require 'cssminify'
 require 'image_size'
 require 'kramdown'
 require 'mime/types'
@@ -9,6 +8,7 @@ require 'pp'
 require 'rack'
 require 'RedCloth'
 require 'rubypants'
+require 'sass'
 require 'time'
 require 'tidy_ffi'
 

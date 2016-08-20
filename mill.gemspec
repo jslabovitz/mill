@@ -21,7 +21,6 @@ Gem::Specification.new do |s|
   s.require_path  = 'lib'
 
   s.add_dependency 'addressable'
-  s.add_dependency 'cssminify'
   s.add_dependency 'image_size'
   s.add_dependency 'kramdown'
   s.add_dependency 'mime-types'
@@ -30,6 +29,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'rack'
   s.add_dependency 'RedCloth'
   s.add_dependency 'rubypants'
+  s.add_dependency 'sass'
   s.add_dependency 'tidy_ffi'
 
   s.add_development_dependency 'bundler'
