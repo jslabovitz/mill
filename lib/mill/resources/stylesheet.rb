@@ -8,7 +8,8 @@ module Mill
         text/css
       }
 
-      def build
+      def load
+        super
         unless @input_file.basename.to_s.end_with?('.min.css')
           engine = Sass::Engine.new(@input_file.read,
             filename: @input_file.to_s,
