@@ -138,30 +138,54 @@ module Mill
       @output_dir.mkpath
     end
 
-    def build
+    def make
+      import
+      load
+      build
+      save
+    end
+
+    def import
       add_files
       add_redirects
       add_feed
       add_sitemap
       add_robots
-      [:load, :build, :save].each do |phase|
-        before_method = "before_#{phase}".to_sym
-        send(before_method) if respond_to?(before_method)
-        warn "phase: #{phase}..."
-        @resources.each do |resource|
-          # ;;warn "#{phase}: #{resource.uri}"
-          old_uri = resource.uri.dup
-          begin
-            resource.send(phase)
-          rescue => e
-            warn "Failed to #{phase} resource #{resource.uri}: #{e}"
-            raise
-          end
-          if resource.uri != old_uri
-            # ;;warn "updating resource URI: #{old_uri} => #{resource.uri}"
-            @resources_by_uri.delete(old_uri)
-            @resources_by_uri[resource.uri] = resource
-          end
+    end
+
+    def load
+      on_each_resource do |resource|
+        # ;;warn "#{resource.uri}: loading"
+        resource.load
+      end
+    end
+
+    def build
+      on_each_resource do |resource|
+        # ;;warn "#{resource.uri}: building"
+        resource.build
+      end
+    end
+
+    def save
+      on_each_resource do |resource|
+        # ;;warn "#{resource.uri}: saving"
+        resource.save
+      end
+    end
+
+    def on_each_resource(&block)
+      @resources.each do |resource|
+        old_uri = resource.uri.dup
+        begin
+          yield(resource)
+        rescue => e
+          raise "#{old_uri}: #{e}"
+        end
+        if resource.uri != old_uri
+          # ;;warn "URI changed: #{old_uri} => #{resource.uri}"
+          @resources_by_uri.delete(old_uri)
+          @resources_by_uri[resource.uri] = resource
         end
       end
     end
