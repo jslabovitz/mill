@@ -2,17 +2,46 @@
 
 - create alternate sites (beta, final, etc.) by subclassing site, and changing @output or @location
 
-- create bin/mill tool to replace Rake
+- rework resource URI usage
+    - 'uri' attribute should be canonical
+        - 'output_file' should be derived from @site.output_dir + uri
+    - URIs should be fully qualified
+        - start with '/'
+        - have extension according to file type
+    - referencing URIs should follow server rules (e.g., / -> /index.html)
+    - #shorten_uris should only apply to writing final files
+
+- combine @input_file & @content?
+    - if @content.kind_of?(Path): copy
+    - else: write as string
+
+- rename Resource #load to #import
+    - uses path argument instead of @input_file
+    - sets @content to path
+    - sets @date to mtime of path
+    - subclasses should:
+        - call super
+    - subclasses may:
+        - assigned @content
+        - change URI
+
+- rename Resource #build to #process
 
 - formalize widget creation & access
+    - any object that responds to #to_html
+    - doesn't have to be specific class (e.g., Mill::Widget)
     - object that is used across site
     - possibly with different states or parameters (eg, navigation)
     - built from current html_fragment use
     - eg:
         - navigation
         - buy buttons
+        - Google Analytics bug
         - link to resource (<a ...>)
         - sidebars
+        - strings (existing String extensions)
+
+- create bin/mill tool to replace Rake
 
 - split Resource#date into Resource#published & Resource#updated
     + add <published> element to feed
@@ -24,11 +53,6 @@
 
 - make Resource::External for external links?
     + add on import of HTML (by examining href/src/etc attributes)
-
-- rationalize resource URI usage
-    + #shorten_uris should only apply to writing final files.
-    + In original content/etc., URIs should be more flexible.
-    + A #convert_uris method should convert all references to proper type.
 
 - save compressed versions of files
     - write compressed versions along with non-compressed
