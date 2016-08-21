@@ -9,7 +9,7 @@ module Mill
       include HTMLHelpers
 
       def build
-        resources = @site.public_resources.sort_by(&:date)
+        resources = @site.feed_resources
         builder = Nokogiri::XML::Builder.new do |xml|
           xml.feed(xmlns: 'http://www.w3.org/2005/Atom') do
             xml.id(@site.tag_uri)

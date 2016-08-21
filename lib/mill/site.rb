@@ -117,6 +117,10 @@ module Mill
       @site_email
     end
 
+    def feed_resources
+      public_resources.sort_by(&:date)
+    end
+
     def public_resources
       @resources.select(&:public)
     end
