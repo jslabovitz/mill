@@ -282,6 +282,7 @@ module Mill
     end
 
     def build_rsync_command(uri, dry_run: false, verbose: false, delete: true)
+      dest = '%s:%s' % [uri.host, Path.new(uri.path).relative_to('/')]
       [
         'rsync',
         '--archive',
@@ -290,7 +291,7 @@ module Mill
         (delete ? '--delete-after' : nil),
         (verbose ? '--verbose' : nil),
         @output_dir.to_s + '/',
-        uri.to_s,
+        dest,
       ]
     end
 
