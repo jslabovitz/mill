@@ -114,7 +114,11 @@ module Mill
       schema_file = Schemas[root_name] or raise "Can't find schema for XML root element <#{root_name}>"
       unless (schema = @schemas[schema_file])
         ;;warn "loading schema for <#{root_name}> element"
-        schema = @schemas[schema_file] = Nokogiri::XML::Schema((SchemasDir / schema_file).open) { |c| c.strict.nonet }
+        schema = Nokogiri::XML::Schema((SchemasDir / schema_file).open) do |config|
+          #FIXME: this block is not actually called!
+          config.options = Nokogiri::XML::ParseOptions::STRICT | Nokogiri::XML::ParseOptions::NONET
+        end
+        @schemas[schema_file] = schema
       end
       validation_errors = schema.validate(xml_doc)
       unless validation_errors.empty?
