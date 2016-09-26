@@ -14,65 +14,45 @@ module Mill
 
     end
 
-    attr_accessor :items
-
     def initialize(items: [])
-      @items = items.map { |uri, title| Item.new(uri: uri, title: title) }
+      @items = Hash[
+        items.map do |uri, title|
+          item = Item.new(uri: uri, title: title)
+          [item.uri, item]
+        end
+      ]
     end
 
-    def item_states_for_uri(uri, &block)
-      current_item = within_item = nil
-      if (item = @items.find { |item| item.uri.relative? && item.uri == uri })
-        current_item = item
-      else
-        within_item = @items.select do |item|
-          item.uri.relative? && uri.path.start_with?(item.uri.path)
-        end.sort_by do |item|
-          item.uri.path.count('/')
-        end.last
-      end
-      @items.each do |item|
-        if item == current_item
-          state = :current
-        elsif item == within_item
-          state = :within
-        else
-          state = :other
-        end
-        yield(state, item)
-      end
+    def items
+      @items.values
     end
 
     def first_item
-      @items.first
+      @items.values.first
     end
 
     def last_item
-      @items.last
+      @items.values.last
     end
 
     def previous_item(uri)
-      index = find_item_index_by_uri(uri)
-      if index && index > 0
-        @items[index - 1]
-      else
-        nil
+      if (item = @items[uri])
+        i = @items.values.index(item)
+        if i > 0
+          return @items.values[i - 1]
+        end
       end
+      nil
     end
 
     def next_item(uri)
-      index = find_item_index_by_uri(uri)
-      if index && index < @items.length - 1
-        @items[index + 1]
-      else
-        nil
+      if (item = @items[uri])
+        i = @items.values.index(item)
+        if i < @items.length - 1
+          return @items.values[i + 1]
+        end
       end
-    end
-
-    def find_item_index_by_uri(uri)
-      if (item = @items.find { |item| item.uri == uri })
-        @items.index(item)
-      end
+      nil
     end
 
   end
