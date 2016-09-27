@@ -30,6 +30,7 @@ module Mill
                    beta_destination: nil,
                    shorten_uris: true,
                    navigator: nil,
+                   google_site_verification: nil,
                    resource_classes: [],
                    redirects: {})
 
@@ -44,6 +45,7 @@ module Mill
       @shorten_uris = shorten_uris
       @resource_classes = resource_classes
       @navigator = navigator
+      @google_site_verification = google_site_verification
       @redirects = redirects
 
       @resources = []
@@ -148,6 +150,7 @@ module Mill
     def import
       add_files
       add_redirects
+      add_google_site_verification
       add_feed
       add_sitemap
       add_robots
@@ -264,6 +267,15 @@ module Mill
             redirect_uri: to)
           add_resource(resource)
         end
+      end
+    end
+
+    def add_google_site_verification
+      if @google_site_verification
+        resource = Resource::GoogleSiteVerification.new(
+          output_file: (@output_dir / @google_site_verification).add_extension('.html'),
+          key: @google_site_verification)
+        add_resource(resource)
       end
     end
 
