@@ -13,7 +13,7 @@ module Mill
       end
 
       def load
-        @content = "google-site-verification: #{@key}\n"
+        @content = "google-site-verification: #{@key}.html\n"
         super
       end
 
