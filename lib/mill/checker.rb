@@ -42,8 +42,11 @@ module Mill
       uri = Addressable::URI.parse(uri)
       return if (!uri.scheme.nil? && uri.scheme != 'http') || !uri.host.to_s.empty? || @visited[uri]
       # ;;warn ('  ' * level) + "CHECKING: #{uri}"
-      @visited[uri] = true
-      request = make_request(uri)
+      request = Rack::Request.new(
+        'GATEWAY_INTERFACE' => 'CGI/1.1',
+        'REQUEST_METHOD' => 'GET',
+        'rack.url_scheme' => 'http',
+        'PATH_INFO' => uri.path)
       response = @server.handle_request(request)
       # ;;pp(request: request, response: response)
       links = []
@@ -71,6 +74,7 @@ module Mill
       else
         raise "Bad status: #{response.inspect}"
       end
+      @visited[uri] = true
       links.each { |link| check(uri + link, level + 1) }
     end
 
@@ -147,15 +151,6 @@ module Mill
           puts "\t\t" + path.to_s
         end
       end
-    end
-
-    def make_request(uri)
-      Rack::Request.new(
-        'GATEWAY_INTERFACE' => 'CGI/1.1',
-        'REQUEST_METHOD' => 'GET',
-        'rack.url_scheme' => 'http',
-        'PATH_INFO' => uri.path,
-      )
     end
 
   end
