@@ -24,30 +24,39 @@ module Mill
 
     def handle_request(request)
       unless request.get? || request.head? || request.options?
+        # ;;warn "#{request.url}: denying invalid method: #{request.request_method}"
         return error_response(:method_not_allowed)
       end
       uri, filename = parse_uri(request.url)
-      # ;;warn "#{request.url} => #{filename}"
+      # ;;warn "#{request.url}: derived file as #{filename}"
       unless filename_is_public?(filename)
+        # ;;warn "#{request.url}: denying non-public file: #{filename}"
         return error_response(:forbidden)
       end
       redirect_path = filename.add_extension('.redirect')
       if redirect_path.exist?
+        # ;;warn "#{request.url}: following .redirect file"
         return redirect_response_from_file(redirect_path, uri)
       end
-      if filename.directory?
-        return redirect_response(uri + '/')
+      if filename.directory? && !uri.path.end_with?('/')
+        # ;;warn "#{request.url}: redirecting request for directory: #{filename}"
+        uri.path += '/'
+        return redirect_response(uri)
       end
-      unless (filename = find_filename(filename))
+      unless (resolved_filename = find_filename(filename))
+        # ;;warn "#{request.url}: denying nonexistant file: #{filename}"
         return error_response(:not_found)
       end
-      unless filename.readable?
+      unless resolved_filename.readable?
+        # ;;warn "#{request.url}: denying unreadable file: #{resolved_filename}"
         return error_response(:forbidden)
       end
-      if request.get_header('HTTP_IF_MODIFIED_SINCE') == filename.mtime.httpdate
+      if request.get_header('HTTP_IF_MODIFIED_SINCE') == resolved_filename.mtime.httpdate
+        # ;;warn "#{request.url}: redirecting unmodified file: #{resolved_filename}"
         return redirect_response(nil, :not_modified)
       end
-      send_file_response(filename, :ok, request.get?)
+      # ;;warn "#{request.url}: sending file: #{resolved_filename}"
+      send_file_response(resolved_filename, :ok, request.get?)
     end
 
     private
@@ -60,8 +69,9 @@ module Mill
         host.sub!(/^(www|web).*?\./, '')
         path /= host
       end
-      path /= Path.new(Addressable::URI.unencode_component(uri.normalized_path))
-      path /= 'index.html' if path.to_s.end_with?('/')
+      uri_path = Addressable::URI.unencode_component(uri.normalized_path)
+      path /= Path.new(uri_path)
+      path /= 'index.html' if uri_path.end_with?('/')
       path = @root / path.relative_path_from('/')
       [uri, path]
     end
