@@ -20,12 +20,12 @@ module Mill
 
     DefaultResourceClasses = ObjectSpace.each_object(Class).select { |c| c < Resource }
 
-    def initialize(input_dir:,
-                   output_dir:,
-                   site_title:,
-                   site_uri:,
-                   site_email:,
-                   site_control_date:,
+    def initialize(input_dir: 'content',
+                   output_dir: 'public_html',
+                   site_title: nil,
+                   site_uri: 'http://localhost',
+                   site_email: nil,
+                   site_control_date: Date.today.to_s,
                    final_destination: nil,
                    beta_destination: nil,
                    shorten_uris: true,
@@ -38,7 +38,7 @@ module Mill
       @output_dir = Path.new(output_dir)
       @site_title = site_title
       @site_uri = Addressable::URI.parse(site_uri)
-      @site_email = Addressable::URI.parse(site_email)
+      @site_email = Addressable::URI.parse(site_email) if site_email
       @site_control_date = Date.parse(site_control_date)
       @final_destination = Addressable::URI.parse(final_destination) if final_destination
       @beta_destination = Addressable::URI.parse(beta_destination) if beta_destination
@@ -94,7 +94,12 @@ module Mill
     end
 
     def tag_uri
-      "tag:#{@site_uri.host.downcase},#{@site_control_date}:"
+      'tag:%s:' % [
+        [
+          @site_uri.host.downcase,
+          @site_control_date
+        ].join(','),
+      ]
     end
 
     def feed_generator

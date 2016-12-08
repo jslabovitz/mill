@@ -66,6 +66,8 @@ module Mill
       def parse_html_header
         if (title_elem = @content.at_xpath('/html/head/title'))
           @title = title_elem.text
+        else
+          @title = uri.to_s
         end
         @content.xpath('/html/head/meta[@name]').each do |meta|
           send("#{meta['name']}=", meta['content'])
@@ -84,7 +86,11 @@ module Mill
       end
 
       def head
-        @content.at_xpath('/html/head').children
+        if (html_elem = @content.at_xpath('/html/head'))
+          head_elem.children
+        else
+          ''
+        end
       end
 
       def body
