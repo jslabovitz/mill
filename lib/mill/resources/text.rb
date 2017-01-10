@@ -64,10 +64,12 @@ module Mill
       end
 
       def parse_html_header
-        if (title_elem = @content.at_xpath('/html/head/title'))
-          @title = title_elem.text
-        else
-          @title = uri.to_s
+        unless @title
+          if (title_elem = @content.at_xpath('/html/head/title'))
+            @title = title_elem.text
+          else
+            @title = uri.to_s
+          end
         end
         @content.xpath('/html/head/meta[@name]').each do |meta|
           send("#{meta['name']}=", meta['content'])
