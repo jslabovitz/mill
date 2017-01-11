@@ -11,8 +11,6 @@ module Mill
     attr_accessor :feed_resource
     attr_accessor :sitemap_resource
     attr_accessor :robots_resource
-    attr_accessor :final_destination
-    attr_accessor :beta_destination
     attr_accessor :shorten_uris
     attr_accessor :navigator
     attr_accessor :resource_classes
@@ -26,8 +24,6 @@ module Mill
                    site_uri: 'http://localhost',
                    site_email: nil,
                    site_control_date: Date.today.to_s,
-                   final_destination: nil,
-                   beta_destination: nil,
                    shorten_uris: true,
                    navigator: nil,
                    google_site_verification: nil,
@@ -40,8 +36,6 @@ module Mill
       @site_uri = Addressable::URI.parse(site_uri)
       @site_email = Addressable::URI.parse(site_email) if site_email
       @site_control_date = Date.parse(site_control_date)
-      @final_destination = Addressable::URI.parse(final_destination) if final_destination
-      @beta_destination = Addressable::URI.parse(beta_destination) if beta_destination
       @shorten_uris = shorten_uris
       @resource_classes = resource_classes
       @navigator = navigator
@@ -200,35 +194,9 @@ module Mill
 
     def check
       warn "checking site..."
-      checker = Checker.new(@output_dir)
-      [
-        home_resource,
-        *private_resources,
-        *redirect_resources,
-        feed_resource,
-        sitemap_resource,
-        robots_resource,
-      ].each do |resource|
-        checker.check(resource.uri)
-      end
+      checker = Checker.new(site: self)
+      checker.check
       checker.report
-    end
-
-    def publish_beta
-      raise "No beta destination configured" unless @beta_destination
-      publish(@beta_destination)
-    end
-
-    def publish_final
-      raise "No final destination configured" unless @final_destination
-      publish(@final_destination)
-    end
-
-    def server
-      server = Server.new(
-        root: @output_dir,
-        multihosting: false)
-      server.run
     end
 
     private
@@ -282,66 +250,6 @@ module Mill
           key: @google_site_verification)
         add_resource(resource)
       end
-    end
-
-    def publish(uri, **options)
-      uri = Addressable::URI.parse(uri)
-      command = case uri.scheme
-      when 'rsync'
-        build_rsync_command(uri, **options)
-      when 'ftp'
-        build_ftp_command(uri, **options)
-      else
-        raise "Unknown publishing destination scheme: #{uri}"
-      end
-      warn "* #{command.compact.join(' ')}"
-      system(*command.compact)
-    end
-
-    def build_rsync_command(uri, dry_run: false, verbose: false, delete: true)
-      dest = '%s:%s' % [uri.host, Path.new(uri.path).relative_to('/')]
-      [
-        'rsync',
-        '--archive',
-        '--progress',
-        (dry_run ? '--dry-run' : nil),
-        (delete ? '--delete-after' : nil),
-        (verbose ? '--verbose' : nil),
-        @output_dir.to_s + '/',
-        dest,
-      ]
-    end
-
-    def build_ftp_command(uri, dry_run: false, verbose: false, delete: true)
-      commands =  [
-        %w{debug 5},
-        %w{set cmd:fail-exit yes},
-        %w{set ssl:verify-certificate no},
-        %w{set ftp:ssl-allow no},
-        ['lcd', @output_dir],
-        ['open', uri],
-        [
-          'mirror',
-          (verbose ? '--verbose=3' : nil),
-          '--reverse',
-          (dry_run ? '--dry-run' : nil),
-          (delete ? '--delete' : nil),
-          '--no-perms',
-          '--no-umask',
-          '--exclude-glob', '.htaccess',
-          '--exclude-glob', 'cgi-bin/',
-          '--exclude-glob', 'php.ini',
-        ].compact
-      ]
-      cmd_file = Path.new('/tmp/lftp.cmd')
-      cmd_file.open('w') do |out|
-        out.puts(commands.map { |c| c.map(&:to_s).join(' ') }.join(";\n"))
-      end
-      [
-        'lftp',
-        '-f',
-        cmd_file.to_s,
-      ]
     end
 
   end

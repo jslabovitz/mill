@@ -26,7 +26,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'mime-types'
   s.add_dependency 'nokogiri'
   s.add_dependency 'path'
-  s.add_dependency 'rack'
   s.add_dependency 'RedCloth'
   s.add_dependency 'rubypants'
   s.add_dependency 'sass'

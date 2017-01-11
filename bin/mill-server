@@ -1,8 +1,0 @@
-#!/usr/bin/env ruby
-
-require 'mill'
-
-server = Mill::Server.new(
-  multihosting: true,
-  root: ARGV.shift || '.')
-server.run
