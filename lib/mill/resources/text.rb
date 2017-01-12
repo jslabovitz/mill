@@ -77,7 +77,7 @@ module Mill
       end
 
       def parse_text_header
-        if @content =~ /^\w+:\s+/
+        if @content.split(/\n/, 2).first =~ /^\w+:\s+/
           header, @content = @content.split(/\n\n/, 2)
           header.split(/\n/).map do |line|
             key, value = line.strip.split(/:\s+/, 2)
