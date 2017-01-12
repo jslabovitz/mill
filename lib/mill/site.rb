@@ -192,13 +192,6 @@ module Mill
       end
     end
 
-    def check
-      warn "checking site..."
-      checker = Checker.new(site: self)
-      checker.check
-      checker.report
-    end
-
     private
 
     def add_files

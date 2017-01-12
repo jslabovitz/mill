@@ -9,8 +9,3 @@ desc 'Make site.'
 task :make => :clean do
   $site.make
 end
-
-desc 'Check for syntax, links, etc.'
-task :check => :make do
-  $site.check
-end
