@@ -15,6 +15,7 @@ module Mill
     attr_accessor :navigator
     attr_accessor :resource_classes
     attr_accessor :redirects
+    attr_accessor :resources
 
     DefaultResourceClasses = ObjectSpace.each_object(Class).select { |c| c < Resource }
 
