@@ -135,16 +135,17 @@ module Mill
       @resources.select { |r| r.kind_of?(Resource::Redirect) }
     end
 
-    def clean
-      @output_dir.rmtree if @output_dir.exist?
-      @output_dir.mkpath
-    end
-
     def make
+      clean
       import
       load
       build
       save
+    end
+
+    def clean
+      @output_dir.rmtree if @output_dir.exist?
+      @output_dir.mkpath
     end
 
     def import
