@@ -32,7 +32,7 @@ module Mill
       when Date, DateTime, nil
         date
       else
-        raise "Can't assign 'date' attribute: #{date.inspect}"
+        raise Error, "Can't assign 'date' attribute: #{date.inspect}"
       end
     end
 
@@ -43,12 +43,12 @@ module Mill
       when 'true', TrueClass
         true
       else
-        raise "Can't assign 'public' attribute: #{public.inspect}"
+        raise Error, "Can't assign 'public' attribute: #{public.inspect}"
       end
     end
 
     def uri
-      raise "#{@input_file}: No output file defined for #{self.class}" unless @output_file
+      raise Error, "#{@input_file}: No output file defined for #{self.class}" unless @output_file
       path = '/' + @output_file.relative_to(@site.output_dir).to_s
       path.sub!(%r{/index\.html$}, '/')
       path.sub!(%r{\.html$}, '') if @site.shorten_uris
@@ -85,7 +85,7 @@ module Mill
         # ;;warn "#{uri}: copying #{@input_file} to #{@output_file}"
         @input_file.copy(@output_file)
       else
-        raise "Can't build resource without content or input file: #{uri}"
+        raise Error, "Can't build resource without content or input file: #{uri}"
       end
     end
 

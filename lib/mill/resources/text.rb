@@ -39,8 +39,8 @@ module Mill
           end
           begin
             @content = parse_html(@content)
-          rescue HTMLError => e
-            raise "failed to parse #{@input_file}: #{e}"
+          rescue Error => e
+            raise e, "#{@input_file}: #{e}"
           end
           parse_html_header
         end
@@ -118,10 +118,10 @@ module Mill
           # skip elements that already have width/height defined
           next if img[:width] || img[:height]
           img_link = Addressable::URI.parse(img['src'])
-          raise "no link in <img> element: #{img.to_s}" if img_link.nil? || img_link.empty?
+          raise Error, "No link in <img> element: #{img.to_s}" if img_link.nil? || img_link.empty?
           next if img_link.host
           img_uri = uri + img_link
-          img_resource = @site.find_resource(img_uri) or raise "Can't find image for #{img_uri}"
+          img_resource = @site.find_resource(img_uri) or raise Error, "Can't find image for #{img_uri}"
           img[:width], img[:height] = img_resource.width, img_resource.height
         end
       end
@@ -129,7 +129,7 @@ module Mill
       def shorten_links
         find_link_elements(@content).each do |attribute|
           elem = attribute.parent
-          link_uri = Addressable::URI.parse(attribute.value) or raise "Can't parse #{attribute.value.inspect} from #{xpath.inspect}"
+          link_uri = Addressable::URI.parse(attribute.value) or raise Error, "Can't parse #{attribute.value.inspect} from #{xpath.inspect}"
           link_uri = uri + link_uri
           if link_uri.relative?
             self_uri = uri.normalize
@@ -142,13 +142,13 @@ module Mill
       end
 
       def feed_content
-        raise "Resource #{uri} has no content" unless @content
+        raise Error, "Resource #{uri} has no content" unless @content
         # If we have a "main" div, use that. Otherwise, use the body, but delete "header" and "footer" div's.
         if (main = @content.at_xpath('//div[@id="main"]'))
           main.children
         else
           html = parse_html(@content.to_html)
-          body = html.at_xpath('/html/body') or raise "No body in HTML content"
+          body = html.at_xpath('/html/body') or raise Error, "No body in HTML content"
           %w{header nav masthead footer}.each do |name|
             if (elem = body.at_xpath("//div[@id=\"#{name}\"]"))
               elem.remove

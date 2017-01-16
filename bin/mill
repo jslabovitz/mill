@@ -4,4 +4,9 @@ require 'mill'
 
 load(Path.pwd / 'code/site.rb')
 
-$site.make
+begin
+  $site.make
+rescue Mill::Error => e
+  warn e
+  exit(1)
+end

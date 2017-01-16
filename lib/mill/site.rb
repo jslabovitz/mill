@@ -64,7 +64,7 @@ module Mill
           return klass
         end
       end
-      raise "Can't determine type of file: #{file}"
+      raise Error, "Can't determine type of file: #{file}"
     end
 
     def add_resource(resource)
@@ -85,7 +85,7 @@ module Mill
     end
 
     def home_resource
-      find_resource('/') or raise "Can't find home"
+      find_resource('/') or raise Error, "Can't find home"
     end
 
     def tag_uri
@@ -183,8 +183,8 @@ module Mill
         old_uri = resource.uri.dup
         begin
           yield(resource)
-        rescue => e
-          raise "#{old_uri}: #{e}"
+        rescue Error => e
+          raise e, "#{resource.input_file || '-'} (#{old_uri}): #{e}"
         end
         if resource.uri != old_uri
           # ;;warn "URI changed: #{old_uri} => #{resource.uri}"
@@ -197,7 +197,7 @@ module Mill
     private
 
     def add_files
-      raise "Input path not found: #{@input_dir}" unless @input_dir.exist?
+      raise Error, "Input path not found: #{@input_dir}" unless @input_dir.exist?
       @input_dir.find do |input_file|
         if (resource_class = file_type(input_file))
           resource = resource_class.new(

@@ -10,6 +10,7 @@ require 'rubypants'
 require 'sass'
 require 'time'
 
+require 'mill/error'
 require 'mill/html_helpers'
 require 'mill/navigator'
 require 'mill/resource'

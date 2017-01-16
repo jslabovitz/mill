@@ -1,7 +1,5 @@
 module HTMLHelpers
 
-  class HTMLError < Exception; end
-
   LinkElementsXPath = '//@href | //@src'
 
   def html_document(&block)
@@ -23,7 +21,7 @@ module HTMLHelpers
     html = Nokogiri::HTML::Document.parse(str) { |config| config.strict }
     html.errors.each do |error|
       next if error.message =~ /^Tag (.*?) invalid$/
-      raise HTMLError, "HTML error at line #{error.line}, column #{error.column}: #{error.message}"
+      raise Error, "HTML error at line #{error.line}, column #{error.column}: #{error.message}"
     end
     html
   end
