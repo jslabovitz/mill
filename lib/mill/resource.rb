@@ -6,6 +6,7 @@ module Mill
 
     attr_accessor :input_file
     attr_accessor :output_file
+    attr_accessor :type
     attr_accessor :date
     attr_accessor :public
     attr_accessor :content
@@ -13,12 +14,14 @@ module Mill
 
     def initialize(input_file: nil,
                    output_file: nil,
+                   type: nil,
                    date: nil,
                    public: false,
                    content: nil,
                    site: nil)
       @input_file = Path.new(input_file) if input_file
       @output_file = Path.new(output_file) if output_file
+      @type = type
       self.date = date
       self.public = public
       @content = content
