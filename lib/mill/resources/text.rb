@@ -88,15 +88,19 @@ module Mill
       end
 
       def head
-        if (html_elem = @content.at_xpath('/html/head'))
-          head_elem.children
+        if @content && (elem = @content.at_xpath('/html/head'))
+          elem.children
         else
           ''
         end
       end
 
       def body
-        @content.at_xpath('/html/body').children
+        if @content && (elem = @content.at_xpath('/html/body'))
+          elem.children
+        else
+          ''
+        end
       end
 
       def add_external_link_targets
