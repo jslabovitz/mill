@@ -55,7 +55,7 @@ module Mill
       path = '/' + @output_file.relative_to(@site.output_dir).to_s
       path.sub!(%r{/index\.html$}, '/')
       path.sub!(%r{\.html$}, '') if @site.shorten_uris
-      Addressable::URI.parse(path)
+      Addressable::URI.parse(URI.encode(path))
     end
 
     def absolute_uri
