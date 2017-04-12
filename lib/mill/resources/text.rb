@@ -146,19 +146,23 @@ module Mill
       end
 
       def feed_content
-        raise Error, "Resource #{uri} has no content" unless @content
-        # If we have a "main" div, use that. Otherwise, use the body, but delete "header" and "footer" div's.
-        if (main = @content.at_xpath('//div[@id="main"]'))
-          main.children
-        else
-          html = parse_html(@content.to_html)
-          body = html.at_xpath('/html/body') or raise Error, "No body in HTML content"
-          %w{header nav masthead footer}.each do |name|
-            if (elem = body.at_xpath("//div[@id=\"#{name}\"]"))
-              elem.remove
+        if @content
+          # If we have a "main" div, use that. Otherwise, use the body, but delete "header" and "footer" div's.
+          if (main = @content.at_xpath('//div[@id="main"]'))
+            main.children
+          else
+            html = parse_html(@content.to_html)
+            body = html.at_xpath('/html/body') or raise Error, "No body in HTML content"
+            %w{header nav masthead footer}.each do |name|
+              if (elem = body.at_xpath("//div[@id=\"#{name}\"]"))
+                elem.remove
+              end
             end
+            body.children
           end
-          body.children
+        else
+          warn "Warning: Resource #{uri} has no content"
+          nil
         end
       end
 
