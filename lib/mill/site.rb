@@ -57,17 +57,6 @@ module Mill
       end
     end
 
-    def resource_for_file(file, params={})
-      return nil if file.directory? || file.basename.to_s[0] == '.'
-      types = MIME::Types.of(file.to_s)
-      types.each do |mime_type|
-        if (klass = @file_types[mime_type.content_type])
-          return klass.new(params.merge(type: mime_type.content_type))
-        end
-      end
-      raise Error, "Can't determine type of file: #{file} (possible types: #{types.join(', ')})"
-    end
-
     def add_resource(resource)
       resource.site = self
       @resources << resource
@@ -197,11 +186,28 @@ module Mill
 
     private
 
+    def resource_class_for_file(file)
+      MIME::Types.of(file.to_s).each do |type|
+        if (klass = @file_types[type.content_type])
+          return [klass, type]
+        end
+      end
+      nil
+    end
+
     def add_files
       raise Error, "Input path not found: #{@input_dir}" unless @input_dir.exist?
       @input_dir.find do |input_file|
-        if (resource = resource_for_file(input_file, input_file: input_file, output_file: @output_dir / input_file.relative_to(@input_dir)))
-          add_resource(resource)
+        if !input_file.directory? && input_file.basename.to_s[0] != '.'
+          if (klass, type = resource_class_for_file(input_file))
+            resource = klass.new(
+              input_file: input_file,
+              output_file: @output_dir / input_file.relative_to(@input_dir),
+              type: type.content_type)
+            add_resource(resource)
+          else
+            warn "Warning: can't determine resource of file: #{input_file}"
+          end
         end
       end
     end
