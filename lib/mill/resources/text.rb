@@ -161,7 +161,7 @@ module Mill
             body.children
           end
         else
-          warn "Warning: Resource #{uri} has no content"
+          warn "Warning: Resource #{uri} (#{self.class}) has no content"
           nil
         end
       end
