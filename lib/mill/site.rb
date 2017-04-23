@@ -85,7 +85,7 @@ module Mill
     end
 
     def home_resource
-      find_resource('/') or raise Error, "Can't find home"
+      find_resource('/')
     end
 
     def tag_uri
