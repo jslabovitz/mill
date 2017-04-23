@@ -2,11 +2,22 @@ module HTMLHelpers
 
   LinkElementsXPath = '//@href | //@src'
 
-  def html_document(&block)
-    builder = Nokogiri::HTML::Builder.new(encoding: 'utf-8') do |doc|
+  def html_document(type=:html4_transitional, &block)
+    doc = Nokogiri::HTML::Document.new
+    doc.encoding = 'UTF-8'
+    doc.internal_subset.remove
+    case type
+    when :html4_transitional
+      doc.create_internal_subset('html', '-//W3C//DTD HTML 4.01 Transitional//EN', 'http://www.w3.org/TR/html4/loose.dtd')
+    when :html5
+      doc.create_internal_subset('html', nil, nil)
+    else
+      raise "Unknown HTML type: #{type.inspect}"
+    end
+    Nokogiri::HTML::Builder.with(doc) do |doc|
       yield(doc)
     end
-    builder.doc
+    doc
   end
 
   def html_fragment(&block)
