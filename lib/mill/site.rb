@@ -74,6 +74,16 @@ module Mill
       resource
     end
 
+    def resource_for_file(path)
+      find_resource(
+        URI.parse(
+          '/' + URI.encode(
+            path.relative_to(@input_dir).to_s
+          )
+        )
+      )
+    end
+
     def home_resource
       find_resource('/') or raise Error, "Can't find home"
     end
