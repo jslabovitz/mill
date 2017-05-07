@@ -78,7 +78,7 @@ module Mill
       find_resource(
         URI.parse(
           '/' + URI.encode(
-            path.relative_to(@input_dir).to_s
+            path.relative_to(@output_dir).to_s
           )
         )
       )
