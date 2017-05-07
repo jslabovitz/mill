@@ -213,7 +213,7 @@ module Mill
             resource = klass.new(
               input_file: input_file,
               output_file: @output_dir / input_file.relative_to(@input_dir),
-              type: type.content_type)
+              type: type)
             add_resource(resource)
           else
             warn "Warning: can't determine resource of file: #{input_file}"
