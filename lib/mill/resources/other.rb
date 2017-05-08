@@ -6,6 +6,7 @@ module Mill
 
       FileTypes = %w{
         application/pdf
+        application/x-shockwave-flash
       }
 
     end
