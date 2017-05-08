@@ -13,6 +13,8 @@ module Mill
         image/tiff
         image/vnd.microsoft.icon
         image/x-icon
+        image/svg
+        image/svg+xml
       }
 
       attr_accessor :width
