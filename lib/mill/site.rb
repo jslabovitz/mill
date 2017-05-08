@@ -12,6 +12,10 @@ module Mill
     attr_accessor :sitemap_resource
     attr_accessor :robots_resource
     attr_accessor :shorten_uris
+    attr_accessor :make_feed
+    attr_accessor :make_sitemap
+    attr_accessor :make_robots
+    attr_accessor :allow_robots
     attr_accessor :navigator
     attr_accessor :resource_classes
     attr_accessor :redirects
@@ -26,6 +30,10 @@ module Mill
                    site_email: nil,
                    site_control_date: Date.today.to_s,
                    shorten_uris: true,
+                   make_feed: true,
+                   make_sitemap: true,
+                   make_robots: true,
+                   allow_robots: true,
                    navigator: nil,
                    google_site_verification: nil,
                    resource_classes: [],
@@ -38,6 +46,10 @@ module Mill
       @site_email = Addressable::URI.parse(site_email) if site_email
       @site_control_date = Date.parse(site_control_date)
       @shorten_uris = shorten_uris
+      @make_feed = make_feed
+      @make_sitemap = make_sitemap
+      @make_robots = make_robots
+      @allow_robots = allow_robots
       @resource_classes = resource_classes
       @navigator = navigator
       @google_site_verification = google_site_verification
@@ -151,10 +163,10 @@ module Mill
     def import
       add_files
       add_redirects
-      add_google_site_verification
-      add_feed
-      add_sitemap
-      add_robots
+      add_google_site_verification if @google_site_verification
+      add_feed if @make_feed
+      add_sitemap if @make_sitemap
+      add_robots if @make_robots
     end
 
     def load
@@ -253,12 +265,10 @@ module Mill
     end
 
     def add_google_site_verification
-      if @google_site_verification
-        resource = Resource::GoogleSiteVerification.new(
-          output_file: (@output_dir / @google_site_verification).add_extension('.html'),
-          key: @google_site_verification)
-        add_resource(resource)
-      end
+      resource = Resource::GoogleSiteVerification.new(
+        output_file: (@output_dir / @google_site_verification).add_extension('.html'),
+        key: @google_site_verification)
+      add_resource(resource)
     end
 
   end
