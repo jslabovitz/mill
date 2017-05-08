@@ -2,7 +2,7 @@ module Mill
 
   class Resource
 
-    class PDF < Resource
+    class Other < Resource
 
       FileTypes = %w{
         application/pdf
