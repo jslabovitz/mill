@@ -228,7 +228,7 @@ module Mill
               type: type)
             add_resource(resource)
           else
-            warn "Warning: can't determine resource of file: #{input_file}"
+            warn "Warning: can't determine resource of file: #{input_file} (#{MIME::Types.of(input_file.to_s).join(', ').inspect})"
           end
         end
       end
