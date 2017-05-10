@@ -16,6 +16,7 @@ module Mill
     attr_accessor :make_sitemap
     attr_accessor :make_robots
     attr_accessor :allow_robots
+    attr_accessor :htpasswd_file
     attr_accessor :navigator
     attr_accessor :resource_classes
     attr_accessor :redirects
@@ -34,6 +35,7 @@ module Mill
                    make_sitemap: true,
                    make_robots: true,
                    allow_robots: true,
+                   htpasswd_file: nil,
                    navigator: nil,
                    google_site_verification: nil,
                    resource_classes: [],
@@ -50,6 +52,7 @@ module Mill
       @make_sitemap = make_sitemap
       @make_robots = make_robots
       @allow_robots = allow_robots
+      @htpasswd_file = htpasswd_file ? Path.new(htpasswd_file) : nil
       @resource_classes = resource_classes
       @navigator = navigator
       @google_site_verification = google_site_verification
@@ -167,6 +170,7 @@ module Mill
       add_feed if @make_feed
       add_sitemap if @make_sitemap
       add_robots if @make_robots
+      add_htpasswd if @htpasswd_file
     end
 
     def load
@@ -268,6 +272,13 @@ module Mill
       resource = Resource::GoogleSiteVerification.new(
         output_file: (@output_dir / @google_site_verification).add_extension('.html'),
         key: @google_site_verification)
+      add_resource(resource)
+    end
+
+    def add_htpasswd
+      resource = Resource::Other.new(
+        input_file: @htpasswd_file,
+        output_file: @output_dir / '.htpasswd')
       add_resource(resource)
     end
 
