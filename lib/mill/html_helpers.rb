@@ -31,8 +31,7 @@ module HTMLHelpers
   def parse_html(str)
     html = Nokogiri::HTML::Document.parse(str) { |config| config.strict }
     html.errors.each do |error|
-      next if error.message =~ /^Tag (.*?) invalid$/
-      raise Error, "HTML error at line #{error.line}, column #{error.column}: #{error.message}"
+      raise "HTML error #{error}" unless error.message =~ /Tag .+? invalid$/
     end
     html
   end
