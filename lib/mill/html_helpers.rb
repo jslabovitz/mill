@@ -111,29 +111,21 @@ module HTMLHelpers
 
   class ::String
 
+    Converters = {
+      nil => RubyPants,
+      smart_quotes: RubyPants,
+      markdown: Kramdown::Document,
+      textile: RedCloth,
+      pre: PreText,
+    }
+
     def to_html(options={})
-      html_str = case options[:mode]
-      when nil, :smart_quotes
-        RubyPants.new(self).to_html
-      when :markdown
-        Kramdown::Document.new(self).to_html
-      when :textile
-        RedCloth.new(self).to_html
-      when :pre
-        PreText.new(self).to_html
-      else
-        raise "Unknown to_html mode: #{options[:mode].inspect}"
+      converter = Converters[options[:mode]] or raise "Unknown to_html mode: #{options[:mode].inspect}"
+      html = Nokogiri::HTML::DocumentFragment.parse(converter.new(self).to_html)
+      if !options[:multiline] && (p_elem = html.at_xpath('p'))
+        html = p_elem.children.to_html
       end
-      html = Nokogiri::HTML::DocumentFragment.parse(html_str)
-      if options[:multiline]
-        html.to_html
-      else
-        if (elem = html.at_xpath('p'))
-          elem.children.to_html
-        else
-          html.to_html
-        end
-      end
+      html.to_html
     end
 
   end
