@@ -22,19 +22,19 @@ module Mill
         super
         if @input_file
           @content = @input_file.read
-          markup_class = case @input_file.extname
+          mode = case @input_file.extname
           when '.md', '.mdown', '.markdown'
-            Kramdown::Document
+            :markdown
           when '.textile'
-            RedCloth
+            :redcloth
           when '.txt'
-            PreText
+            :pre
           else
-            nil
+            raise "Unknown text type: #{@input_file}"
           end
-          if markup_class
+          if mode
             parse_text_header
-            @content = markup_class.new(@content).to_html
+            @content = @content.to_html(mode: mode, multiline: true)
             @output_file = @output_file.replace_extension('.html')
           end
           begin

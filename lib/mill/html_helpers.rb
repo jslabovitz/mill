@@ -111,8 +111,29 @@ module HTMLHelpers
 
   class ::String
 
-    def to_html
-      Nokogiri::HTML::DocumentFragment.parse(RubyPants.new(self).to_html).to_html
+    def to_html(options={})
+      html_str = case options[:mode]
+      when nil, :smart_quotes
+        RubyPants.new(self).to_html
+      when :markdown
+        Kramdown::Document.new(self).to_html
+      when :textile
+        RedCloth.new(self).to_html
+      when :pre
+        PreText.new(self).to_html
+      else
+        raise "Unknown to_html mode: #{options[:mode].inspect}"
+      end
+      html = Nokogiri::HTML::DocumentFragment.parse(html_str)
+      if options[:multiline]
+        html.to_html
+      else
+        if (elem = html.at_xpath('p'))
+          elem.children.to_html
+        else
+          html.to_html
+        end
+      end
     end
 
   end
