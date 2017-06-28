@@ -47,7 +47,7 @@ module Mill
       end
 
       def build
-        @content = html_document do |doc|
+        @content = html_document(@site.html_version) do |doc|
           doc.html(lang: 'en') do |html|
             html.head do
               html << head.to_html

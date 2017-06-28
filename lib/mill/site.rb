@@ -8,6 +8,7 @@ module Mill
     attr_accessor :site_uri
     attr_accessor :site_email
     attr_accessor :site_control_date
+    attr_accessor :html_version
     attr_accessor :feed_resource
     attr_accessor :sitemap_resource
     attr_accessor :robots_resource
@@ -30,6 +31,7 @@ module Mill
                    site_uri: 'http://localhost',
                    site_email: nil,
                    site_control_date: Date.today.to_s,
+                   html_version: :html4_transitional,
                    shorten_uris: true,
                    make_feed: true,
                    make_sitemap: true,
@@ -47,6 +49,7 @@ module Mill
       @site_uri = Addressable::URI.parse(site_uri)
       @site_email = Addressable::URI.parse(site_email) if site_email
       @site_control_date = Date.parse(site_control_date)
+      @html_version = html_version
       @shorten_uris = shorten_uris
       @make_feed = make_feed
       @make_sitemap = make_sitemap
