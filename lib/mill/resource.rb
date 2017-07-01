@@ -50,6 +50,10 @@ module Mill
       end
     end
 
+    def public?
+      @public
+    end
+
     def uri
       raise Error, "#{@input_file}: No output file defined for #{self.class}" unless @output_file
       path = '/' + @output_file.relative_to(@site.output_dir).to_s
