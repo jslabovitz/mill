@@ -12,9 +12,13 @@ module Mill
       }
 
       attr_accessor :title
+      attr_accessor :summary
+      attr_accessor :author
 
-      def initialize(title: nil, **args)
+      def initialize(title: nil, summary: nil, author: nil, **args)
         @title = title
+        @summary = summary
+        @author = author
         super(**args, public: true)
       end
 
