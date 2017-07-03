@@ -227,16 +227,18 @@ module Mill
     def add_files
       raise Error, "Input path not found: #{@input_dir}" unless @input_dir.exist?
       @input_dir.find do |input_file|
-        if !input_file.directory? && input_file.basename.to_s[0] != '.'
-          if (klass, type = resource_class_for_file(input_file))
-            resource = klass.new(
-              input_file: input_file,
-              output_file: @output_dir / input_file.relative_to(@input_dir),
-              type: type)
-            add_resource(resource)
-          else
-            warn "Warning: can't determine resource of file: #{input_file} (#{MIME::Types.of(input_file.to_s).join(', ').inspect})"
-          end
+        if input_file.basename.to_s[0] == '.'
+          Find.prune
+        elsif input_file.directory?
+          # skip
+        elsif (klass, type = resource_class_for_file(input_file))
+          resource = klass.new(
+            input_file: input_file,
+            output_file: @output_dir / input_file.relative_to(@input_dir),
+            type: type)
+          add_resource(resource)
+        else
+          warn "Warning: can't determine resource of file: #{input_file} (#{MIME::Types.of(input_file.to_s).join(', ').inspect})"
         end
       end
     end
