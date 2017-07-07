@@ -2,7 +2,7 @@ module HTMLHelpers
 
   LinkElementsXPath = '//@href | //@src'
 
-  def html_document(type, &block)
+  def html_document(type=:html4_transitional, &block)
     doc = Nokogiri::HTML::Document.new
     doc.encoding = 'UTF-8'
     doc.internal_subset.remove
