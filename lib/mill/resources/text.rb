@@ -63,6 +63,7 @@ module Mill
             end
           end
         end
+        replace_pages_element
         remove_comments
         add_image_sizes
         # shorten_links
@@ -149,6 +150,29 @@ module Mill
             # ;;warn "[#{uri}] shortened link #{elem.name}/@#{attribute.name}: #{link_uri} => #{attribute.value}"
           end
         end
+      end
+
+      def replace_pages_element
+        replace_element(@content, '//pages') do |elem|
+          html_fragment do |html|
+            html.dl do
+              find_sibling_resources(Resource::Text).each do |page|
+                html.dt do
+                  html.a(href: page.uri) { html << page.title.to_html }
+                end
+                html.dd do
+                  if (summary = page.summary)
+                    html << summary.to_html
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+
+      def summary
+        @summary || ((p = feed_content.at_xpath('//p')) && p.children)
       end
 
       def feed_content
