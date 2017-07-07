@@ -26,17 +26,19 @@ module Mill
         super
         if @input_file
           @content = @input_file.read
-          mode = case @input_file.extname
+          mode = case @input_file.extname.downcase
           when '.md', '.mdown', '.markdown'
             :markdown
           when '.textile'
             :redcloth
           when '.txt'
             :pre
+          when '.htm', '.html'
+            :html
           else
             raise "Unknown text type: #{@input_file}"
           end
-          if mode
+          if mode != :html
             parse_text_header
             @content = @content.to_html(mode: mode, multiline: true)
             @output_file = @output_file.replace_extension('.html')
