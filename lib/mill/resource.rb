@@ -54,6 +54,18 @@ module Mill
       @public
     end
 
+    def inspect
+      "<%p> input_file: %p, output_file: %p, type: %p, date: %s, public: %p, content: <%p>" % [
+        self.class,
+        @input_file ? @input_file.relative_to(@site.input_dir).to_s : nil,
+        @output_file ? @output_file.relative_to(@site.output_dir).to_s : nil,
+        @type.to_s,
+        @date.to_s,
+        @public,
+        @content && @content.class,
+      ]
+    end
+
     def uri
       raise Error, "#{@input_file}: No output file defined for #{self.class}" unless @output_file
       path = '/' + @output_file.relative_to(@site.output_dir).to_s
