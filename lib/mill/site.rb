@@ -154,19 +154,24 @@ module Mill
     end
 
     def make
-      clean
-      import
-      load
       build
       save
     end
 
-    def clean
-      @output_dir.rmtree if @output_dir.exist?
-      @output_dir.mkpath
+    def list
+      build
+      on_each_resource do |resource|
+        puts resource.inspect
+      end
     end
 
-    def import
+    def build
+      import_resources
+      load_resources
+      build_resources
+    end
+
+    def import_resources
       add_files
       add_redirects
       add_google_site_verification if @google_site_verification
@@ -176,14 +181,14 @@ module Mill
       add_htpasswd if @htpasswd_file
     end
 
-    def load
+    def load_resources
       on_each_resource do |resource|
         # ;;warn "#{resource.uri}: loading"
         resource.load
       end
     end
 
-    def build
+    def build_resources
       on_each_resource do |resource|
         # ;;warn "#{resource.uri}: building"
         resource.build
@@ -191,6 +196,8 @@ module Mill
     end
 
     def save
+      @output_dir.rmtree if @output_dir.exist?
+      @output_dir.mkpath
       on_each_resource do |resource|
         # ;;warn "#{resource.uri}: saving"
         resource.save
