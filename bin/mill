@@ -2,7 +2,7 @@
 
 require 'mill'
 
-load(Path.pwd / 'code/site.rb')
+load Path.pwd / 'code' / 'site.rb'
 
 begin
   $site.make
