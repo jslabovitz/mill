@@ -22,7 +22,7 @@ module Mill
       @input_file = Path.new(input_file) if input_file
       @output_file = Path.new(output_file) if output_file
       @type = type
-      self.date = date
+      self.date = date || DateTime.now
       self.public = public
       @content = content
       @site = site
