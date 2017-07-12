@@ -13,7 +13,7 @@ module Mill
         builder = Nokogiri::XML::Builder.new do |xml|
           xml.feed(xmlns: 'http://www.w3.org/2005/Atom') do
             xml.id(@site.tag_uri)
-            xml.generator(*@site.feed_generator)
+            # xml.generator(*@site.feed_generator)
             xml.title(@site.site_title) if @site.site_title
             xml.link(rel: 'alternate', type: 'text/html',             href: @site.home_resource.uri) if @site.home_resource
             xml.link(rel: 'self',      type: 'application/atom+xml',  href: uri)
