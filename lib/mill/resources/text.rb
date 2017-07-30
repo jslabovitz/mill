@@ -188,6 +188,8 @@ module Mill
           # If we have a "main" div, use that. Otherwise, use the body, but delete "header" and "footer" div's.
           if (main = @content.at_xpath('//div[@id="main"]'))
             main.children
+          elsif (article = @content.at_xpath('//article'))
+            article.children
           else
             html = parse_html(@content.to_html)
             body = html.at_xpath('/html/body') or raise Error, "No body in HTML content"
