@@ -22,6 +22,14 @@ module Mill
         super(**args, public: true)
       end
 
+      def inspect
+        super + ", title: %p, summary: %p, author: %p" % [
+          @title,
+          @summary,
+          @author,
+        ]
+      end
+
       def load
         super
         if @input_file
