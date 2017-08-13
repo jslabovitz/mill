@@ -23,15 +23,19 @@ module HTMLHelpers
   def html_fragment(&block)
     html = Nokogiri::HTML::DocumentFragment.parse('')
     Nokogiri::HTML::Builder.with(html) do |html|
-      yield(html)
+      yield(html) if block_given?
     end
     html
   end
 
   def parse_html(str)
-    html = Nokogiri::HTML::Document.parse(str) { |config| config.strict }
-    html.errors.each do |error|
-      raise "HTML error #{error}" unless error.message =~ /Tag .+? invalid$/
+    if str.strip.empty?
+      html = html_fragment
+    else
+      html = Nokogiri::HTML::Document.parse(str) { |config| config.strict }
+      html.errors.each do |error|
+        raise Mill::Error, "HTML error #{error}" unless error.message =~ /Tag .+? invalid$/
+      end
     end
     html
   end

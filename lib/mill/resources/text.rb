@@ -48,7 +48,7 @@ module Mill
           end
           if mode != :html
             parse_text_header
-            @content = @content.to_html(mode: mode, multiline: true)
+            @content = (@content || '').to_html(mode: mode, multiline: true)
             @output_file = @output_file.replace_extension('.html')
           end
           begin
