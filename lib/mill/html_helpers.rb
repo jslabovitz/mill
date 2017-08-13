@@ -103,6 +103,15 @@ module HTMLHelpers
     end
   end
 
+  def link_if(state, html, &block)
+    elem = html_fragment { |h| yield(h) }
+    if state
+      html.a(href: uri) { html << elem.to_html }
+    else
+      html << elem.to_html
+    end
+  end
+
   class PreText < String
 
     def to_html
