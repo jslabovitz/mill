@@ -15,11 +15,11 @@ module Mill
       attr_accessor :summary
       attr_accessor :author
 
-      def initialize(title: nil, summary: nil, author: nil, **args)
+      def initialize(title: nil, summary: nil, author: nil, public: true, **args)
         @title = title
         @summary = summary
         @author = author
-        super(**args, public: true)
+        super(public: public, **args)
       end
 
       def inspect
