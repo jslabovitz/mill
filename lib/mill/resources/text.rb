@@ -38,7 +38,7 @@ module Mill
           when '.md', '.mdown', '.markdown'
             :markdown
           when '.textile'
-            :redcloth
+            :textile
           when '.txt'
             :pre
           when '.htm', '.html'
