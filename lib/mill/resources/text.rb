@@ -122,6 +122,7 @@ module Mill
         @content.xpath('//a').each do |a|
           if a['href'] && a['href'] =~ /^\w+:/
             a['target'] = '_blank'
+            a['rel'] = 'noopener noreferrer'
           end
         end
       end
