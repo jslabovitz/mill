@@ -118,6 +118,14 @@ module Mill
         end
       end
 
+      def content_head
+        @content && @content.at_xpath('/html/head')
+      end
+
+      def content_body
+        @content && @content.at_xpath('/html/body')
+      end
+
       def add_external_link_targets
         @content.xpath('//a').each do |a|
           if a['href'] && a['href'] =~ /^\w+:/
