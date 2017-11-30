@@ -63,12 +63,8 @@ module Mill
       def build
         @content = html_document(@site.html_version) do |doc|
           doc.html(lang: 'en') do |html|
-            html.head do
-              html << head.to_html
-            end
-            html.body do
-              html << body.to_html
-            end
+            html << head.to_html
+            html << body.to_html
           end
         end
         replace_pages_element
@@ -103,18 +99,22 @@ module Mill
       end
 
       def head
-        if @content && (elem = @content.at_xpath('/html/head'))
-          elem.children
-        else
-          ''
+        html_fragment do |html|
+          html.head do
+            if (elem = content_head)
+              html << elem.children
+            end
+          end
         end
       end
 
       def body
-        if @content && (elem = @content.at_xpath('/html/body'))
-          elem.children
-        else
-          ''
+        html_fragment do |html|
+          html.body do
+            if (elem = content_body)
+              html << elem.children
+            end
+          end
         end
       end
 
