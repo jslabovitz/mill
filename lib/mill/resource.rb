@@ -19,10 +19,15 @@ module Mill
                    public: false,
                    content: nil,
                    site: nil)
-      @input_file = Path.new(input_file) if input_file
+      if input_file
+        @input_file = Path.new(input_file)
+        @date = input_file.mtime.to_datetime
+      else
+        @date = DateTime.now
+      end
       @output_file = Path.new(output_file) if output_file
       @type = type
-      self.date = date || DateTime.now
+      self.date = date if date
       self.public = public
       @content = content
       @site = site
@@ -100,7 +105,7 @@ module Mill
     end
 
     def load
-      self.date ||= @input_file ? @input_file.mtime : DateTime.now
+      # implemented in subclass
     end
 
     def build
