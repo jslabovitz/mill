@@ -194,20 +194,20 @@ module Mill
 
       def feed_content
         if @content
-          # If we have a "main" div, use that. Otherwise, use the body, but delete "header" and "footer" div's.
-          if (main = @content.at_xpath('//div[@id="main"]'))
+          # If we have a main element (<div class="main"> or <main>), use that.
+          # Otherwise, use the body, but delete header/footer/nav divs or elements.
+          if (main = @content.at_xpath('//div[@id="main"]')) || (main = @content.at_xpath('//main'))
             main.children
           elsif (article = @content.at_xpath('//article'))
             article.children
           else
-            html = parse_html(@content.to_html)
-            body = html.at_xpath('/html/body') or raise Error, "No body in HTML content"
+            body_elem = @content.content_body.clone
             %w{header nav masthead footer}.each do |name|
-              if (elem = body.at_xpath("//div[@id=\"#{name}\"]"))
+              if (elem = body_elem.at_xpath("//div[@id=\"#{name}\"]")) || (elem = body_elem.at_xpath("//#{name}"))
                 elem.remove
               end
             end
-            body.children
+            body_elem.children
           end
         else
           warn "Warning: Resource #{uri} (#{self.class}) has no content"
