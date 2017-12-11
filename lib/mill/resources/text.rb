@@ -193,15 +193,15 @@ module Mill
       end
 
       def feed_content
-        if @content
+        if (body = content_body)
           # If we have a main element (<div class="main"> or <main>), use that.
           # Otherwise, use the body, but delete header/footer/nav divs or elements.
-          if (main = @content.at_xpath('//div[@id="main"]')) || (main = @content.at_xpath('//main'))
+          if (main = body.at_xpath('//div[@id="main"]')) || (main = body.at_xpath('//main'))
             main.children
-          elsif (article = @content.at_xpath('//article'))
+          elsif (article = body.at_xpath('//article'))
             article.children
           else
-            body_elem = @content.content_body.clone
+            body_elem = body.clone
             %w{header nav masthead footer}.each do |name|
               if (elem = body_elem.at_xpath("//div[@id=\"#{name}\"]")) || (elem = body_elem.at_xpath("//#{name}"))
                 elem.remove
