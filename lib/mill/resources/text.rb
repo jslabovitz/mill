@@ -102,7 +102,7 @@ module Mill
         html_fragment do |html|
           html.head do
             if (elem = content_head)
-              html << elem.children
+              html << elem.children.to_html
             end
           end
         end
@@ -112,7 +112,7 @@ module Mill
         html_fragment do |html|
           html.body do
             if (elem = content_body)
-              html << elem.children
+              html << elem.children.to_html
             end
           end
         end
