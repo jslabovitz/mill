@@ -61,17 +61,15 @@ module Mill
       end
 
       def build
-        @content = html_document(@site.html_version) do |doc|
-          doc.html(lang: 'en') do |html|
-            html << head.to_html
-            html << body.to_html
-          end
-        end
+        replace_elements
+        super
+      end
+
+      def replace_elements
         replace_pages_element
         remove_comments
         add_image_sizes
         # shorten_links
-        super
       end
 
       def parse_html_header
@@ -96,6 +94,15 @@ module Mill
             send("#{key}=", value)
           end
         end
+      end
+
+      def final_content
+        html_document(@site.html_version) do |doc|
+          doc.html(lang: 'en') do |html|
+            html << head.to_html
+            html << body.to_html
+          end
+        end.to_html
       end
 
       def head

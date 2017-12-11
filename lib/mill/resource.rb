@@ -104,6 +104,10 @@ module Mill
       :weekly
     end
 
+    def final_content
+      @content
+    end
+
     def load
       # implemented in subclass
     end
@@ -114,9 +118,9 @@ module Mill
 
     def save
       @output_file.dirname.mkpath
-      if @content
+      if (content = final_content)
         # ;;warn "#{uri}: writing #{@input_file} to #{@output_file}"
-        @output_file.write(@content.to_s)
+        @output_file.write(content.to_s)
         @output_file.utime(@date.to_time, @date.to_time)
       elsif @input_file
         # ;;warn "#{uri}: copying #{@input_file} to #{@output_file}"
