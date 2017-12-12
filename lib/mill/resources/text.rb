@@ -105,22 +105,30 @@ module Mill
         end.to_html
       end
 
-      def head
+      def head(&block)
         html_fragment do |html|
           html.head do
-            if (elem = content_head)
-              html << elem.children.to_html
+            head = content_head
+            if (title = @title || (head && head.at_xpath('title')))
+              html.title { html << title.to_html }
+            end
+            yield(html) if block_given?
+            if head
+              head.children.reject { |e| e.text? || e.name == 'title' }.each do |e|
+                html << e.to_html
+              end
             end
           end
         end
       end
 
-      def body
+      def body(&block)
         html_fragment do |html|
           html.body do
             if (elem = content_body)
               html << elem.children.to_html
             end
+            yield(html) if block_given?
           end
         end
       end
