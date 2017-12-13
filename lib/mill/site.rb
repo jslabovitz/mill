@@ -201,11 +201,19 @@ module Mill
     end
 
     def save
-      @output_dir.rmtree if @output_dir.exist?
+      clean
       @output_dir.mkpath
       on_each_resource do |resource|
         # ;;warn "#{resource.uri}: saving"
         resource.save
+      end
+    end
+
+    def clean
+      if @output_dir.exist?
+        @output_dir.children.reject { |p| p.basename.to_s == '.git' }.each do |path|
+          path.rm_rf
+        end
       end
     end
 
