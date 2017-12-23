@@ -14,13 +14,14 @@ module Mill
 
     end
 
-    def initialize(items: [])
+    def initialize(items: [], site: nil)
       @items = Hash[
         items.map do |uri, title|
           item = Item.new(uri: uri, title: title)
           [item.uri, item]
         end
       ]
+      @site = site
     end
 
     def items
