@@ -120,16 +120,6 @@ module Mill
       ]
     end
 
-    def feed_generator
-      [
-        'Mill',
-        {
-          uri: Addressable::URI.parse('http://github.com/jslabovitz/mill'),
-          version: Mill::VERSION,
-        }
-      ]
-    end
-
     def feed_author_name
       @site_title
     end
