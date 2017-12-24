@@ -20,6 +20,13 @@ module Mill
       attr_accessor :width
       attr_accessor :height
 
+      def inspect
+        super + ", width: %p, height: %p" % [
+          @width,
+          @height,
+        ]
+      end
+
       def load
         info = ImageSize.path(@input_file.to_s)
         @width, @height = *info.size

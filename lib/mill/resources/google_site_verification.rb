@@ -12,6 +12,12 @@ module Mill
         super(**args)
       end
 
+      def inspect
+        super + ", key: %p" % [
+          @key,
+        ]
+      end
+
       def load
         @content = "google-site-verification: #{@key}.html\n"
         super

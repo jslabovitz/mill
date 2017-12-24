@@ -13,6 +13,13 @@ module Mill
         super(**args)
       end
 
+      def inspect
+        super + ", redirect_uri: %p, redirect_code: %p" % [
+          @redirect_uri.to_s,
+          @redirect_code,
+        ]
+      end
+
       def load
         @content = "%s %d" % [@redirect_uri, @redirect_code]
         super
