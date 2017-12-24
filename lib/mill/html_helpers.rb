@@ -60,40 +60,6 @@ module HTMLHelpers
     end
   end
 
-  def amazon_button(asin)
-    html_fragment do |html|
-      html.a(href: "http://www.amazon.com/dp/#{asin}") do
-        html.img(src: '/images/buy1._V46787834_.gif', alt: 'Buy from Amazon.com')
-      end
-    end
-  end
-
-  def paypal_button(id)
-    html_fragment do |html|
-      html.form(action: 'https://www.paypal.com/cgi-bin/webscr', method: 'post') do
-        html.input(
-          type: 'hidden',
-          name: 'cmd',
-          value: '_s-xclick')
-        html.input(
-          type: 'hidden',
-          name: 'hosted_button_id',
-          value: id)
-        html.input(
-          type: 'image',
-          src: 'https://www.paypalobjects.com/en_US/i/btn/btn_buynow_LG.gif',
-          name: 'submit',
-          alt: 'PayPal - The safer, easier way to pay online!')
-        html.img(
-          alt: '',
-          border: 0,
-          width: 1,
-          height: 1,
-          src: 'https://www.paypalobjects.com/en_US/i/scr/pixel.gif')
-      end
-    end
-  end
-
   def google_analytics(tracker_id)
     html_fragment do |html|
       html.script(type: 'text/javascript') do
