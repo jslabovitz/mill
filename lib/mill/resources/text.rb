@@ -60,18 +60,6 @@ module Mill
         end
       end
 
-      def build
-        replace_elements
-        super
-      end
-
-      def replace_elements
-        replace_pages_element
-        remove_comments
-        add_image_sizes
-        # shorten_links
-      end
-
       def parse_html_header
         unless @title
           if (title_elem = @content.at_xpath('/html/head/title'))
