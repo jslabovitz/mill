@@ -1,4 +1,3 @@
 source 'https://rubygems.org'
-
-# Specify your gem's dependencies in mill.gemspec
+gem 'web-checker', path: '~/Projects/web-checker'
 gemspec

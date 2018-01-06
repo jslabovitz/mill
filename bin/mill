@@ -10,6 +10,8 @@ begin
     $site.make
   when 'clean'
     $site.clean
+  when 'check'
+    $site.check
   when 'list'
     $site.list
   when 'output-dir'

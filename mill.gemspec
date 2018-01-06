@@ -29,6 +29,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'RedCloth'
   s.add_dependency 'rubypants'
   s.add_dependency 'sass'
+  s.add_dependency 'web-checker'
 
   s.add_development_dependency 'bundler'
   s.add_development_dependency 'rake'

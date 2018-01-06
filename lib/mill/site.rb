@@ -207,6 +207,10 @@ module Mill
       end
     end
 
+    def check
+      checker = WebChecker.new(site_uri: @site_uri, site_dir: @output_dir)
+    end
+
     def on_each_resource(&block)
       @resources.each do |resource|
         old_uri = resource.uri.dup
