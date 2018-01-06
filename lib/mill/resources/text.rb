@@ -87,8 +87,8 @@ module Mill
       def final_content
         html_document(@site.html_version) do |doc|
           doc.html(lang: 'en') do |html|
-            html << head.to_html
-            html << body.to_html
+            html.parent << head
+            html.parent << body
           end
         end.to_html
       end
