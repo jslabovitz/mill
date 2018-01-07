@@ -4,6 +4,7 @@ module Mill
 
     attr_accessor :input_dir
     attr_accessor :output_dir
+    attr_accessor :site_rsync
     attr_accessor :site_title
     attr_accessor :site_uri
     attr_accessor :site_email
@@ -27,6 +28,7 @@ module Mill
 
     def initialize(input_dir: 'content',
                    output_dir: 'public_html',
+                   site_rsync: nil,
                    site_title: nil,
                    site_uri: 'http://localhost',
                    site_email: nil,
@@ -45,6 +47,7 @@ module Mill
 
       @input_dir = Path.new(input_dir)
       @output_dir = Path.new(output_dir)
+      @site_rsync = site_rsync
       @site_title = site_title
       @site_uri = Addressable::URI.parse(site_uri)
       @site_email = Addressable::URI.parse(site_email) if site_email
@@ -209,6 +212,38 @@ module Mill
 
     def check
       checker = WebChecker.new(site_uri: @site_uri, site_dir: @output_dir)
+    end
+
+    def snapshot
+      @output_dir.chdir do
+        system('git',
+          'add',
+          '.')
+        system('git',
+          'commit',
+          '-a',
+          '-m',
+          'Update.')
+      end
+    end
+
+    def diff
+      @output_dir.chdir do
+        system('git',
+          'diff')
+      end
+    end
+
+    def upload
+      raise "site_rsync not defined" unless @site_rsync
+      system('rsync',
+        '--progress',
+        '--verbose',
+        '--archive',
+        '--exclude=.git',
+        '--delete-after',
+        @output_dir.to_s,
+        @site_rsync)
     end
 
     def on_each_resource(&block)
