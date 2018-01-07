@@ -1,7 +1,0 @@
-$LOAD_PATH.unshift '../lib'
-
-require 'mill'
-
-$site = Mill::Site.new
-
-load 'mill/tasks.rake'
