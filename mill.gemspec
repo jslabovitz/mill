@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.description   = %q{
     Mill provides a simple but useful static site generator.
   }
-  s.licenses      = %w{MIT}
+  s.license       = 'MIT'
   s.homepage      = 'http://github.com/jslabovitz/mill'
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
