@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.require_path  = 'lib'
 
   s.add_dependency 'addressable', '~> 0'
-  s.add_dependency 'image_size', '~> 0'
+  s.add_dependency 'image_size', '~> 1.5'
   s.add_dependency 'kramdown', '~> 0'
   s.add_dependency 'mime-types', '~> 3.1'
   s.add_dependency 'nokogiri', '~> 1.8'
