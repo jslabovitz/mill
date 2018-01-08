@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'kramdown', '~> 0'
   s.add_dependency 'mime-types', '~> 0'
   s.add_dependency 'nokogiri', '~> 0'
-  s.add_dependency 'path', '~> 0'
+  s.add_dependency 'path', '~> 2.0'
   s.add_dependency 'RedCloth', '~> 4.3'
   s.add_dependency 'rubypants', '~> 0'
   s.add_dependency 'sass', '~> 3.5'
