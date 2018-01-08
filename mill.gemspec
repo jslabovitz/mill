@@ -31,4 +31,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'rubypants', '~> 0.6'
   s.add_dependency 'sass', '~> 3.5'
   s.add_dependency 'web-checker', '~> 0.1'
+
+  s.add_dependency 'rake', '~> 12.3'
+  s.add_dependency 'rubygems-tasks', '~> 0.2'
 end
