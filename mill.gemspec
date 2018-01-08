@@ -18,17 +18,17 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map { |f| File.basename(f) }
   s.require_path  = 'lib'
 
-  s.add_dependency 'addressable', '~> 2.5'
-  s.add_dependency 'image_size', '~> 1.5'
-  s.add_dependency 'kramdown', '~> 1.16'
-  s.add_dependency 'mime-types', '~> 3.1'
-  s.add_dependency 'nokogiri', '~> 1.8'
-  s.add_dependency 'path', '~> 2.0'
-  s.add_dependency 'RedCloth', '~> 4.3'
-  s.add_dependency 'rubypants', '~> 0.6'
+  s.add_dependency 'addressable', '~> 0'
+  s.add_dependency 'image_size', '~> 0'
+  s.add_dependency 'kramdown', '~> 0'
+  s.add_dependency 'mime-types', '~> 0'
+  s.add_dependency 'nokogiri', '~> 0'
+  s.add_dependency 'path', '~> 0'
+  s.add_dependency 'RedCloth', '~> 0'
+  s.add_dependency 'rubypants', '~> 0'
   s.add_dependency 'sass', '~> 3.5'
-  s.add_dependency 'web-checker', '~> 0.1'
+  s.add_dependency 'web-checker', '~> 0'
 
-  s.add_dependency 'rake', '~> 12.3'
-  s.add_dependency 'rubygems-tasks', '~> 0.2'
+  s.add_development_dependency 'rake', '~> 0'
+  s.add_development_dependency 'rubygems-tasks', '~> 0.0'
 end
