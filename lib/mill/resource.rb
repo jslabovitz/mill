@@ -6,7 +6,6 @@ module Mill
 
     attr_accessor :input_file
     attr_accessor :output_file
-    attr_accessor :type
     attr_accessor :date
     attr_accessor :public
     attr_accessor :content
@@ -14,7 +13,6 @@ module Mill
 
     def initialize(input_file: nil,
                    output_file: nil,
-                   type: nil,
                    date: nil,
                    public: false,
                    content: nil,
@@ -26,7 +24,6 @@ module Mill
         @date = DateTime.now
       end
       @output_file = Path.new(output_file) if output_file
-      @type = type
       self.date = date if date
       self.public = public
       @content = content
@@ -60,11 +57,10 @@ module Mill
     end
 
     def inspect
-      "<%p> input_file: %p, output_file: %p, type: %p, date: %s, public: %p, content: <%p>" % [
+      "<%p> input_file: %p, output_file: %p, date: %s, public: %p, content: <%p>" % [
         self.class,
         @input_file ? @input_file.relative_to(@site.input_dir).to_s : nil,
         @output_file ? @output_file.relative_to(@site.output_dir).to_s : nil,
-        @type.to_s,
         @date.to_s,
         @public,
         @content && @content.class,

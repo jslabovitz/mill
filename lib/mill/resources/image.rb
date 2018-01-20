@@ -12,8 +12,6 @@ module Mill
         image/png
         image/tiff
         image/vnd.microsoft.icon
-        image/x-icon
-        image/svg
         image/svg+xml
       }
 

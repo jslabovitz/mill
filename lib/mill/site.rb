@@ -265,13 +265,12 @@ module Mill
     private
 
     def resource_class_for_file(file)
-      types = MIME::Types.of(file.to_s)
-      types.each do |type|
-        if (klass = @file_types[type.content_type])
-          return [klass, type]
-        end
+      type = MIME::Types.of(file.to_s).first
+      if type && (klass = @file_types[type.content_type])
+        klass
+      else
+        Resource
       end
-      [Resource, types.first.content_type]
     end
 
     def add_files
@@ -281,11 +280,10 @@ module Mill
           Find.prune
         elsif input_file.directory?
           # skip
-        else (klass, type = resource_class_for_file(input_file))
+        else (klass = resource_class_for_file(input_file))
           resource = klass.new(
             input_file: input_file,
-            output_file: @output_dir / input_file.relative_to(@input_dir),
-            type: type)
+            output_file: @output_dir / input_file.relative_to(@input_dir))
           add_resource(resource)
         end
       end
