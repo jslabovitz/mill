@@ -265,12 +265,13 @@ module Mill
     private
 
     def resource_class_for_file(file)
-      MIME::Types.of(file.to_s).each do |type|
+      types = MIME::Types.of(file.to_s)
+      types.each do |type|
         if (klass = @file_types[type.content_type])
           return [klass, type]
         end
       end
-      nil
+      [Resource, types.first.content_type]
     end
 
     def add_files
@@ -280,14 +281,12 @@ module Mill
           Find.prune
         elsif input_file.directory?
           # skip
-        elsif (klass, type = resource_class_for_file(input_file))
+        else (klass, type = resource_class_for_file(input_file))
           resource = klass.new(
             input_file: input_file,
             output_file: @output_dir / input_file.relative_to(@input_dir),
             type: type)
           add_resource(resource)
-        else
-          warn "Warning: can't determine resource of file: #{input_file} (#{MIME::Types.of(input_file.to_s).join(', ').inspect})"
         end
       end
     end
@@ -330,7 +329,7 @@ module Mill
     end
 
     def add_htpasswd
-      resource = Resource::Other.new(
+      resource = Resource.new(
         input_file: @htpasswd_file,
         output_file: @output_dir / '.htpasswd')
       add_resource(resource)
