@@ -129,11 +129,11 @@ module Mill
         @content && @content.at_xpath('/html/body')
       end
 
-      def add_external_link_targets
+      def add_external_link_targets(rel='noopener')
         @content.xpath('//a').each do |a|
           if a['href'] && a['href'] =~ /^\w+:/
             a['target'] = '_blank'
-            a['rel'] = 'noopener noreferrer'
+            a['rel'] = rel
           end
         end
       end
