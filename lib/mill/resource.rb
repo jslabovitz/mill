@@ -33,7 +33,11 @@ module Mill
     def date=(date)
       @date = case date
       when String, Time
-        DateTime.parse(date.to_s)
+        begin
+          DateTime.parse(date.to_s)
+        rescue ArgumentError => e
+          raise Error, "Can't parse date: #{date.inspect}"
+        end
       when Date, DateTime, nil
         date
       else
