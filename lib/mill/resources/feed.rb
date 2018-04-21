@@ -14,8 +14,8 @@ module Mill
           xml.feed(xmlns: 'http://www.w3.org/2005/Atom') do
             xml.id(@site.tag_uri)
             xml.title(@site.site_title) if @site.site_title
-            xml.link(rel: 'alternate', type: 'text/html',             href: @site.home_resource.uri) if @site.home_resource
-            xml.link(rel: 'self',      type: 'application/atom+xml',  href: uri)
+            xml.link(rel: 'alternate', type: 'text/html',             href: @site.home_resource.absolute_uri) if @site.home_resource
+            xml.link(rel: 'self',      type: 'application/atom+xml',  href: absolute_uri)
             xml.author do
               xml.name(@site.feed_author_name) if @site.feed_author_name
               xml.uri(@site.feed_author_uri) if @site.feed_author_uri
@@ -25,7 +25,7 @@ module Mill
             resources.each do |resource|
               xml.entry do
                 xml.title(resource.title) if resource.title
-                xml.link(rel: 'alternate', href: resource.uri)
+                xml.link(rel: 'alternate', href: resource.absolute_uri)
                 xml.id(resource.tag_uri)
                 xml.updated(resource.date.iso8601)
                 xml.published(resource.date.iso8601)
