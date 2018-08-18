@@ -9,6 +9,7 @@ module Mill
       FileTypes = %w{
         text/plain
         text/html
+        text/markdown
       }
 
       attr_accessor :title
