@@ -21,6 +21,7 @@ module Mill
         application/x-font-otf
 
         application/mp4
+        audio/mpeg
         audio/mp4
         video/mp4
         video/vnd.objectvideo
