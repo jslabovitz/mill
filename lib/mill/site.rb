@@ -157,9 +157,33 @@ module Mill
     end
 
     def list
+
+      list_keys = {
+        class:        proc { |v| v.to_s.sub(/::Resource::/, '::') },
+        input_file:   proc { |v| v.relative_to(@input_dir) },
+        output_file:  proc { |v| v.relative_to(@output_dir) },
+        public:       proc { |v| v },
+        content:      proc { |v| '%dKB' % (v.to_s.length / 1024.0).ceil },
+      }
+
       build
-      on_each_resource do |resource|
-        puts resource.inspect
+      list = @resources.map do |resource|
+        Hash[
+          list_keys.map do |k, p|
+            v = resource.send(k)
+            [
+              k,
+              v ? p.call(v).to_s : '-'
+            ]
+          end
+        ]
+      end
+      format = list_keys.keys.map do |key|
+        '%%-%ds' % list.map { |item| item[key].length }.max
+      end.join(' ')
+      puts format % list_keys.keys
+      list.each do |item|
+        puts format % item.values
       end
     end
 
