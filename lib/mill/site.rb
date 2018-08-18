@@ -293,7 +293,7 @@ module Mill
       if type && (klass = @file_types[type.content_type])
         klass
       else
-        Resource
+        raise Error, "Unknown file type: #{file.to_s.inspect} (#{MIME::Types.of(file.to_s).join(', ')})"
       end
     end
 
