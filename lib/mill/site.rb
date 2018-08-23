@@ -235,6 +235,7 @@ module Mill
     end
 
     def check
+      build
       checker = WebChecker.new(site_uri: @site_uri, site_dir: @output_dir)
     end
 
