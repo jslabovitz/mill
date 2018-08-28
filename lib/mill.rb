@@ -7,7 +7,7 @@ require 'path'
 require 'pp'
 require 'RedCloth'
 require 'rubypants'
-require 'sass'
+require 'sassc'
 require 'time'
 require 'web-checker'
 
