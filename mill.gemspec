@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'path', '~> 2.0'
   s.add_dependency 'RedCloth', '~> 4.3'
   s.add_dependency 'rubypants', '~> 0.6'
-  s.add_dependency 'sassc', '~> 0'
+  s.add_dependency 'sassc', '~> 2.0'
   s.add_dependency 'web-checker', '~> 0'
 
   s.add_development_dependency 'rake', '~> 0'
