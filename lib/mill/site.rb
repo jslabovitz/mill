@@ -265,7 +265,7 @@ module Mill
         '--progress',
         '--verbose',
         '--archive',
-        '--append-verify',
+        # '--append-verify',
         '--exclude=.git',
         '--delete-after',
         @output_dir.to_s,
