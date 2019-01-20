@@ -242,6 +242,8 @@ module Mill
     def snapshot
       @output_dir.chdir do
         system('git',
+          'init') unless Path.new('.git').exist?
+        system('git',
           'add',
           '.')
         system('git',
