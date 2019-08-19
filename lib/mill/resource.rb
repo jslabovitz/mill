@@ -71,15 +71,6 @@ module Mill
       ]
     end
 
-    def find_sibling_resources(klass=nil)
-      # parent_uri = parent_uri
-      @site.resources.select do |resource|
-        resource != self &&
-          (klass.nil? || resource.kind_of?(klass)) &&
-          resource.parent_uri == parent_uri
-      end
-    end
-
     def uri
       raise Error, "#{@input_file}: No output file defined for #{self.class}" unless @output_file
       path = '/' + @output_file.relative_to(@site.output_dir).to_s
