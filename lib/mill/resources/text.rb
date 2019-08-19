@@ -78,7 +78,7 @@ module Mill
         if @content.split(/\n/, 2).first =~ /^\w+:\s+/
           header, @content = @content.split(/\n\n/, 2)
           header.split(/\n/).map do |line|
-            key, value = line.strip.split(/:\s+/, 2)
+            key, value = line.strip.split(/:\s*/, 2)
             key = key.gsub('-', '_').downcase.to_sym
             send("#{key}=", value)
           end
