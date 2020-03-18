@@ -15,19 +15,22 @@ module Mill
       attr_accessor :title
       attr_accessor :summary
       attr_accessor :author
+      attr_accessor :type
 
       def initialize(title: nil, summary: nil, author: nil, public: true, **args)
         @title = title
         @summary = summary
         @author = author
+        @type = nil
         super(public: public, **args)
       end
 
       def inspect
-        super + ", title: %p, summary: %p, author: %p" % [
+        super + ", title: %p, summary: %p, author: %p, type: %p" % [
           @title,
           @summary,
           @author,
+          @type,
         ]
       end
 
@@ -35,7 +38,7 @@ module Mill
         super
         if @input_file
           @content = @input_file.read
-          mode = case @input_file.extname.downcase
+          @type = case @input_file.extname.downcase
           when '.md', '.mdown', '.markdown'
             :markdown
           when '.textile'
@@ -47,10 +50,11 @@ module Mill
           else
             raise "Unknown text type: #{@input_file}"
           end
-          if mode != :html
+          if @type != :html
             parse_text_header
-            @content = (@content || '').to_html(mode: mode, multiline: true)
+            @content = (@content || '').to_html(mode: @type, multiline: true)
             @output_file = @output_file.replace_extension('.html')
+            @type = :html
           end
           begin
             @content = parse_html(@content)
