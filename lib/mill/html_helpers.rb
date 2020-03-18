@@ -104,7 +104,7 @@ module HTMLHelpers
       nil => RubyPants,
       smart_quotes: RubyPants,
       markdown: Kramdown::Document,
-      textile: RedCloth,
+      textile: [RedCloth, :no_span_caps],
       pre: PreText,
     }
 
