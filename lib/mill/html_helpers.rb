@@ -109,8 +109,14 @@ module HTMLHelpers
     }
 
     def to_html(options={})
-      converter = Converters[options[:mode]] or raise "Unknown to_html mode: #{options[:mode].inspect}"
-      html = Nokogiri::HTML::DocumentFragment.parse(converter.new(self).to_html)
+      converter_class = Converters[options[:mode]] or raise "Unknown to_html mode: #{options[:mode].inspect}"
+      if converter_class.kind_of?(Array)
+        converter_class, *converter_options = *converter_class
+        converter = converter_class.new(self, converter_options)
+      else
+        converter = converter_class.new(self)
+      end
+      html = Nokogiri::HTML::DocumentFragment.parse(converter.to_html)
       if !options[:multiline] && (p_elem = html.at_xpath('p'))
         html = p_elem.children.to_html
       end
