@@ -1,6 +1,10 @@
+- remove textile/pre processors from Resource::Text
+    - streamline to allow domain-specific subclassing if needed
+
 - initialize site by setting ivars directly, not by passing params to super's initialize()
 
 - create alternate sites (beta, final, etc.) by subclassing site, and changing @output or @location
+    - allow CLI option to specify site
 
 - rework resource URI usage
     - 'uri' attribute should be canonical
@@ -41,8 +45,6 @@
         - sidebars
         - strings (existing String extensions)
 
-- create bin/mill tool to replace Rake
-
 - split Resource#date into Resource#published & Resource#updated
     + add <published> element to feed
     + #published should be stated date (e.g., from header)
@@ -57,5 +59,3 @@
 - save compressed versions of files
     - write compressed versions along with non-compressed
     - serve compressed versions if asked by client
-
-- add MailChimp signup form generator to HTMLHelpers
