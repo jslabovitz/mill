@@ -20,8 +20,8 @@ begin
     $site.snapshot
   when 'upload'
     $site.upload
-  when 'output-dir'
-    puts $site.output_dir
+  when 'show'
+    puts $site.send(ARGV.shift)
   else
     raise "Unknown command: #{command.inspect}"
   end
