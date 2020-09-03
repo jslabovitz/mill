@@ -29,6 +29,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'sassc', '~> 2.2'
   s.add_dependency 'web-checker', '~> 0.4'
 
+  s.add_development_dependency 'bundler'
   s.add_development_dependency 'rake', '~> 13.0'
   s.add_development_dependency 'rubygems-tasks', '~> 0.2'
 end
