@@ -19,17 +19,18 @@ Gem::Specification.new do |s|
   s.require_path  = 'lib'
 
   s.add_dependency 'addressable', '~> 2.7'
-  s.add_dependency 'image_size', '~> 2.0'
-  s.add_dependency 'kramdown', '~> 2.1'
+  s.add_dependency 'image_size', '~> 2.1'
+  s.add_dependency 'kramdown', '~> 2.3'
   s.add_dependency 'mime-types', '~> 3.3'
   s.add_dependency 'nokogiri', '~> 1.10'
   s.add_dependency 'path', '~> 2.0'
   s.add_dependency 'RedCloth', '~> 4.3'
   s.add_dependency 'rubypants', '~> 0.7'
-  s.add_dependency 'sassc', '~> 2.2'
+  s.add_dependency 'sassc', '~> 2.4'
   s.add_dependency 'web-checker', '~> 0.4'
 
-  s.add_development_dependency 'bundler'
+  s.add_development_dependency 'bundler', '~> 2.1'
   s.add_development_dependency 'rake', '~> 13.0'
   s.add_development_dependency 'rubygems-tasks', '~> 0.2'
+
 end
