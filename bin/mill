@@ -1,8 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'bundler' rescue nil
-Bundler.require if defined?(Bundler)
-
 require 'mill'
 
 load Path.pwd / 'code' / 'site.rb'
