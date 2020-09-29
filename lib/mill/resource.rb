@@ -57,7 +57,7 @@ module Mill
     end
 
     def public?
-      @public
+      @public == true
     end
 
     def inspect
