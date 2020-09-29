@@ -10,6 +10,7 @@ module Mill
     attr_accessor :public
     attr_accessor :content
     attr_accessor :site
+    attr_accessor :node
 
     def initialize(input_file: nil,
                    output_file: nil,

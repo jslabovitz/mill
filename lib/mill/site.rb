@@ -65,7 +65,7 @@ module Mill
       @redirects = redirects
 
       @resources = []
-      @resources_by_uri = {}
+      @resources_tree = nil
       build_file_types
     end
 
@@ -81,28 +81,34 @@ module Mill
     def add_resource(resource)
       resource.site = self
       @resources << resource
-      @resources_by_uri[resource.uri] = resource
+      add_resource_to_tree(resource)
       # ;;warn "added #{resource} as #{resource.uri}"
     end
 
     def find_resource(uri)
-      uri = Addressable::URI.parse(uri.to_s) unless uri.kind_of?(Addressable::URI)
-      resource = @resources_by_uri[uri]
-      if resource.nil? && @shorten_uris
-        uri.path = uri.path.sub(%r{\.html$}, '')
-        resource = @resources_by_uri[uri]
+      path = case uri
+      when Addressable::URI
+        uri.path
+      when String
+        uri
+      else
+        raise "Unknown URI type: #{uri.inspect}"
       end
-      resource
+      path.sub!(%r{\.html$}, '') if @shorten_uris
+      node = @resources_tree
+      path_components(path).each do |component|
+        node = node[component] || break
+      end
+      node&.content
     end
 
-    def resource_for_file(path)
-      find_resource(
-        URI.parse(
-          '/' + URI.encode(
-            path.relative_to(@output_dir).to_s
-          )
-        )
-      )
+    def add_resource_to_tree(resource)
+      node = (@resources_tree ||= Tree::TreeNode.new(''))
+      resource.path_components.each do |component|
+        node = node[component] || (node << Tree::TreeNode.new(component))
+      end
+      node.content = resource
+      resource.node = node
     end
 
     def home_resource
