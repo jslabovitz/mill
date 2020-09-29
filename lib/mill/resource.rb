@@ -79,10 +79,6 @@ module Mill
       Addressable::URI.encode(path, Addressable::URI)
     end
 
-    def parent_uri
-      uri + '.'
-    end
-
     def absolute_uri
       @site.site_uri + uri
     end

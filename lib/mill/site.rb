@@ -85,11 +85,6 @@ module Mill
       # ;;warn "added #{resource} as #{resource.uri}"
     end
 
-    def delete_resource(resource)
-      @resources.delete(resource)
-      @resources_by_uri.delete(resource.uri)
-    end
-
     def find_resource(uri)
       uri = Addressable::URI.parse(uri.to_s) unless uri.kind_of?(Addressable::URI)
       resource = @resources_by_uri[uri]
