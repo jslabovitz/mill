@@ -9,6 +9,7 @@ require 'RedCloth'
 require 'rubypants'
 require 'sassc'
 require 'time'
+require 'tree'
 require 'web-checker'
 
 require 'mill/error'
