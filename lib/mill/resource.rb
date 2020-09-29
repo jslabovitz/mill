@@ -71,6 +71,14 @@ module Mill
       ]
     end
 
+    def path
+      uri.path
+    end
+
+    def path_components
+      @site.path_components(path)
+    end
+
     def uri
       raise Error, "#{@input_file}: No output file defined for #{self.class}" unless @output_file
       path = '/' + @output_file.relative_to(@site.output_dir).to_s

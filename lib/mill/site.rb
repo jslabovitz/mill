@@ -285,6 +285,13 @@ module Mill
       end
     end
 
+    def path_components(path)
+      components = path.split('/')
+      components.pop if components.last == 'index.html'
+      components.pop while components.length > 1 && components.last == ''
+      components
+    end
+
     private
 
     def resource_class_for_file(file)
