@@ -17,12 +17,15 @@ module Mill
       attr_accessor :author
       attr_accessor :type
 
-      def initialize(title: nil, summary: nil, author: nil, public: true, **args)
+      def initialize(title: nil, summary: nil, author: nil, public: true, output_file: nil, **args)
         @title = title
         @summary = summary
         @author = author
         @type = nil
-        super(public: public, **args)
+        super(
+          public: public,
+          output_file: output_file.replace_extension('.html'),
+          **args)
       end
 
       def inspect
@@ -53,7 +56,6 @@ module Mill
           if @type != :html
             parse_text_header
             @content = (@content || '').to_html(mode: @type, multiline: true)
-            @output_file = @output_file.replace_extension('.html')
             @type = :html
           end
           begin
