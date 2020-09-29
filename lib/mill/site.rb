@@ -271,16 +271,10 @@ module Mill
 
     def on_each_resource(&block)
       @resources.each do |resource|
-        old_uri = resource.uri.dup
         begin
           yield(resource)
         rescue Error => e
           raise e, "#{resource.input_file || '-'} (#{old_uri}): #{e}"
-        end
-        if resource.uri != old_uri
-          # ;;warn "URI changed: #{old_uri} => #{resource.uri}"
-          @resources_by_uri.delete(old_uri)
-          @resources_by_uri[resource.uri] = resource
         end
       end
     end
