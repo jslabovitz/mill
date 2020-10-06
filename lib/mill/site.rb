@@ -64,8 +64,8 @@ module Mill
       @google_site_verification = google_site_verification
       @redirects = redirects
 
-      @resources = []
-      @resources_tree = nil
+      @resources = {}
+      @resources_tree = Tree::TreeNode.new('')
       build_file_types
     end
 
@@ -79,36 +79,20 @@ module Mill
     end
 
     def add_resource(resource)
-      resource.site = self
-      @resources << resource
-      add_resource_to_tree(resource)
-      # ;;warn "added #{resource} as #{resource.uri}"
-    end
-
-    def find_resource(uri)
-      path = case uri
-      when Addressable::URI
-        uri.path
-      when String
-        uri
-      else
-        raise "Unknown URI type: #{uri.inspect}"
-      end
-      path.sub!(%r{\.html$}, '') if @shorten_uris
+      raise "Must assign resource to site" unless resource.site
+      @resources[resource.path] = resource
       node = @resources_tree
-      path_components(path).each do |component|
-        node = node[component] || break
-      end
-      node&.content
-    end
-
-    def add_resource_to_tree(resource)
-      node = (@resources_tree ||= Tree::TreeNode.new(''))
-      resource.path_components.each do |component|
+      resource.path.split('/').reject(&:empty?).each do |component|
         node = node[component] || (node << Tree::TreeNode.new(component))
       end
-      node.content = resource
       resource.node = node
+      node.content = resource
+      # ;;warn "added #{resource} as #{resource.path}"
+    end
+
+    def find_resource(path)
+      path = path.path if path.kind_of?(Addressable::URI)
+      @resources[path] || @resources[path + '/']
     end
 
     def home_resource
@@ -136,20 +120,30 @@ module Mill
       @site_email
     end
 
+    def select_resources(selector=nil, &block)
+      if block_given?
+        @resources.values.select(&block)
+      elsif selector.kind_of?(Class)
+        @resources.values.select { |r| r.kind_of?(selector) }
+      else
+        @resources.values.select(selector)
+      end
+    end
+
     def feed_resources
       public_resources.sort_by(&:date)
     end
 
     def public_resources
-      @resources.select(&:public)
-    end
-
-    def private_resources
-      @resources.select { |r| r.kind_of?(Resource::Text) && !r.public }
+      select_resources(&:public?)
     end
 
     def redirect_resources
-      @resources.select { |r| r.kind_of?(Resource::Redirect) }
+      select_resources(&:redirect?)
+    end
+
+    def text_resources
+      select_resources(&:text?)
     end
 
     def make
@@ -206,14 +200,14 @@ module Mill
 
     def load_resources
       on_each_resource do |resource|
-        # ;;warn "#{resource.uri}: loading"
+        # ;;warn "#{resource.path}: loading"
         resource.load
       end
     end
 
     def build_resources
       on_each_resource do |resource|
-        # ;;warn "#{resource.uri}: building"
+        # ;;warn "#{resource.path}: building"
         resource.build
       end
     end
@@ -222,7 +216,7 @@ module Mill
       clean
       @output_dir.mkpath
       on_each_resource do |resource|
-        # ;;warn "#{resource.uri}: saving"
+        # ;;warn "#{resource.path}: saving"
         resource.save
       end
     end
@@ -276,20 +270,13 @@ module Mill
     end
 
     def on_each_resource(&block)
-      @resources.each do |resource|
+      @resources.values.each do |resource|
         begin
           yield(resource)
         rescue Error => e
-          raise e, "#{resource.input_file || '-'} (#{old_uri}): #{e}"
+          raise e, "#{resource.input_file || '-'} (#{resource.path}): #{e}"
         end
       end
-    end
-
-    def path_components(path)
-      components = path.split('/')
-      components.pop if components.last == 'index.html'
-      components.pop while components.length > 1 && components.last == ''
-      components
     end
 
     private
@@ -304,7 +291,7 @@ module Mill
     end
 
     def add_files
-      raise Error, "Input path not found: #{@input_dir}" unless @input_dir.exist?
+      raise Error, "Input directory not found: #{@input_dir}" unless @input_dir.exist?
       @input_dir.find do |input_file|
         if input_file.basename.to_s[0] == '.'
           Find.prune
@@ -313,7 +300,8 @@ module Mill
         else (klass = resource_class_for_file(input_file))
           resource = klass.new(
             input_file: input_file,
-            output_file: @output_dir / input_file.relative_to(@input_dir))
+            output_file: @output_dir / input_file.relative_to(@input_dir),
+            site: self)
           add_resource(resource)
         end
       end
@@ -321,19 +309,22 @@ module Mill
 
     def add_feed
       @feed_resource = Resource::Feed.new(
-        output_file: @output_dir / 'feed.xml')
+        output_file: @output_dir / 'feed.xml',
+        site: self)
       add_resource(@feed_resource)
     end
 
     def add_sitemap
       @sitemap_resource = Resource::Sitemap.new(
-        output_file: @output_dir / 'sitemap.xml')
+        output_file: @output_dir / 'sitemap.xml',
+        site: self)
       add_resource(@sitemap_resource)
     end
 
     def add_robots
       @robots_resource = Resource::Robots.new(
-        output_file: @output_dir / 'robots.txt')
+        output_file: @output_dir / 'robots.txt',
+        site: self)
       add_resource(@robots_resource)
     end
 
@@ -343,7 +334,8 @@ module Mill
           output_file = @output_dir / Path.new(from).relative_to('/')
           resource = Resource::Redirect.new(
             output_file: output_file,
-            redirect_uri: to)
+            redirect_uri: to,
+            site: self)
           add_resource(resource)
         end
       end
@@ -352,14 +344,16 @@ module Mill
     def add_google_site_verification
       resource = Resource::GoogleSiteVerification.new(
         output_file: (@output_dir / @google_site_verification).add_extension('.html'),
-        key: @google_site_verification)
+        key: @google_site_verification,
+        site: self)
       add_resource(resource)
     end
 
     def add_htpasswd
       resource = Resource.new(
         input_file: @htpasswd_file,
-        output_file: @output_dir / '.htpasswd')
+        output_file: @output_dir / '.htpasswd',
+        site: self)
       add_resource(resource)
     end
 

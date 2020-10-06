@@ -17,7 +17,7 @@ module Mill
       attr_accessor :author
       attr_accessor :type
 
-      def initialize(title: nil, summary: nil, author: nil, public: true, output_file: nil, **args)
+      def initialize(title: nil, summary: nil, author: nil, public: true, output_file:, **args)
         @title = title
         @summary = summary
         @author = author
@@ -26,6 +26,8 @@ module Mill
           public: public,
           output_file: output_file.replace_extension('.html'),
           **args)
+        @path.sub!(%r{\.html$}, '') if @site.shorten_uris
+        @path.sub!(%r{(.*)index$}, '\1')
       end
 
       def inspect
@@ -72,7 +74,7 @@ module Mill
           if (title_elem = @content.at_xpath('/html/head/title'))
             @title = title_elem.text
           else
-            @title = uri.to_s
+            @title = @path
           end
         end
         @content.xpath('/html/head/meta[@name]').each do |meta|
@@ -174,7 +176,7 @@ module Mill
             self_uri.scheme = 'http'
             link_uri.scheme = 'http'
             attribute.value = self_uri.route_to(link_uri)
-            # ;;warn "[#{uri}] shortened link #{elem.name}/@#{attribute.name}: #{link_uri} => #{attribute.value}"
+            # ;;warn "[#{path}] shortened link #{elem.name}/@#{attribute.name}: #{link_uri} => #{attribute.value}"
           end
         end
       end
@@ -201,7 +203,7 @@ module Mill
             body_elem.children
           end
         else
-          warn "Warning: Resource #{uri} (#{self.class}) has no content"
+          warn "Warning: Resource #{path} (#{self.class}) has no content"
           nil
         end
       end

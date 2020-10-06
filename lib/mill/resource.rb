@@ -6,6 +6,7 @@ module Mill
 
     attr_accessor :input_file
     attr_accessor :output_file
+    attr_accessor :path
     attr_accessor :date
     attr_accessor :public
     attr_accessor :content
@@ -25,6 +26,7 @@ module Mill
         @date = DateTime.now
       end
       @output_file = Path.new(output_file) if output_file
+      @path = '/' + @output_file.relative_to(site.output_dir).to_s
       self.date = date if date
       self.public = public
       @content = content
@@ -61,31 +63,44 @@ module Mill
       @public == true
     end
 
+    def text?
+      kind_of?(Resource::Text) && public?
+    end
+
+    def redirect?
+      kind_of?(Resource::Redirect)
+    end
+
     def inspect
-      "<%p> input_file: %p, output_file: %p, date: %s, public: %p, content: <%p>" % [
+      "<%p> input_file: %p, output_file: %p, path: %s, date: %s, public: %p, content: <%p>, parent: %p, siblings: %p, children: %p" % [
         self.class,
         @input_file ? @input_file.relative_to(@site.input_dir).to_s : nil,
         @output_file ? @output_file.relative_to(@site.output_dir).to_s : nil,
+        @path,
         @date.to_s,
         @public,
-        @content && @content.class,
+        @content&.class,
+        parent&.path,
+        siblings.map(&:path),
+        children.map(&:path),
       ]
     end
 
-    def path
-      uri.path
+    def parent
+      @node.parent&.content
     end
 
-    def path_components
-      @site.path_components(path)
+    def siblings
+      @node.siblings.map(&:content).compact
+    end
+
+    def children
+      @node.children.map(&:content).compact
     end
 
     def uri
-      raise Error, "#{@input_file}: No output file defined for #{self.class}" unless @output_file
-      path = '/' + @output_file.relative_to(@site.output_dir).to_s
-      path.sub!(%r{/index\.html$}, '/')
-      path.sub!(%r{\.html$}, '') if @site.shorten_uris
-      Addressable::URI.encode(path, Addressable::URI)
+      raise Error, "#{@input_file}: No path defined for #{self.class}" unless @path
+      Addressable::URI.encode(@path, Addressable::URI)
     end
 
     def absolute_uri
@@ -115,14 +130,14 @@ module Mill
     def save
       @output_file.dirname.mkpath
       if (content = final_content)
-        # ;;warn "#{uri}: writing #{@input_file} to #{@output_file}"
+        # ;;warn "#{path}: writing #{@input_file} to #{@output_file}"
         @output_file.write(content.to_s)
         @output_file.utime(@date.to_time, @date.to_time)
       elsif @input_file
-        # ;;warn "#{uri}: copying #{@input_file} to #{@output_file}"
+        # ;;warn "#{path}: copying #{@input_file} to #{@output_file}"
         @input_file.copy(@output_file)
       else
-        raise Error, "Can't build resource without content or input file: #{uri}"
+        raise Error, "Can't build resource without content or input file: #{path}"
       end
     end
 
