@@ -151,35 +151,67 @@ module Mill
       save
     end
 
+    def print_tree(node=nil, level=0)
+      node ||= @resources_tree
+      if node.is_root?
+        print '*'
+      else
+        print "\t" * level
+      end
+      print " #{node.name.inspect}"
+      print " <#{node.content&.path}>"
+      print " (#{node.children.length} children)" if node.has_children?
+      puts
+      node.children { |child| print_tree(child, level + 1) }
+    end
+
+    ListKeys = {
+      path:         :to_s,
+      input_file:   :to_s,
+      output_file:  :to_s,
+      date:         :to_s,
+      public:       :to_s,
+      class:        :to_s,
+      content:      proc { |r| r.content ? ('%s (%dKB)' % [r.content.class, (r.content.to_s.length / 1024.0).ceil]) : nil },
+      parent:       proc { |r| r.parent&.path },
+      siblings:     proc { |r| r.siblings.map(&:path) },
+      children:     proc { |r| r.children.map(&:path) },
+    }
+
     def list
-
-      list_keys = {
-        class:        proc { |v| v.to_s.sub(/::Resource::/, '::') },
-        input_file:   proc { |v| v.relative_to(@input_dir) },
-        output_file:  proc { |v| v.relative_to(@output_dir) },
-        public:       proc { |v| v },
-        content:      proc { |v| '%dKB' % (v.to_s.length / 1024.0).ceil },
-      }
-
       build
-      list = @resources.map do |resource|
-        Hash[
-          list_keys.map do |k, p|
-            v = resource.send(k)
-            [
-              k,
-              v ? p.call(v).to_s : '-'
-            ]
+      width = ListKeys.keys.map(&:length).max
+      select_resources.each do |resource|
+        ListKeys.each do |key, converter|
+          value = resource.send(key)
+          value = case converter
+          when nil
+            value
+          when Symbol
+            value.send(converter)
+          when Proc
+            converter.call(resource)
+          else
+            raise
           end
-        ]
+          print '%*s: ' % [width, key]
+          case value
+          when Array
+            if value.empty?
+              puts '-'
+            else
+              value.each_with_index do |v, i|
+                print '%*s  ' % [width, ''] if i > 0
+                puts (v.nil? ? '-' : v)
+              end
+            end
+          else
+            puts (value.nil? ? '-' : value)
+          end
+        end
+        puts
       end
-      format = list_keys.keys.map do |key|
-        '%%-%ds' % list.map { |item| item[key].length }.max
-      end.join(' ')
-      puts format % list_keys.keys
-      list.each do |item|
-        puts format % item.values
-      end
+      puts
     end
 
     def build
