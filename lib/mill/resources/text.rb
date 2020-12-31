@@ -1,3 +1,4 @@
+
 module Mill
 
   class Resource
