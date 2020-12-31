@@ -5,7 +5,7 @@ require 'mime/types'
 require 'nokogiri'
 require 'path'
 require 'pp'
-require 'pry' rescue nil
+# require 'pry' rescue nil
 require 'RedCloth'
 require 'rubypants'
 require 'sassc'

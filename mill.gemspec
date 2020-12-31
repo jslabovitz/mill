@@ -30,7 +30,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'sassc', '~> 2.4'
   s.add_dependency 'web-checker', '~> 0.4'
 
-  s.add_development_dependency 'bundler', '~> 2.1'
+  s.add_development_dependency 'bundler', '~> 2.2'
   s.add_development_dependency 'minitest', '~> 5.14'
   s.add_development_dependency 'minitest-power_assert', '~> 0.3'
   s.add_development_dependency 'pry', '~> 0.13'
