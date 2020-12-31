@@ -17,17 +17,19 @@ module Mill
       attr_accessor :author
       attr_accessor :type
 
-      def initialize(title: nil, summary: nil, author: nil, public: true, output_file:, **args)
+      def initialize(title: nil, summary: nil, author: nil, public: true, output_file: nil, **args)
         @title = title
         @summary = summary
         @author = author
         @type = nil
         super(
           public: public,
-          output_file: output_file.replace_extension('.html'),
+          output_file: output_file&.replace_extension('.html'),
           **args)
-        @path.sub!(%r{\.html$}, '') if @site.shorten_uris
-        @path.sub!(%r{(.*)index$}, '\1')
+        if @path
+          @path.sub!(%r{\.html$}, '') if @site&.shorten_uris
+          @path.sub!(%r{(.*)index$}, '\1')
+        end
       end
 
       def inspect
@@ -94,7 +96,7 @@ module Mill
       end
 
       def final_content
-        html_document(@site.html_version) do |doc|
+        html_document(@site&.html_version || :html5) do |doc|
           doc.html(lang: 'en') do |html|
             html.parent << head
             html.parent << body

@@ -25,8 +25,10 @@ module Mill
       else
         @date = DateTime.now
       end
-      @output_file = Path.new(output_file) if output_file
-      @path = '/' + @output_file.relative_to(site.output_dir).to_s
+      if output_file
+        @output_file = Path.new(output_file)
+        @path = '/' + @output_file.relative_to(site.output_dir).to_s
+      end
       self.date = date if date
       self.public = public
       @content = content
