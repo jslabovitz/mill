@@ -33,7 +33,7 @@ module Mill
                    site_uri: 'http://localhost',
                    site_email: nil,
                    site_control_date: Date.today.to_s,
-                   html_version: :html4_transitional,
+                   html_version: :html4,
                    shorten_uris: true,
                    make_feed: true,
                    make_sitemap: true,

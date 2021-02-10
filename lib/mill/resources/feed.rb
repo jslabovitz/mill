@@ -6,8 +6,6 @@ module Mill
 
     class Feed < Resource
 
-      include HTMLHelpers
-
       def build
         resources = @site.feed_resources
         builder = Nokogiri::XML::Builder.new do |xml|
@@ -41,7 +39,7 @@ module Mill
       end
 
       def link_html
-        html_fragment do |html|
+        Simple::Builder.html_fragment do |html|
           html.link(href: uri, rel: 'alternate', type: 'application/atom+xml')
         end
       end

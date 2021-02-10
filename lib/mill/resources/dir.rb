@@ -4,8 +4,6 @@ module Mill
 
     class Index < Text
 
-      include HTMLHelpers
-
       attr_accessor :pages
 
       def initialize(pages:, **args)
@@ -15,7 +13,7 @@ module Mill
 
       def load
         super
-        @content = html_fragment do |html|
+        @content = Simple::Builder.html_fragment do |html|
           html.dl do
             @pages.each do |page|
               html.dt(page.title)

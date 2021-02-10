@@ -5,8 +5,6 @@ module Mill
 
     class Text < Resource
 
-      include HTMLHelpers
-
       FileTypes = %w{
         text/plain
         text/html
@@ -72,16 +70,26 @@ module Mill
         end
       end
 
-      def parse_html_header
-        unless @title
-          if (title_elem = @content.at_xpath('/html/head/title'))
-            @title = title_elem.text
-          else
-            @title = @path
-          end
+      def parse_html(str)
+        if str.strip.empty?
+          html = Simple::Builder.html_fragment
+        else
+          html = Nokogiri::HTML::Document.parse(str) { |config| config.strict }
+          check_errors(html)
         end
-        @content.xpath('/html/head/meta[@name]').each do |meta|
-          send("#{meta['name']}=", meta['content'])
+        html
+      end
+
+      def parse_html_fragment(str)
+        html = Nokogiri::HTML::DocumentFragment.parse(str) { |config| config.strict }
+        check_errors(html)
+        html
+      end
+
+      def parse_html_header
+        @title ||= find_title(@content) || @path
+        Simple::Builder.find_meta_tags(@content).each do |key, value|
+          send("#{key}=", value)
         end
       end
 
@@ -96,8 +104,26 @@ module Mill
         end
       end
 
+      def check_errors(html)
+        html.errors.each do |error|
+          raise Mill::Error, "HTML error #{error}" unless error.message =~ /Tag .+? invalid$/
+        end
+      end
+
+      def build
+        post_process_html(@content) if respond_to?(:post_process_html)
+      end
+
       def final_content
-        html_document(@site&.html_version || :html5) do |doc|
+        type = case @site&.html_version
+        when :html4
+          :html4_document
+        when :html5, nil
+          :html5_document
+        else
+          raise "Unknown HTML version: #{@site&.html_version.inspect}"
+        end
+        Simple::Builder.send(type) do |doc|
           doc.html(lang: 'en') do |html|
             html.parent << head
             html.parent << body
@@ -106,7 +132,7 @@ module Mill
       end
 
       def head(&block)
-        html_fragment do |html|
+        Simple::Builder.html_fragment do |html|
           html.head do
             head = content_head
             if (title = @title || (head && head.at_xpath('title')))
@@ -123,7 +149,7 @@ module Mill
       end
 
       def body(&block)
-        html_fragment do |html|
+        Simple::Builder.html_fragment do |html|
           html.body do
             if (elem = content_body)
               html << elem.children.to_html
@@ -134,26 +160,11 @@ module Mill
       end
 
       def content_head
-        @content && @content.at_xpath('/html/head')
+        @content && Simple::Builder.find_head(@content)
       end
 
       def content_body
-        @content && @content.at_xpath('/html/body')
-      end
-
-      def add_external_link_targets(rel='noopener')
-        @content.xpath('//a').each do |a|
-          if a['href'] && a['href'] =~ /^\w+:/
-            a['target'] = '_blank'
-            a['rel'] = rel
-          end
-        end
-      end
-
-      def remove_comments
-        @content.xpath('//comment()').each do |comment|
-          comment.remove
-        end
+        @content && Simple::Builder.find_body(@content)
       end
 
       def add_image_sizes
@@ -170,7 +181,7 @@ module Mill
       end
 
       def shorten_links
-        find_link_elements(@content).each do |attribute|
+        Simple::Builder.find_link_elements(@content).each do |attribute|
           elem = attribute.parent
           link_uri = Addressable::URI.parse(attribute.value) or raise Error, "Can't parse #{attribute.value.inspect} from #{xpath.inspect}"
           link_uri = uri + link_uri
