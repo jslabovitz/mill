@@ -87,7 +87,7 @@ module Mill
       end
 
       def parse_html_header
-        @title ||= find_title(@content) || @path
+        @title ||= Simple::Builder.find_title(@content) || @path
         Simple::Builder.find_meta_tags(@content).each do |key, value|
           send("#{key}=", value)
         end
