@@ -125,8 +125,10 @@ module Mill
         @resources.values.select(&block)
       elsif selector.kind_of?(Class)
         @resources.values.select { |r| r.kind_of?(selector) }
-      else
+      elsif selector
         @resources.values.select(selector)
+      else
+        @resources.values
       end
     end
 
