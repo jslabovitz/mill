@@ -222,6 +222,18 @@ module Mill
         end
       end
 
+      def home_page?
+        @path == '/'
+      end
+
+      def children_pages
+        children.select(&:text?)
+      end
+
+      def sibling_pages
+        siblings.select(&:text?)
+      end
+
     end
 
   end
