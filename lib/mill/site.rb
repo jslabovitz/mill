@@ -266,6 +266,8 @@ module Mill
     def check
       build
       checker = WebChecker.new(site_uri: @site_uri, site_dir: @output_dir)
+      checker.check
+      checker.report
     end
 
     def snapshot
