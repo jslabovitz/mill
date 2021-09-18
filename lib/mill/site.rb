@@ -331,8 +331,10 @@ module Mill
       @input_dir.find do |input_file|
         if input_file.basename.to_s[0] == '.'
           Find.prune
+        elsif input_file.basename.to_s == "Icon\r"
+          # skip macOS garbage file
         elsif input_file.directory?
-          # skip
+          # skip directories
         else (klass = resource_class_for_file(input_file))
           resource = klass.new(
             input_file: input_file,
