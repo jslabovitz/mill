@@ -33,12 +33,19 @@ module Mill
       @bb = @site.find_resource('/b/bb') or raise
     end
 
+    AuxiliaryPaths = %w{
+      /feed.xml
+      /sitemap.xml
+      /robots.txt
+    }
+
     def test_has_index
       assert { @root }
     end
 
     def test_children
-      assert { @root.children == [@a, @b] }
+      children = @root.children.reject { |c| AuxiliaryPaths.include?(c.path) }
+      assert { children == [@a, @b] }
       assert { @a.children.empty? }
     end
 
@@ -50,9 +57,12 @@ module Mill
     end
 
     def test_siblings
-      assert { @root.siblings.empty? }
-      assert { @a.siblings == [@b] }
-      assert { @ba.siblings == [@bb] }
+      siblings = @root.siblings.reject { |c| AuxiliaryPaths.include?(c.path) }
+      a_siblings = @a.siblings.reject { |c| AuxiliaryPaths.include?(c.path) }
+      ba_siblings = @ba.siblings.reject { |c| AuxiliaryPaths.include?(c.path) }
+      assert { siblings.empty? }
+      assert { a_siblings == [@b] }
+      assert { ba_siblings == [@bb] }
     end
 
   end
