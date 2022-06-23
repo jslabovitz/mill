@@ -15,7 +15,7 @@ class String
     else
       converter = converter_class.new(self)
     end
-    html = Nokogiri::HTML::DocumentFragment.parse(converter.to_html)
+    html = Nokogiri::HTML5::DocumentFragment.parse(converter.to_html)
     if !options[:multiline] && (p_elem = html.at_xpath('p'))
       html = p_elem.children.to_html
     end

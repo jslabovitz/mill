@@ -74,14 +74,14 @@ module Mill
         if str.strip.empty?
           html = Simple::Builder.html_fragment
         else
-          html = Nokogiri::HTML::Document.parse(str) { |config| config.strict }
+          html = Nokogiri::HTML5::Document.parse(str)
           check_errors(html)
         end
         html
       end
 
       def parse_html_fragment(str)
-        html = Nokogiri::HTML::DocumentFragment.parse(str) { |config| config.strict }
+        html = Nokogiri::HTML5::DocumentFragment.parse(str) { |config| config.strict }
         check_errors(html)
         html
       end
