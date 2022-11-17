@@ -15,13 +15,7 @@ module Mill
   class Test < Minitest::Test
 
     def setup
-      @site = Site.new(
-        input_dir: 'test/content',
-        output_dir: 'test/output',
-        site_title: 'Test',
-        site_uri: 'http://test.test',
-        html_version: :html5,
-      )
+      @site = Site.load('test/site.yaml')
       @site.make
 # ;;@site.print_tree
 # ;;@site.list

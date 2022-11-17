@@ -26,47 +26,65 @@ module Mill
 
     DefaultResourceClasses = ObjectSpace.each_object(Class).select { |c| c < Resource }
 
-    def initialize(input_dir: 'content',
-                   output_dir: 'public_html',
-                   site_rsync: nil,
-                   site_title: nil,
-                   site_uri: 'http://localhost',
-                   site_email: nil,
-                   site_control_date: Date.today.to_s,
-                   html_version: :html4,
-                   shorten_uris: true,
-                   make_feed: true,
-                   make_sitemap: true,
-                   make_robots: true,
-                   allow_robots: true,
-                   htpasswd_file: nil,
-                   navigator: nil,
-                   google_site_verification: nil,
-                   resource_classes: [],
-                   redirects: {})
+    include SetParams
 
-      @input_dir = Path.new(input_dir)
-      @output_dir = Path.new(output_dir)
-      @site_rsync = site_rsync
-      @site_title = site_title
-      @site_uri = Addressable::URI.parse(site_uri)
-      @site_email = Addressable::URI.parse(site_email) if site_email
-      @site_control_date = Date.parse(site_control_date)
-      @html_version = html_version
-      @shorten_uris = shorten_uris
-      @make_feed = make_feed
-      @make_sitemap = make_sitemap
-      @make_robots = make_robots
-      @allow_robots = allow_robots
-      @htpasswd_file = htpasswd_file ? Path.new(htpasswd_file) : nil
-      @resource_classes = resource_classes
-      @navigator = navigator
-      @google_site_verification = google_site_verification
-      @redirects = redirects
+    def self.load(file)
+      params = YAML.load_file(file).map { |k, v| [k.to_sym, v] }.to_h
+      new(params)
+    end
 
+    def initialize(params={})
+      super(
+        {
+          input_dir: 'content',
+          output_dir: 'public_html',
+          site_uri: 'http://localhost',
+          site_control_date: Date.today,
+          html_version: :html4,
+          shorten_uris: true,
+          make_feed: true,
+          make_sitemap: true,
+          make_robots: true,
+          allow_robots: true,
+          resource_classes: [],
+          redirects: {},
+        }.merge(**params)
+      )
       @resources = {}
       @resources_tree = Tree::TreeNode.new('')
       build_file_types
+    end
+
+    def input_dir=(dir)
+      @input_dir = Path.new(dir)
+    end
+
+    def output_dir=(dir)
+      @output_dir = Path.new(dir)
+    end
+
+    def site_uri=(uri)
+      @site_uri = Addressable::URI.parse(uri)
+    end
+
+    def site_email=(uri)
+      @site_email = Addressable::URI.parse(uri)
+    end
+
+    def site_control_date=(date)
+      @site_control_date = date.kind_of?(Date) ? date : Date.parse(date)
+    end
+
+    def html_version=(version)
+      @html_version = version.to_sym
+    end
+
+    def htpasswd_file=(file)
+      @htpasswd_file = Path.new(file)
+    end
+
+    def resource_classes=(class_names)
+      @resource_classes = class_names.map { |n| const_get(n) }
     end
 
     def build_file_types
