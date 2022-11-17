@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'rubypants', '~> 0.7'
   s.add_dependency 'rubytree', '~> 2.0'
   s.add_dependency 'sassc', '~> 2.4'
+  s.add_dependency 'set_params', '~> 0.2'
   s.add_dependency 'simple-builder', '~> 0.1'
   s.add_dependency 'web-checker', '~> 0.5'
 
