@@ -81,7 +81,7 @@ module Mill
       end
 
       def parse_html_fragment(str)
-        html = Nokogiri::HTML5::DocumentFragment.parse(str) { |config| config.strict }
+        html = Nokogiri::HTML5::DocumentFragment.parse(str)
         check_errors(html)
         html
       end
