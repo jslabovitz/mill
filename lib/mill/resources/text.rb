@@ -48,8 +48,6 @@ module Mill
             :markdown
           when '.textile'
             :textile
-          when '.txt'
-            :pre
           when '.htm', '.html'
             :html
           else
@@ -76,12 +74,6 @@ module Mill
           html = Nokogiri::HTML5::Document.parse(str)
           check_errors(html)
         end
-        html
-      end
-
-      def parse_html_fragment(str)
-        html = Nokogiri::HTML5::DocumentFragment.parse(str)
-        check_errors(html)
         html
       end
 
