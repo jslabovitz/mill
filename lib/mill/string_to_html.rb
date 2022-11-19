@@ -1,25 +1,20 @@
 class String
 
   Converters = {
-    nil => RubyPants,
-    smart_quotes: RubyPants,
-    markdown: Kramdown::Document,
-    textile: [RedCloth, :no_span_caps],
+    nil => proc { |t| RubyPants.new(t) },
+    smart_quotes: proc { |t| RubyPants.new(t) },
+    markdown: proc { |t| Kramdown::Document.new(t) },
+    textile: proc { |t| RedCloth.new(t, [:no_span_caps]) },
   }
 
   def to_html(options={})
-    converter_class = Converters[options[:mode]] or raise "Unknown to_html mode: #{options[:mode].inspect}"
-    if converter_class.kind_of?(Array)
-      converter_class, *converter_options = *converter_class
-      converter = converter_class.new(self, converter_options)
-    else
-      converter = converter_class.new(self)
+    converter = Converters[options[:mode]] or raise "Unknown to_html mode: #{options[:mode].inspect}"
+    html = converter.call(self).to_html
+    doc = Nokogiri::HTML5::DocumentFragment.parse(html)
+    if !options[:multiline] && (p_elem = doc.at_xpath('p'))
+      doc = p_elem.children.to_html
     end
-    html = Nokogiri::HTML5::DocumentFragment.parse(converter.to_html)
-    if !options[:multiline] && (p_elem = html.at_xpath('p'))
-      html = p_elem.children.to_html
-    end
-    html.to_html
+    doc.to_html
   end
 
 end
