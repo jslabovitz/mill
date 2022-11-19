@@ -2,7 +2,7 @@ module Mill
 
   class Site
 
-    attr_accessor :dir_dir
+    attr_accessor :dir
     attr_accessor :input_dir
     attr_accessor :output_dir
     attr_accessor :code_dir
@@ -46,8 +46,11 @@ module Mill
     include SetParams
 
     def self.load(dir=nil)
-      dir = Path.new(dir || '.')
-      params = { dir: dir }
+      params = DefaultParams.dup
+      params[:dir] = Path.new(dir || params[:dir])
+      [:input_dir, :output_dir, :code_dir].each do |key|
+        params[key] = params[:dir] / params[key]
+      end
       load_yaml(params)
       load_code(params)
       params[:site_class].new(params)
@@ -62,7 +65,7 @@ module Mill
     end
 
     def self.load_code(params)
-      if (site_file = params[:dir] / 'code' / 'site.rb').exist?
+      if (site_file = params[:dir] / params[:code_dir] / 'site.rb').exist?
         Kernel.require(site_file.expand_path.without_extension.to_s)
         site_classes = subclasses(self)
         raise Error, "More than one Site class defined" if site_classes.length > 1
@@ -77,7 +80,7 @@ module Mill
 
     def initialize(params={})
       @redirects = {}
-      super(DefaultParams.merge(params))
+      super
     end
 
     def dir=(d)
