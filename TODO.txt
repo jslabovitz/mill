@@ -1,7 +1,7 @@
+- rename #final_content -> #to_html, #feed_content -> #feed_items
+
 - remove textile/pre processors from Resource::Text
     - streamline to allow domain-specific subclassing if needed
-
-- initialize site by setting ivars directly, not by passing params to super's initialize()
 
 - create alternate sites (beta, final, etc.) by subclassing site, and changing @output or @location
     - allow CLI option to specify site

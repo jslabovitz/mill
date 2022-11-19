@@ -2,26 +2,25 @@
 
 require 'mill'
 
-load Path.pwd / 'code' / 'site.rb'
-
 begin
+  site = Mill::Site.load
   case (command = ARGV.shift)
   when nil, 'make'
-    $site.make
+    site.make
   when 'clean'
-    $site.clean
+    site.clean
   when 'check'
-    $site.check
+    site.check
   when 'list'
-    $site.list
+    site.list
   when 'diff'
-    $site.diff
+    site.diff
   when 'snapshot'
-    $site.snapshot
+    site.snapshot
   when 'upload'
-    $site.upload
+    site.upload
   when 'show'
-    puts $site.send(ARGV.shift)
+    puts site.send(ARGV.shift)
   else
     raise "Unknown command: #{command.inspect}"
   end

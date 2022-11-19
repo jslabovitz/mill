@@ -2,8 +2,10 @@ module Mill
 
   class Site
 
+    attr_accessor :dir_dir
     attr_accessor :input_dir
     attr_accessor :output_dir
+    attr_accessor :code_dir
     attr_accessor :site_rsync
     attr_accessor :site_title
     attr_accessor :site_uri
@@ -14,53 +16,84 @@ module Mill
     attr_accessor :sitemap_resource
     attr_accessor :robots_resource
     attr_accessor :shorten_uris
+    attr_accessor :combine_sections
+    attr_accessor :modes
     attr_accessor :make_feed
     attr_accessor :make_sitemap
     attr_accessor :make_robots
     attr_accessor :allow_robots
     attr_accessor :htpasswd_file
     attr_accessor :navigator
-    attr_accessor :resource_classes
     attr_accessor :redirects
     attr_accessor :resources
+    attr_accessor :site_class
 
-    DefaultResourceClasses = ObjectSpace.each_object(Class).select { |c| c < Resource }
+    DefaultParams = {
+      dir: '.',
+      input_dir: 'content',
+      output_dir: 'public_html',
+      code_dir: 'code',
+      site_uri: 'http://localhost',
+      html_version: :html4,
+      shorten_uris: true,
+      make_feed: true,
+      make_sitemap: true,
+      make_robots: true,
+      allow_robots: true,
+      modes: [:html],
+    }
 
     include SetParams
 
-    def self.load(file)
-      params = YAML.load_file(file).map { |k, v| [k.to_sym, v] }.to_h
-      new(params)
+    def self.load(dir=nil)
+      dir = Path.new(dir || '.')
+      params = { dir: dir }
+      load_yaml(params)
+      load_code(params)
+      params[:site_class].new(params)
+    end
+
+    def self.load_yaml(params)
+      yaml_file = params[:dir] / 'mill.yaml'
+      if yaml_file.exist?
+        yaml = YAML.load_file(yaml_file, permitted_classes: [Date, Symbol])
+        params.update(yaml.map { |k, v| [k.to_sym, v] }.to_h)
+      end
+    end
+
+    def self.load_code(params)
+      if (site_file = params[:dir] / 'code' / 'site.rb').exist?
+        Kernel.require(site_file.expand_path.without_extension.to_s)
+        site_classes = subclasses(self)
+        raise Error, "More than one Site class defined" if site_classes.length > 1
+        params[:site_class] = site_classes.first
+      end
+      params[:site_class] ||= self
+    end
+
+    def self.subclasses(klass)
+      ObjectSpace.each_object(Class).select { |c| c < klass }
     end
 
     def initialize(params={})
-      super(
-        {
-          input_dir: 'content',
-          output_dir: 'public_html',
-          site_uri: 'http://localhost',
-          site_control_date: Date.today,
-          html_version: :html4,
-          shorten_uris: true,
-          make_feed: true,
-          make_sitemap: true,
-          make_robots: true,
-          allow_robots: true,
-          resource_classes: [],
-          redirects: {},
-        }.merge(**params)
-      )
-      @resources = {}
-      @resources_tree = Tree::TreeNode.new('')
-      build_file_types
+      @redirects = {}
+      super(DefaultParams.merge(params))
     end
 
-    def input_dir=(dir)
-      @input_dir = Path.new(dir)
+    def dir=(d)
+      @dir = d.kind_of?(Path) ? d : Path.new(d)
     end
 
-    def output_dir=(dir)
-      @output_dir = Path.new(dir)
+    def input_dir=(d)
+      @input_dir = @dir / d
+    end
+
+    def output_dir=(d)
+      @output_dir = @dir / d
+    end
+
+    def code_dir=(d)
+      @code_dir = @dir / d
     end
 
     def site_uri=(uri)
@@ -83,13 +116,13 @@ module Mill
       @htpasswd_file = Path.new(file)
     end
 
-    def resource_classes=(class_names)
-      @resource_classes = class_names.map { |n| const_get(n) }
+    def modes=(modes)
+      @modes = modes.map(&:to_sym)
     end
 
     def build_file_types
       @file_types = {}
-      (DefaultResourceClasses + @resource_classes).each do |resource_class|
+      self.class.subclasses(Resource).each do |resource_class|
         resource_class.const_get(:FileTypes).each do |type|
           @file_types[type] = resource_class
         end
@@ -235,12 +268,15 @@ module Mill
     end
 
     def build
+      build_file_types
       import_resources
       load_resources
       build_resources
     end
 
     def import_resources
+      @resources = {}
+      @resources_tree = Tree::TreeNode.new('')
       add_files
       add_redirects
       add_google_site_verification if @google_site_verification

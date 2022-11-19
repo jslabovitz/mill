@@ -1,5 +1,3 @@
-# see http://www.sitemaps.org/protocol.php
-
 module Mill
 
   class Resource

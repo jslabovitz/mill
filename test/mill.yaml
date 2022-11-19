@@ -1,5 +1,5 @@
-input_dir: test/content
-output_dir: test/output
+input_dir: content
+output_dir: output
 site_title: Test
 site_uri: http://test.test
 html_version: :html5

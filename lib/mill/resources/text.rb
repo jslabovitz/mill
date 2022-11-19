@@ -1,4 +1,3 @@
-
 module Mill
 
   class Resource
@@ -108,10 +107,6 @@ module Mill
         html.errors.each do |error|
           raise Mill::Error, "HTML error #{error}" unless error.message =~ /Tag .+? invalid$/
         end
-      end
-
-      def build
-        post_process_html(@content) if respond_to?(:post_process_html)
       end
 
       def final_content

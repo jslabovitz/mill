@@ -15,7 +15,7 @@ module Mill
   class Test < Minitest::Test
 
     def setup
-      @site = Site.load('test/site.yaml')
+      @site = Site.load('test')
       @site.make
 # ;;@site.print_tree
 # ;;@site.list
