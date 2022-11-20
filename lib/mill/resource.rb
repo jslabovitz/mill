@@ -35,6 +35,10 @@ module Mill
       @site = site
     end
 
+    def set(params={})
+      params.each { |key, value| send("#{key}=", value) }
+    end
+
     def date=(date)
       @date = case date
       when String, Time

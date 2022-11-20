@@ -13,13 +13,52 @@ module Mill
       attr_accessor :title
       attr_accessor :summary
       attr_accessor :author
-      attr_accessor :type
+
+      def self.textile_to_html(str)
+        parse_html_fragment(
+          RedCloth.new(str, [:no_span_caps]).to_html
+        ).to_html
+      end
+
+      def self.markdown_to_html(str)
+        parse_html_fragment(
+          Kramdown::Document.new(str).to_html
+        ).to_html
+      end
+
+      def self.string_to_html(str)
+        p_children(
+          parse_html_fragment(
+            RubyPants.new(str).to_html
+          )
+        )
+      end
+
+      def self.parse_html(html)
+        Nokogiri::HTML5::Document.parse(html).tap { |doc| check_errors(doc) }
+      end
+
+      def self.parse_html_fragment(html)
+        Nokogiri::HTML5::DocumentFragment.parse(html).tap { |doc| check_errors(doc) }
+      end
+
+      def self.check_errors(doc)
+        doc.errors.each do |error|
+          raise Mill::Error, "HTML error #{error}" #unless error.message =~ /Tag .+? invalid$/
+        end
+      end
+
+      def self.p_children(doc)
+        if (p = doc.at_xpath('p'))
+          doc = p.children.to_html
+        end
+        doc.to_html
+      end
 
       def initialize(title: nil, summary: nil, author: nil, public: true, output_file: nil, **args)
         @title = title
         @summary = summary
         @author = author
-        @type = nil
         super(
           public: public,
           output_file: output_file&.replace_extension('.html'),
@@ -31,11 +70,10 @@ module Mill
       end
 
       def inspect
-        super + ", title: %p, summary: %p, author: %p, type: %p" % [
+        super + ", title: %p, summary: %p, author: %p" % [
           @title,
           @summary,
           @author,
-          @type,
         ]
       end
 
@@ -43,23 +81,19 @@ module Mill
         super
         if @input_file
           @content = @input_file.read
-          @type = case @input_file.extname.downcase
+          case @input_file.extname.downcase
           when '.md', '.mdown', '.markdown'
-            :markdown
+            parse_text_header
+            @content = self.class.markdown_to_html(@content)
           when '.textile'
-            :textile
+            parse_text_header
+            @content = self.class.textile_to_html(@content)
           when '.htm', '.html'
-            :html
           else
             raise "Unknown text type: #{@input_file}"
           end
-          if @type != :html
-            parse_text_header
-            @content = (@content || '').to_html(mode: @type, multiline: true)
-            @type = :html
-          end
           begin
-            @content = parse_html(@content)
+            @content = self.class.parse_html(@content)
           rescue Error => e
             raise e, "#{@input_file}: #{e}"
           end
@@ -67,42 +101,25 @@ module Mill
         end
       end
 
-      def parse_html(str)
-        if str.strip.empty?
-          html = Simple::Builder.html_fragment
-        else
-          html = Nokogiri::HTML5::Document.parse(str)
-          check_errors(html)
-        end
-        html
-      end
-
       def parse_html_header
         @title ||= Simple::Builder.find_title(@content)
-        Simple::Builder.find_meta_tags(@content).each do |key, value|
-          send("#{key}=", value)
-        end
+        set(Simple::Builder.find_meta_tags(@content))
       end
 
       def parse_text_header
         if @content.split(/\n/, 2).first =~ /^\w+:\s+/
           header, @content = @content.split(/\n\n/, 2)
-          header.split(/\n/).map do |line|
+          params = header.split(/\n/).map do |line|
             key, value = line.strip.split(/:\s*/, 2)
             key = key.gsub('-', '_').downcase.to_sym
-            send("#{key}=", value)
-          end
-        end
-      end
-
-      def check_errors(html)
-        html.errors.each do |error|
-          raise Mill::Error, "HTML error #{error}" unless error.message =~ /Tag .+? invalid$/
+            [key, value]
+          end.to_h
+          set(params)
         end
       end
 
       def final_content
-        type = case @site&.html_version
+        doctype = case @site&.html_version
         when :html4
           :html4_document
         when :html5, nil
@@ -110,7 +127,7 @@ module Mill
         else
           raise "Unknown HTML version: #{@site&.html_version.inspect}"
         end
-        Simple::Builder.send(type) do |doc|
+        Simple::Builder.send(doctype) do |doc|
           doc.html(lang: 'en') do |html|
             html.parent << head
             html.parent << body
