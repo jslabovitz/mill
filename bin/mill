@@ -21,8 +21,6 @@ begin
     site.snapshot
   when 'upload'
     site.upload
-  when 'show'
-    puts site.send(ARGV.shift)
   else
     raise "Unknown command: #{command.inspect}"
   end
