@@ -26,7 +26,6 @@ module Mill
     attr_accessor :navigator
     attr_accessor :redirects
     attr_accessor :resources
-    attr_accessor :site_class
 
     DefaultParams = {
       dir: '.',
@@ -52,8 +51,8 @@ module Mill
         params[key] = params[:dir] / params[key]
       end
       load_yaml(params)
-      load_code(params)
-      params[:site_class].new(params)
+      klass = load_code(params) || self
+      klass.new(params)
     end
 
     def self.load_yaml(params)
@@ -69,9 +68,8 @@ module Mill
         Kernel.require(site_file.expand_path.without_extension.to_s)
         site_classes = subclasses(self)
         raise Error, "More than one Site class defined" if site_classes.length > 1
-        params[:site_class] = site_classes.first
+        site_classes.first
       end
-      params[:site_class] ||= self
     end
 
     def self.subclasses(klass)
