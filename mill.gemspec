@@ -25,7 +25,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'nokogiri', '~> 1.13'
   s.add_dependency 'path', '~> 2.0'
   s.add_dependency 'RedCloth', '~> 4.3'
-  s.add_dependency 'rubypants', '~> 0.7'
   s.add_dependency 'rubytree', '~> 2.0'
   s.add_dependency 'sassc', '~> 2.4'
   s.add_dependency 'set_params', '~> 0.2'

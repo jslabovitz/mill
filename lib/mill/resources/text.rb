@@ -13,26 +13,7 @@ module Mill
       attr_accessor :title
       attr_writer   :summary
       attr_accessor :author
-
-      def self.textile_to_html(str)
-        Simple::Builder.parse_html_fragment(
-          RedCloth.new(str, [:no_span_caps]).to_html
-        ).to_html
-      end
-
-      def self.markdown_to_html(str)
-        Simple::Builder.parse_html_fragment(
-          Kramdown::Document.new(str).to_html
-        ).to_html
-      end
-
-      def self.string_to_html(str)
-        Simple::Builder.find_p_child_elements(
-          Simple::Builder.parse_html_fragment(
-            RubyPants.new(str).to_html
-          )
-        ).to_html
-      end
+      attr_reader   :public
 
       def initialize(title: nil, summary: nil, author: nil, public: true, output_file: nil, **args)
         @title = title
@@ -63,10 +44,10 @@ module Mill
           case @input_file.extname.downcase
           when '.md', '.mdown', '.markdown'
             parse_text_header
-            @content = self.class.markdown_to_html(@content)
+            @content = Simple::Builder.markdown_to_html(@content)
           when '.textile'
             parse_text_header
-            @content = self.class.textile_to_html(@content)
+            @content = Simple::Builder.textile_to_html(@content)
           when '.htm', '.html'
             parse_html_header
           else
