@@ -68,6 +68,7 @@ module Mill
             parse_text_header
             @content = self.class.textile_to_html(@content)
           when '.htm', '.html'
+            parse_html_header
           else
             raise "Unknown text type: #{@input_file}"
           end
@@ -76,7 +77,6 @@ module Mill
           rescue Error => e
             raise e, "#{@input_file}: #{e}"
           end
-          parse_html_header
         end
       end
 
