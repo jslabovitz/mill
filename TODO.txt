@@ -1,3 +1,7 @@
+- combine @status, @public, etc.
+
+- move HTML parsing into Simple::Builder
+
 - rename #final_content -> #to_html, #feed_content -> #feed_items
 
 - remove textile/pre processors from Resource::Text
@@ -40,7 +44,6 @@
     - eg:
         - navigation
         - buy buttons
-        - Google Analytics bug
         - link to resource (<a ...>)
         - sidebars
         - strings (existing String extensions)
