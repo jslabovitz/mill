@@ -3,6 +3,19 @@ module Mill
   class Resource
 
     FileTypes = []
+    ListKeys = {
+      path:         nil,
+      input_file:   nil,
+      output_file:  nil,
+      date:         nil,
+      public:       nil,
+      class:        nil,
+      content:      proc { |v| v ? ('%s (%dKB)' % [v.class, (v.to_s.length / 1024.0).ceil]) : nil },
+      parent:       proc { |v| v&.path },
+      siblings:     proc { |v| v.map(&:path) },
+      children:     proc { |v| v.map(&:path) },
+    }
+    ListKeyWidth = ListKeys.keys.map(&:length).max
 
     attr_accessor :input_file
     attr_accessor :output_file
@@ -90,6 +103,30 @@ module Mill
         siblings.map(&:path),
         children.map(&:path),
       ]
+    end
+
+    def list
+      ListKeys.keys.each { |k| list_key(k) }
+      puts
+    end
+
+    def list_key(key)
+      print '%*s: ' % [ListKeyWidth, key]
+      value = send(key)
+      value = (converter = ListKeys[key]) ? converter.call(value) : value
+      case value
+      when Array
+        if value.empty?
+          puts '-'
+        else
+          value.each_with_index do |v, i|
+            print '%*s  ' % [ListKeyWidth, ''] if i > 0
+            puts (v.nil? ? '-' : v)
+          end
+        end
+      else
+        puts (value.nil? ? '-' : value)
+      end
     end
 
     def parent

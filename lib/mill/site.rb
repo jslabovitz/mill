@@ -214,53 +214,12 @@ module Mill
       node.children { |child| print_tree(child, level + 1) }
     end
 
-    ListKeys = {
-      path:         :to_s,
-      input_file:   :to_s,
-      output_file:  :to_s,
-      date:         :to_s,
-      public:       :to_s,
-      class:        :to_s,
-      content:      proc { |r| r.content ? ('%s (%dKB)' % [r.content.class, (r.content.to_s.length / 1024.0).ceil]) : nil },
-      parent:       proc { |r| r.parent&.path },
-      siblings:     proc { |r| r.siblings.map(&:path) },
-      children:     proc { |r| r.children.map(&:path) },
-    }
-
     def list
       build
-      width = ListKeys.keys.map(&:length).max
       select_resources.each do |resource|
-        ListKeys.each do |key, converter|
-          value = resource.send(key)
-          value = case converter
-          when nil
-            value
-          when Symbol
-            value.send(converter)
-          when Proc
-            converter.call(resource)
-          else
-            raise
-          end
-          print '%*s: ' % [width, key]
-          case value
-          when Array
-            if value.empty?
-              puts '-'
-            else
-              value.each_with_index do |v, i|
-                print '%*s  ' % [width, ''] if i > 0
-                puts (v.nil? ? '-' : v)
-              end
-            end
-          else
-            puts (value.nil? ? '-' : value)
-          end
-        end
+        resource.list
         puts
       end
-      puts
     end
 
     def build
