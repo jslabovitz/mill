@@ -8,7 +8,6 @@ module Mill
       input_file:   nil,
       output_file:  nil,
       date:         nil,
-      public:       nil,
       class:        nil,
       content:      proc { |v| v ? ('%s (%dKB)' % [v.class, (v.to_s.length / 1024.0).ceil]) : nil },
       parent:       proc { |v| v&.path },
@@ -21,7 +20,6 @@ module Mill
     attr_accessor :output_file
     attr_accessor :path
     attr_reader   :date
-    attr_reader   :public
     attr_accessor :content
     attr_accessor :site
     attr_accessor :node
@@ -29,7 +27,6 @@ module Mill
     def initialize(input_file: nil,
                    output_file: nil,
                    date: nil,
-                   public: false,
                    content: nil,
                    site: nil)
       if input_file
@@ -43,7 +40,6 @@ module Mill
         @path = '/' + @output_file.relative_to(site.output_dir).to_s
       end
       self.date = date if date
-      self.public = public
       @content = content
       @site = site
     end
@@ -67,21 +63,6 @@ module Mill
       end
     end
 
-    def public=(public)
-      @public = case public
-      when 'false', FalseClass
-        false
-      when 'true', TrueClass
-        true
-      else
-        raise Error, "Can't assign 'public' attribute: #{public.inspect}"
-      end
-    end
-
-    def public?
-      @public == true
-    end
-
     def text?
       kind_of?(Resource::Text) && public?
     end
@@ -91,13 +72,12 @@ module Mill
     end
 
     def inspect
-      "<%p> input_file: %p, output_file: %p, path: %s, date: %s, public: %p, content: <%p>, parent: %p, siblings: %p, children: %p" % [
+      "<%p> input_file: %p, output_file: %p, path: %s, date: %s, content: <%p>, parent: %p, siblings: %p, children: %p" % [
         self.class,
         @input_file ? @input_file.relative_to(@site.input_dir).to_s : nil,
         @output_file ? @output_file.relative_to(@site.output_dir).to_s : nil,
         @path,
         @date.to_s,
-        @public,
         @content&.class,
         parent&.path,
         siblings.map(&:path),

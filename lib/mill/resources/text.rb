@@ -19,8 +19,8 @@ module Mill
         @title = title
         @summary = summary
         @author = author
+        @public = public
         super(
-          public: public,
           output_file: output_file&.replace_extension('.html'),
           **args)
         if @path
@@ -29,11 +29,27 @@ module Mill
         end
       end
 
+      def public=(public)
+        @public = case public
+        when 'false', FalseClass
+          false
+        when 'true', TrueClass
+          true
+        else
+          raise Error, "Can't assign 'public' attribute: #{public.inspect}"
+        end
+      end
+
+      def public?
+        @public == true
+      end
+
       def inspect
-        super + ", title: %p, summary: %p, author: %p" % [
+        super + ", title: %p, summary: %p, author: %p, public: %p" % [
           @title,
           @summary,
           @author,
+          @public,
         ]
       end
 

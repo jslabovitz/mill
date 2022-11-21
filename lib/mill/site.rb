@@ -180,19 +180,19 @@ module Mill
     end
 
     def feed_resources
-      public_resources.sort_by(&:date)
+      published_resources.sort_by(&:date)
     end
 
-    def public_resources
-      select_resources(&:public?)
+    def sitemap_resources
+      published_resources.sort_by(&:date)
+    end
+
+    def published_resources
+      select_resources(&:text?)
     end
 
     def redirect_resources
       select_resources(&:redirect?)
-    end
-
-    def text_resources
-      select_resources(&:text?)
     end
 
     def make
