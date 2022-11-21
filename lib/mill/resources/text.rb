@@ -98,15 +98,15 @@ module Mill
       end
 
       def final_content
-        doctype = case @site&.html_version
+        builder = case @site&.html_version
         when :html4
-          :html4_document
+          :build_html4_document
         when :html5, nil
-          :html5_document
+          :build_html5_document
         else
           raise "Unknown HTML version: #{@site&.html_version.inspect}"
         end
-        Simple::Builder.send(doctype) do |doc|
+        Simple::Builder.send(builder) do |doc|
           doc.html(lang: 'en') do |html|
             html.parent << head
             html.parent << body
@@ -115,7 +115,7 @@ module Mill
       end
 
       def head(&block)
-        Simple::Builder.html_fragment do |html|
+        Simple::Builder.build_html do |html|
           html.head do
             title = @title || Simple::Builder.title_element&.text
             html.title { html << title.to_html } if title
@@ -130,7 +130,7 @@ module Mill
       end
 
       def body(&block)
-        Simple::Builder.html_fragment do |html|
+        Simple::Builder.build_html do |html|
           html.body do
             if (elem = content_body)
               html << elem.children.to_html

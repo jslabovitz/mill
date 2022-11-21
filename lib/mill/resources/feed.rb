@@ -37,7 +37,7 @@ module Mill
       end
 
       def link_html
-        Simple::Builder.html_fragment do |html|
+        Simple::Builder.build_html do |html|
           html.link(href: uri, rel: 'alternate', type: 'application/atom+xml')
         end
       end
