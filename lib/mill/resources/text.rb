@@ -15,44 +15,23 @@ module Mill
       attr_accessor :author
 
       def self.textile_to_html(str)
-        parse_html_fragment(
+        Simple::Builder.parse_html_fragment(
           RedCloth.new(str, [:no_span_caps]).to_html
         ).to_html
       end
 
       def self.markdown_to_html(str)
-        parse_html_fragment(
+        Simple::Builder.parse_html_fragment(
           Kramdown::Document.new(str).to_html
         ).to_html
       end
 
       def self.string_to_html(str)
-        p_children(
-          parse_html_fragment(
+        Simple::Builder.p_children(
+          Simple::Builder.parse_html_fragment(
             RubyPants.new(str).to_html
           )
-        )
-      end
-
-      def self.parse_html(html)
-        Nokogiri::HTML5::Document.parse(html).tap { |doc| check_errors(doc) }
-      end
-
-      def self.parse_html_fragment(html)
-        Nokogiri::HTML5::DocumentFragment.parse(html).tap { |doc| check_errors(doc) }
-      end
-
-      def self.check_errors(doc)
-        doc.errors.each do |error|
-          raise Mill::Error, "HTML error #{error}" #unless error.message =~ /Tag .+? invalid$/
-        end
-      end
-
-      def self.p_children(doc)
-        if (p = doc.at_xpath('p'))
-          doc = p.children.to_html
-        end
-        doc.to_html
+        ).to_html
       end
 
       def initialize(title: nil, summary: nil, author: nil, public: true, output_file: nil, **args)
@@ -93,7 +72,7 @@ module Mill
             raise "Unknown text type: #{@input_file}"
           end
           begin
-            @content = self.class.parse_html(@content)
+            @content = Simple::Builder.parse_html(@content)
           rescue Error => e
             raise e, "#{@input_file}: #{e}"
           end
