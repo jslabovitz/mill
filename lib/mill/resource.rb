@@ -64,11 +64,15 @@ module Mill
     end
 
     def text?
-      kind_of?(Resource::Text) && public?
+      kind_of?(Resource::Text)
     end
 
     def redirect?
       kind_of?(Resource::Redirect)
+    end
+
+    def root?
+      self == @site.home_resource
     end
 
     def inspect
@@ -79,9 +83,9 @@ module Mill
         @path,
         @date.to_s,
         @content&.class,
-        parent&.path,
-        siblings.map(&:path),
-        children.map(&:path),
+        @node && parent&.path,
+        @node && siblings.map(&:path),
+        @node && children.map(&:path),
       ]
     end
 
@@ -114,11 +118,11 @@ module Mill
     end
 
     def siblings
-      @node.siblings.map(&:content).compact
+      @node.siblings.map(&:content).compact.reject { |r| r.draft? || r.hidden? }
     end
 
     def children
-      @node.children.map(&:content).compact
+      @node.children.map(&:content).compact.reject { |r| r.draft? || r.hidden? }
     end
 
     def uri

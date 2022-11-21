@@ -126,15 +126,16 @@ module Mill
     end
 
     def add_resource(resource)
-      raise "Must assign resource to site" unless resource.site
       @resources[resource.path] = resource
-      node = @resources_tree
-      resource.path.split('/').reject(&:empty?).each do |component|
-        node = node[component] || (node << Tree::TreeNode.new(component))
-      end
-      resource.node = node
-      node.content = resource
       # ;;warn "added #{resource} as #{resource.path}"
+      if resource.text?
+        node = @resources_tree
+        resource.path.split('/').reject(&:empty?).each do |component|
+          node = node[component] || (node << Tree::TreeNode.new(component))
+        end
+        resource.node = node
+        node.content = resource
+      end
     end
 
     def find_resource(path)
@@ -168,31 +169,28 @@ module Mill
     end
 
     def select_resources(selector=nil, &block)
+      resources = @resources.values.reject { |r| r.text? && r.draft? }
       if block_given?
-        @resources.values.select(&block)
+        resources.select(&block)
       elsif selector.kind_of?(Class)
-        @resources.values.select { |r| r.kind_of?(selector) }
+        resources.select { |r| r.kind_of?(selector) }
       elsif selector
-        @resources.values.select(selector)
+        resources.select(selector)
       else
-        @resources.values
+        resources
       end
     end
 
     def feed_resources
-      published_resources.sort_by(&:date)
+      text_resources.reject(&:hidden?).sort_by(&:date)
     end
 
     def sitemap_resources
-      published_resources.sort_by(&:date)
+      text_resources.reject(&:hidden?).sort_by(&:date)
     end
 
-    def published_resources
+    def text_resources
       select_resources(&:text?)
-    end
-
-    def redirect_resources
-      select_resources(&:redirect?)
     end
 
     def make
@@ -316,7 +314,7 @@ module Mill
     end
 
     def on_each_resource(&block)
-      @resources.values.each do |resource|
+      select_resources.each do |resource|
         begin
           yield(resource)
         rescue Error => e

@@ -13,13 +13,15 @@ module Mill
       attr_accessor :title
       attr_writer   :summary
       attr_accessor :author
-      attr_reader   :public
+      attr_reader   :draft
+      attr_reader   :hidden
 
-      def initialize(title: nil, summary: nil, author: nil, public: true, output_file: nil, **args)
+      def initialize(title: nil, summary: nil, author: nil, draft: false, hidden: false, output_file: nil, **args)
         @title = title
         @summary = summary
         @author = author
-        @public = public
+        @draft = draft
+        @hidden = hidden
         super(
           output_file: output_file&.replace_extension('.html'),
           **args)
@@ -29,27 +31,43 @@ module Mill
         end
       end
 
-      def public=(public)
-        @public = case public
+      def draft=(state)
+        @draft = case state
         when 'false', FalseClass
           false
         when 'true', TrueClass
           true
         else
-          raise Error, "Can't assign 'public' attribute: #{public.inspect}"
+          raise Error, "Can't assign 'draft' attribute: #{state.inspect}"
         end
       end
 
-      def public?
-        @public == true
+      def draft?
+        @draft == true
+      end
+
+      def hidden=(state)
+        @hidden = case state
+        when 'false', FalseClass
+          false
+        when 'true', TrueClass
+          true
+        else
+          raise Error, "Can't assign 'hidden' attribute: #{state.inspect}"
+        end
+      end
+
+      def hidden?
+        @hidden == true
       end
 
       def inspect
-        super + ", title: %p, summary: %p, author: %p, public: %p" % [
+        super + ", title: %p, summary: %p, author: %p, draft: %p, hidden: %p" % [
           @title,
           @summary,
           @author,
-          @public,
+          @draft,
+          @hidden,
         ]
       end
 
@@ -197,18 +215,6 @@ module Mill
           warn "Warning: Resource #{path} (#{self.class}) has no content"
           nil
         end
-      end
-
-      def home_page?
-        @path == '/'
-      end
-
-      def children_pages
-        children.select(&:text?)
-      end
-
-      def sibling_pages
-        siblings.select(&:text?)
       end
 
     end

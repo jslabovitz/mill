@@ -14,25 +14,38 @@ module Mill
 # ;;@site.print_tree
 # ;;@site.list
 # ;;binding.pry
-      @root = @site.find_resource('/') or raise
-      @a = @site.find_resource('/a') or raise
-      @b = @site.find_resource('/b') or raise
-      @ba = @site.find_resource('/b/ba') or raise
-      @bb = @site.find_resource('/b/bb') or raise
+      @root = @site.find_resource('/')
+      @a = @site.find_resource('/a')
+      @b = @site.find_resource('/b')
+      @ba = @site.find_resource('/b/ba')
+      @bb = @site.find_resource('/b/bb')
+      @c = @site.find_resource('/c')
+      @d = @site.find_resource('/d')
     end
-
-    AuxiliaryPaths = %w{
-      /feed.xml
-      /sitemap.xml
-      /robots.txt
-    }
 
     def test_has_index
       assert { @root }
     end
 
+    def test_resources
+      assert { @a }
+      assert { @b }
+      assert { @ba }
+      assert { @bb }
+      assert { @c }
+      assert { @d }
+    end
+
+    def test_hidden
+      assert { @c.hidden? }
+    end
+
+    def test_draft
+      assert { @d.draft? }
+    end
+
     def test_children
-      children = @root.children.reject { |c| AuxiliaryPaths.include?(c.path) }
+      children = @root.children
       assert { children == [@a, @b] }
       assert { @a.children.empty? }
     end
@@ -45,10 +58,10 @@ module Mill
     end
 
     def test_siblings
-      siblings = @root.siblings.reject { |c| AuxiliaryPaths.include?(c.path) }
-      a_siblings = @a.siblings.reject { |c| AuxiliaryPaths.include?(c.path) }
-      ba_siblings = @ba.siblings.reject { |c| AuxiliaryPaths.include?(c.path) }
-      assert { siblings.empty? }
+      root_siblings = @root.siblings
+      a_siblings = @a.siblings
+      ba_siblings = @ba.siblings
+      assert { root_siblings.empty? }
       assert { a_siblings == [@b] }
       assert { ba_siblings == [@bb] }
     end
