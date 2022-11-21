@@ -280,7 +280,6 @@ module Mill
       @resources_tree = Tree::TreeNode.new('')
       add_files
       add_redirects
-      add_google_site_verification if @google_site_verification
       add_feed if @make_feed
       add_sitemap if @make_sitemap
       add_robots if @make_robots
@@ -432,14 +431,6 @@ module Mill
           add_resource(resource)
         end
       end
-    end
-
-    def add_google_site_verification
-      resource = Resource::GoogleSiteVerification.new(
-        output_file: (@output_dir / @google_site_verification).add_extension('.html'),
-        key: @google_site_verification,
-        site: self)
-      add_resource(resource)
     end
 
     def add_htpasswd
