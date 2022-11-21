@@ -1,6 +1,6 @@
-- combine @status, @public, etc.
+- move common #build_html uses into Simple::Builder/fragments
 
-- move HTML parsing into Simple::Builder
+- combine @status, @public, etc.
 
 - rename #final_content -> #to_html, #feed_content -> #feed_items
 
