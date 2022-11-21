@@ -20,8 +20,8 @@ module Mill
     attr_accessor :input_file
     attr_accessor :output_file
     attr_accessor :path
-    attr_accessor :date
-    attr_accessor :public
+    attr_reader   :date
+    attr_reader   :public
     attr_accessor :content
     attr_accessor :site
     attr_accessor :node
@@ -58,7 +58,7 @@ module Mill
         begin
           DateTime.parse(date.to_s)
         rescue ArgumentError => e
-          raise Error, "Can't parse date: #{date.inspect}"
+          raise Error, "Can't parse date: #{date.inspect} (#{e})"
         end
       when Date, DateTime, nil
         date

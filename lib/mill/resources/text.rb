@@ -11,7 +11,7 @@ module Mill
       }
 
       attr_accessor :title
-      attr_accessor :summary
+      attr_writer   :summary
       attr_accessor :author
 
       def self.textile_to_html(str)
@@ -186,7 +186,6 @@ module Mill
 
       def shorten_links
         Simple::Builder.find_link_elements(@content).each do |attribute|
-          elem = attribute.parent
           link_uri = Addressable::URI.parse(attribute.value) or raise Error, "Can't parse #{attribute.value.inspect} from #{xpath.inspect}"
           link_uri = uri + link_uri
           if link_uri.relative?
@@ -194,7 +193,7 @@ module Mill
             self_uri.scheme = 'http'
             link_uri.scheme = 'http'
             attribute.value = self_uri.route_to(link_uri)
-            # ;;warn "[#{path}] shortened link #{elem.name}/@#{attribute.name}: #{link_uri} => #{attribute.value}"
+            # ;;warn "[#{path}] shortened link #{attribute.parent.name}/@#{attribute.name}: #{link_uri} => #{attribute.value}"
           end
         end
       end

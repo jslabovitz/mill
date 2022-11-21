@@ -2,22 +2,22 @@ module Mill
 
   class Site
 
-    attr_accessor :dir
-    attr_accessor :input_dir
-    attr_accessor :output_dir
-    attr_accessor :code_dir
+    attr_reader   :dir
+    attr_reader   :input_dir
+    attr_reader   :output_dir
+    attr_reader   :code_dir
     attr_accessor :site_rsync
     attr_accessor :site_title
-    attr_accessor :site_uri
-    attr_accessor :site_email
-    attr_accessor :site_control_date
-    attr_accessor :html_version
+    attr_reader   :site_uri
+    attr_reader   :site_email
+    attr_reader   :site_control_date
+    attr_reader   :html_version
     attr_accessor :feed_resource
     attr_accessor :sitemap_resource
     attr_accessor :robots_resource
     attr_accessor :shorten_uris
     attr_accessor :combine_sections
-    attr_accessor :modes
+    attr_reader   :modes
     attr_accessor :make_feed
     attr_accessor :make_sitemap
     attr_accessor :make_robots
