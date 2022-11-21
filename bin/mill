@@ -13,6 +13,8 @@ begin
     site.check
   when 'list'
     site.list
+  when 'tree'
+    site.print_tree
   when 'diff'
     site.diff
   when 'snapshot'

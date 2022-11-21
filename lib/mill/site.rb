@@ -201,7 +201,10 @@ module Mill
     end
 
     def print_tree(node=nil, level=0)
-      node ||= @resources_tree
+      unless node
+        build
+        node = @resources_tree
+      end
       if node.is_root?
         print '*'
       else
