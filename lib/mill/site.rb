@@ -22,7 +22,6 @@ module Mill
     attr_accessor :make_sitemap
     attr_accessor :make_robots
     attr_accessor :allow_robots
-    attr_accessor :htpasswd_file
     attr_accessor :navigator
     attr_accessor :redirects
     attr_accessor :resources
@@ -111,10 +110,6 @@ module Mill
 
     def html_version=(version)
       @html_version = version.to_sym
-    end
-
-    def htpasswd_file=(file)
-      @htpasswd_file = Path.new(file)
     end
 
     def modes=(modes)
@@ -283,7 +278,6 @@ module Mill
       add_feed if @make_feed
       add_sitemap if @make_sitemap
       add_robots if @make_robots
-      add_htpasswd if @htpasswd_file
     end
 
     def load_resources
@@ -431,14 +425,6 @@ module Mill
           add_resource(resource)
         end
       end
-    end
-
-    def add_htpasswd
-      resource = Resource.new(
-        input_file: @htpasswd_file,
-        output_file: @output_dir / '.htpasswd',
-        site: self)
-      add_resource(resource)
     end
 
   end
