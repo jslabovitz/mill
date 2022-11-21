@@ -33,7 +33,7 @@ module Mill
       output_dir: 'public_html',
       code_dir: 'code',
       site_uri: 'http://localhost',
-      html_version: :html4,
+      html_version: :html5,
       shorten_uris: true,
       make_feed: true,
       make_sitemap: true,
