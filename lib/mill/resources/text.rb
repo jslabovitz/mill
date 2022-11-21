@@ -27,7 +27,7 @@ module Mill
       end
 
       def self.string_to_html(str)
-        Simple::Builder.p_children(
+        Simple::Builder.find_p_child_elements(
           Simple::Builder.parse_html_fragment(
             RubyPants.new(str).to_html
           )
@@ -81,8 +81,8 @@ module Mill
       end
 
       def parse_html_header
-        @title ||= Simple::Builder.find_title(@content)
-        set(Simple::Builder.find_meta_tags(@content))
+        @title ||= Simple::Builder.title_element(@content)&.text
+        set(Simple::Builder.find_meta_info(@content))
       end
 
       def parse_text_header
@@ -117,12 +117,10 @@ module Mill
       def head(&block)
         Simple::Builder.html_fragment do |html|
           html.head do
-            head = content_head
-            if (title = @title || (head && head.at_xpath('title')))
-              html.title { html << title.to_html }
-            end
+            title = @title || Simple::Builder.title_element&.text
+            html.title { html << title.to_html } if title
             yield(html) if block_given?
-            if head
+            if (head = content_head)
               head.children.reject { |e| e.text? || e.name == 'title' }.each do |e|
                 html << e.to_html
               end
@@ -143,11 +141,11 @@ module Mill
       end
 
       def content_head
-        @content && Simple::Builder.find_head(@content)
+        @content && Simple::Builder.find_head_element(@content)
       end
 
       def content_body
-        @content && Simple::Builder.find_body(@content)
+        @content && Simple::Builder.find_body_element(@content)
       end
 
       def add_image_sizes
@@ -164,8 +162,8 @@ module Mill
       end
 
       def shorten_links
-        Simple::Builder.find_link_elements(@content).each do |attribute|
-          link_uri = Addressable::URI.parse(attribute.value) or raise Error, "Can't parse #{attribute.value.inspect} from #{xpath.inspect}"
+        Simple::Builder.find_link_element_attributes(@content).each do |attribute|
+          link_uri = Addressable::URI.parse(attribute.value) or raise Error, "Can't parse attribute value: #{attribute.inspect}"
           link_uri = uri + link_uri
           if link_uri.relative?
             self_uri = uri.normalize
