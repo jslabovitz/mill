@@ -21,16 +21,13 @@
 
 - rework resource URI usage
     - 'uri' attribute should be canonical
+        - remove 'path' attribute
         - 'output_file' should be derived from @site.output_dir + uri
     - URIs should be fully qualified
         - start with '/'
         - have extension according to file type
     - referencing URIs should follow server rules (e.g., / -> /index.html)
-    - #shorten_uris should only apply to writing final files
-
-- combine @input_file & @content?
-    - if @content.kind_of?(Path): copy
-    - else: write as string
+    - #shorten_uris should only be applied when writing final files
 
 - rename Resource #load to #import
     - uses path argument instead of @input_file
@@ -64,9 +61,6 @@
 
 - make Navigator into more generic Collection
     + include Enumerable
-
-- make Resource::External for external links?
-    + add on import of HTML (by examining href/src/etc attributes)
 
 - save compressed versions of files
     - write compressed versions along with non-compressed
