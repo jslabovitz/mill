@@ -38,7 +38,7 @@ module Mill
         when 'true', TrueClass
           true
         else
-          raise Error, "Can't assign 'draft' attribute: #{state.inspect}"
+          raise ArgumentError
         end
       end
 
@@ -53,7 +53,7 @@ module Mill
         when 'true', TrueClass
           true
         else
-          raise Error, "Can't assign 'hidden' attribute: #{state.inspect}"
+          raise ArgumentError
         end
       end
 
