@@ -175,8 +175,7 @@ module Mill
           link_uri = uri + link_uri
           if link_uri.relative?
             self_uri = uri.normalize
-            self_uri.scheme = 'http'
-            link_uri.scheme = 'http'
+            self_uri.scheme = link_uri.scheme = @site.site_uri.scheme
             attribute.value = self_uri.route_to(link_uri)
             # ;;warn "[#{path}] shortened link #{attribute.parent.name}/@#{attribute.name}: #{link_uri} => #{attribute.value}"
           end
