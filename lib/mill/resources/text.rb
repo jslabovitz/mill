@@ -16,19 +16,12 @@ module Mill
       attr_reader   :draft
       attr_reader   :hidden
 
-      def initialize(title: nil, summary: nil, author: nil, draft: false, hidden: false, output_file: nil, **args)
-        @title = title
-        @summary = summary
-        @author = author
-        @draft = draft
-        @hidden = hidden
-        super(
-          output_file: output_file&.replace_extension('.html'),
-          **args)
-        if @path
-          @path.sub!(%r{\.html$}, '') if @site&.shorten_uris
-          @path.sub!(%r{(.*)index$}, '\1')
-        end
+      def initialize(params={})
+        super
+        @output_file = @output_file&.replace_extension('.html')
+        @path = '/' + @output_file.relative_to(@site.output_dir).to_s
+        @path.sub!(%r{\.html$}, '') if @site&.shorten_uris
+        @path.sub!(%r{(.*)index$}, '\1')
       end
 
       def draft=(state)

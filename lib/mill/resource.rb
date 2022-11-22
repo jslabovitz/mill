@@ -24,28 +24,12 @@ module Mill
     attr_accessor :site
     attr_accessor :node
 
-    def initialize(input_file: nil,
-                   output_file: nil,
-                   date: nil,
-                   content: nil,
-                   site: nil)
-      if input_file
-        @input_file = Path.new(input_file)
-        @date = input_file.mtime.to_datetime
-      else
-        @date = DateTime.now
-      end
-      if output_file
-        @output_file = Path.new(output_file)
-        @path = '/' + @output_file.relative_to(site.output_dir).to_s
-      end
-      self.date = date if date
-      @content = content
-      @site = site
-    end
+    include SetParams
 
-    def set(params={})
-      params.each { |key, value| send("#{key}=", value) }
+    def initialize(params={})
+      super
+      @date ||= (@input_file ? @input_file.mtime.to_datetime : DateTime.now)
+      @path = '/' + @output_file.relative_to(@site.output_dir).to_s
     end
 
     def date=(date)
