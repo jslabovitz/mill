@@ -11,8 +11,8 @@ module Mill
       class:        nil,
       content:      proc { |v| v ? ('%s (%dKB)' % [v.class, (v.to_s.length / 1024.0).ceil]) : nil },
       parent:       proc { |v| v&.path },
-      siblings:     proc { |v| v.map(&:path) },
-      children:     proc { |v| v.map(&:path) },
+      siblings:     proc { |v| v&.map(&:path) },
+      children:     proc { |v| v&.map(&:path) },
     }
     ListKeyWidth = ListKeys.keys.map(&:length).max
 
@@ -84,8 +84,8 @@ module Mill
         @date.to_s,
         @content&.class,
         @node && parent&.path,
-        @node && siblings.map(&:path),
-        @node && children.map(&:path),
+        @node && siblings&.map(&:path),
+        @node && children&.map(&:path),
       ]
     end
 
@@ -114,15 +114,15 @@ module Mill
     end
 
     def parent
-      @node.parent&.content
+      @node&.parent&.content
     end
 
     def siblings
-      @node.siblings.map(&:content).compact.reject { |r| r.draft? || r.hidden? }
+      @node && @node.siblings.map(&:content).compact.reject { |r| r.draft? || r.hidden? }
     end
 
     def children
-      @node.children.map(&:content).compact.reject { |r| r.draft? || r.hidden? }
+      @node && @node.children.map(&:content).compact.reject { |r| r.draft? || r.hidden? }
     end
 
     def uri
