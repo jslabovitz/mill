@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
     Mill provides a simple but useful static site generator.
   }
   s.license       = 'MIT'
-  s.homepage      = 'http://github.com/jslabovitz/mill'
+  s.homepage      = 'https://github.com/jslabovitz/mill'
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.executables   = `git ls-files -- bin/*`.split("\n").map { |f| File.basename(f) }
