@@ -1,5 +1,3 @@
-+ rename @resources_tree -> @tree
-
 - build tree *after* all resources are loaded?
 
 - consider using tree *only* instead of @resources hash
@@ -14,9 +12,6 @@
 
 - remove textile/pre processors from Resource::Text
     - streamline to allow domain-specific subclassing if needed
-
-- create alternate sites (beta, final, etc.) by subclassing site, and changing @output or @location
-    - allow CLI option to specify site
 
 - rework resource URI usage
     - 'uri' attribute should be canonical
