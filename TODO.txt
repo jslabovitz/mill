@@ -1,22 +1,13 @@
-- only add Text resources to @resources_tree
-    - remove #children_pages, #sibling_pages
-    - in johnlabovitz.com: rename 'pages' to 'texts'?
-
-- rename 'public' to 'published'
-    - add 'hidden' attribute to avoid showing up in feed/sitemap
-        - rework content accordingly
-
 - rename Text resource to Document
     + rename @resources_tree -> @text_tree
 
 - build tree *after* all resources are loaded?
 
 - consider using tree *only* instead of @resources hash
+    - but then need to filter by text/draft/hidden
 
 - replace error.md document with built?
     - don't include date
-
-- use SetParams for Resource initialization
 
 - move common #build_html uses into Simple::Builder/fragments
 
