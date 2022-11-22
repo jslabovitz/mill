@@ -377,7 +377,7 @@ module Mill
     def add_redirects
       if @redirects
         @redirects.each do |from, to|
-          output_file = @output_dir / Path.new(from).relative_to('/')
+          output_file = @output_dir / Path.new(from).relative_to('/').add_extension('.redirect')
           resource = Resource::Redirect.new(
             output_file: output_file,
             redirect_uri: to,

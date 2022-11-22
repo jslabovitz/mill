@@ -32,11 +32,6 @@ module Mill
         super
       end
 
-      def save
-        @output_file = @output_file.add_extension('.redirect')
-        super
-      end
-
     end
 
   end
