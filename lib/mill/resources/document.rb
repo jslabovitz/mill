@@ -178,10 +178,6 @@ module Mill
         end
       end
 
-      def summary
-        @summary || ((p = feed_content.at_xpath('//p')) && p.children)
-      end
-
       def feed_content
         if (body = content_body)
           # If we have a main element (<div class="main"> or <main>), use that.
