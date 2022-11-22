@@ -11,8 +11,6 @@ module Mill
       }
 
       attr_accessor :title
-      attr_writer   :summary
-      attr_accessor :author
       attr_reader   :draft
       attr_reader   :hidden
 
@@ -55,10 +53,8 @@ module Mill
       end
 
       def inspect
-        super + ", title: %p, summary: %p, author: %p, draft: %p, hidden: %p" % [
+        super + ", title: %p, draft: %p, hidden: %p" % [
           @title,
-          @summary,
-          @author,
           @draft,
           @hidden,
         ]
