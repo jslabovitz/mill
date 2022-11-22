@@ -47,8 +47,8 @@ module Mill
       end
     end
 
-    def text?
-      kind_of?(Resource::Text)
+    def document?
+      kind_of?(Resource::Document)
     end
 
     def redirect?

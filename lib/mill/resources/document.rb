@@ -2,7 +2,7 @@ module Mill
 
   class Resource
 
-    class Text < Resource
+    class Document < Resource
 
       FileTypes = %w{
         text/plain
@@ -78,7 +78,7 @@ module Mill
           when '.htm', '.html'
             parse_html_header
           else
-            raise "Unknown text type: #{@input_file}"
+            raise "Unknown document type: #{@input_file}"
           end
           begin
             @content = Simple::Builder.parse_html(@content)

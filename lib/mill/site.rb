@@ -128,7 +128,7 @@ module Mill
     def add_resource(resource)
       @resources[resource.path] = resource
       # ;;warn "added #{resource} as #{resource.path}"
-      if resource.text?
+      if resource.document?
         node = @resources_tree
         resource.path.split('/').reject(&:empty?).each do |component|
           node = node[component] || (node << Tree::TreeNode.new(component))
@@ -169,7 +169,7 @@ module Mill
     end
 
     def select_resources(selector=nil, &block)
-      resources = @resources.values.reject { |r| r.text? && r.draft? }
+      resources = @resources.values.reject { |r| r.document? && r.draft? }
       if block_given?
         resources.select(&block)
       elsif selector.kind_of?(Class)
@@ -182,15 +182,15 @@ module Mill
     end
 
     def feed_resources
-      text_resources.reject(&:hidden?).sort_by(&:date)
+      document_resources.reject(&:hidden?).sort_by(&:date)
     end
 
     def sitemap_resources
-      text_resources.reject(&:hidden?).sort_by(&:date)
+      document_resources.reject(&:hidden?).sort_by(&:date)
     end
 
-    def text_resources
-      select_resources(&:text?)
+    def document_resources
+      select_resources(&:document?)
     end
 
     def make

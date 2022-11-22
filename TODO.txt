@@ -1,5 +1,4 @@
-- rename Text resource to Document
-    + rename @resources_tree -> @text_tree
++ rename @resources_tree -> @tree
 
 - build tree *after* all resources are loaded?
 
