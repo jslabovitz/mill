@@ -45,7 +45,7 @@ module Mill
 
     def test_children
       children = @root.children
-      assert { children == [@a, @b, @c, @d] }
+      assert { children == [@a, @b] }
       assert { @a.children.empty? }
     end
 
@@ -61,7 +61,7 @@ module Mill
       a_siblings = @a.siblings
       ba_siblings = @ba.siblings
       assert { root_siblings.empty? }
-      assert { a_siblings == [@b, @c, @d] }
+      assert { a_siblings == [@b] }
       assert { ba_siblings == [@bb] }
     end
 

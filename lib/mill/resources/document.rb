@@ -59,6 +59,14 @@ module Mill
         ]
       end
 
+      def publish?
+        !draft?
+      end
+
+      def advertise?
+        publish? && !hidden?
+      end
+
       def output_file
         if (file = super)
           file /= 'index' if @path.end_with?('/')
@@ -201,6 +209,12 @@ module Mill
             end
             body_elem.children
           end
+        end
+      end
+
+      def make_link
+        Simple::Builder.build_html do |html|
+          html.a(href: @uri) { html << @title.to_html }
         end
       end
 

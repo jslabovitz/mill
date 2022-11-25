@@ -8,6 +8,8 @@ module Mill
       input_file:   nil,
       output_file:  nil,
       date:         nil,
+      publish?:     nil,
+      advertise?:   nil,
       class:        nil,
       content:      proc { |v| v ? ('%s (%dKB)' % [v.class, (v.to_s.length / 1024.0).ceil]) : nil },
       parent:       proc { |v| v&.path },
@@ -28,35 +30,33 @@ module Mill
 
     def initialize(params={})
       super
-      @date ||= (@input_file ? @input_file.mtime.to_datetime : DateTime.now)
+      @date = (@input_file ? @input_file.mtime.to_datetime : DateTime.now) unless defined?(@date)
       @uri = Addressable::URI.encode(@path, Addressable::URI)
     end
 
     def date=(date)
       @date = case date
-      when String, Time
+      when String
         begin
           DateTime.parse(date.to_s)
         rescue ArgumentError => e
           raise Error, "Can't parse date: #{date.inspect} (#{e})"
         end
-      when Date, DateTime, nil
+      when Time, Date
+        date.to_datetime
+      when DateTime, nil
         date
       else
         raise Error, "Can't assign 'date' attribute: #{date.inspect}"
       end
     end
 
-    def document?
-      kind_of?(Resource::Document)
+    def publish?
+      true
     end
 
-    def public_document?
-      document? && !draft? && !hidden?
-    end
-
-    def redirect?
-      kind_of?(Resource::Redirect)
+    def advertise?
+      false
     end
 
     def root?
@@ -72,12 +72,14 @@ module Mill
     end
 
     def inspect
-      "<%p> path: %p, input_file: %p, output_file: %p, date: %s, content: <%p>, parent: %p, siblings: %p, children: %p" % [
+      "<%p> path: %p, input_file: %p, output_file: %p, date: %s, publish: %p, advertise: %p, content: <%p>, parent: %p, siblings: %p, children: %p" % [
         self.class,
         @path,
         @input_file ? @input_file.relative_to(@site.input_dir).to_s : nil,
         (o = output_file) ? o.relative_to(@site.output_dir).to_s : nil,
         @date.to_s,
+        publish?,
+        advertise?,
         @content&.class,
         @node && parent&.path,
         @node && siblings&.map(&:path),

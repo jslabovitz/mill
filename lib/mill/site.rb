@@ -74,7 +74,6 @@ module Mill
 
     def initialize(params={})
       @resources = {}
-      @documents_tree = Tree::TreeNode.new('')
       @redirects = {}
       super
     end
@@ -125,17 +124,9 @@ module Mill
     end
 
     def add_resource(resource)
+      # ;;warn "adding #{resource.class} as #{resource.path}"
       resource.site = self
-      # ;;warn "added #{resource.class} as #{resource.path}"
       @resources[resource.path] = resource
-      if resource.public_document?
-        node = @documents_tree
-        resource.path.split('/').reject(&:empty?).each do |component|
-          node = node[component] || (node << Tree::TreeNode.new(component))
-        end
-        resource.node = node
-        node.content = resource
-      end
     end
 
     def find_resource(path)
@@ -169,15 +160,15 @@ module Mill
     end
 
     def feed_resources
-      document_resources
+      advertised_resources
     end
 
     def sitemap_resources
-      document_resources
+      advertised_resources
     end
 
-    def document_resources
-      select_resources(&:public_document?).sort_by(&:date)
+    def advertised_resources
+      select_resources(&:advertise?).sort_by(&:date)
     end
 
     def make
@@ -204,21 +195,9 @@ module Mill
 
     def select_resources(selector=nil, &block)
       resources = @resources.values
-      if selector
-        resources.select! do |r|
-          case selector
-          when Class
-            r.kind_of?(selector)
-          else
-            raise
-          end
-        end
-      end
-      if block_given?
-        resources.select!(&block)
-      else
-        resources
-      end
+      resources.select! { |r| r.kind_of?(selector) } if selector
+      resources.select!(&block) if block_given?
+      resources
     end
 
     def list
@@ -233,6 +212,7 @@ module Mill
       build_file_types
       import_resources
       load_resources
+      build_tree
       build_resources
     end
 
@@ -251,6 +231,18 @@ module Mill
       end
     end
 
+    def build_tree
+      @documents_tree = Tree::TreeNode.new('')
+      select_resources(&:advertise?).each do |resource|
+        node = @documents_tree
+        resource.path.split('/').reject(&:empty?).each do |component|
+          node = node[component] || (node << Tree::TreeNode.new(component))
+        end
+        resource.node = node
+        node.content = resource
+      end
+    end
+
     def build_resources
       select_resources.each do |resource|
         # ;;warn "#{resource.path}: building"
@@ -261,7 +253,7 @@ module Mill
     def save
       clean
       @output_dir.mkpath
-      select_resources.each do |resource|
+      select_resources(&:publish?).each do |resource|
         # ;;warn "#{resource.path}: saving"
         resource.save
       end
