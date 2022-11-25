@@ -13,7 +13,6 @@ module Mill
       @site.make
 # ;;@site.print_tree
 # ;;@site.list
-# ;;binding.pry
       @root = @site.find_resource('/')
       @a = @site.find_resource('/a')
       @b = @site.find_resource('/b')
@@ -46,7 +45,7 @@ module Mill
 
     def test_children
       children = @root.children
-      assert { children == [@a, @b] }
+      assert { children == [@a, @b, @c, @d] }
       assert { @a.children.empty? }
     end
 
@@ -62,7 +61,7 @@ module Mill
       a_siblings = @a.siblings
       ba_siblings = @ba.siblings
       assert { root_siblings.empty? }
-      assert { a_siblings == [@b] }
+      assert { a_siblings == [@b, @c, @d] }
       assert { ba_siblings == [@bb] }
     end
 

@@ -16,10 +16,9 @@ module Mill
 
       def initialize(params={})
         super
-        @output_file = @output_file&.replace_extension('.html')
-        @path = '/' + @output_file.relative_to(@site.output_dir).to_s
-        @path.sub!(%r{\.html$}, '') if @site&.shorten_uris
-        @path.sub!(%r{(.*)index$}, '\1')
+        @path.sub!(%r{\.\w+$}, '')
+        @path.sub!(%r{/index$}, '/')
+        @uri = Addressable::URI.encode(@path, Addressable::URI)
       end
 
       def draft=(state)
@@ -58,6 +57,13 @@ module Mill
           @draft,
           @hidden,
         ]
+      end
+
+      def output_file
+        if (file = super)
+          file /= 'index' if @path.end_with?('/')
+          file.add_extension('.html')
+        end
       end
 
       def load
@@ -159,7 +165,7 @@ module Mill
           img_link = Addressable::URI.parse(img['src'])
           raise Error, "No link in <img> element: #{img.to_s}" if img_link.nil? || img_link.empty?
           next if img_link.host
-          img_uri = uri + img_link
+          img_uri = @uri + img_link
           img_resource = @site.find_resource(img_uri) or raise Error, "Can't find image for #{img_uri}"
           img[:width], img[:height] = img_resource.width, img_resource.height
         end
@@ -168,12 +174,12 @@ module Mill
       def shorten_links
         Simple::Builder.find_link_element_attributes(@content).each do |attribute|
           link_uri = Addressable::URI.parse(attribute.value) or raise Error, "Can't parse attribute value: #{attribute.inspect}"
-          link_uri = uri + link_uri
+          link_uri = @uri + link_uri
           if link_uri.relative?
-            self_uri = uri.normalize
+            self_uri = @uri.normalize
             self_uri.scheme = link_uri.scheme = @site.site_uri.scheme
             attribute.value = self_uri.route_to(link_uri)
-            # ;;warn "[#{path}] shortened link #{attribute.parent.name}/@#{attribute.name}: #{link_uri} => #{attribute.value}"
+            # ;;warn "[#{@path}] shortened link #{attribute.parent.name}/@#{attribute.name}: #{link_uri} => #{attribute.value}"
           end
         end
       end
@@ -195,9 +201,6 @@ module Mill
             end
             body_elem.children
           end
-        else
-          warn "Warning: Resource #{path} (#{self.class}) has no content"
-          nil
         end
       end
 

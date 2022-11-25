@@ -15,7 +15,6 @@ module Mill
     attr_accessor :feed_resource
     attr_accessor :sitemap_resource
     attr_accessor :robots_resource
-    attr_accessor :shorten_uris
     attr_accessor :combine_sections
     attr_reader   :modes
     attr_accessor :make_feed
@@ -24,7 +23,6 @@ module Mill
     attr_accessor :allow_robots
     attr_accessor :navigator
     attr_accessor :redirects
-    attr_accessor :resources
 
     DefaultParams = {
       dir: '.',
@@ -33,7 +31,6 @@ module Mill
       code_dir: 'code',
       site_uri: 'http://localhost',
       html_version: :html5,
-      shorten_uris: true,
       make_feed: true,
       make_sitemap: true,
       make_robots: true,
@@ -76,6 +73,8 @@ module Mill
     end
 
     def initialize(params={})
+      @resources = {}
+      @documents_tree = Tree::TreeNode.new('')
       @redirects = {}
       super
     end
@@ -126,10 +125,11 @@ module Mill
     end
 
     def add_resource(resource)
+      resource.site = self
+      # ;;warn "added #{resource.class} as #{resource.path}"
       @resources[resource.path] = resource
-      # ;;warn "added #{resource} as #{resource.path}"
-      if resource.document?
-        node = @resources_tree
+      if resource.public_document?
+        node = @documents_tree
         resource.path.split('/').reject(&:empty?).each do |component|
           node = node[component] || (node << Tree::TreeNode.new(component))
         end
@@ -168,29 +168,16 @@ module Mill
       @site_email
     end
 
-    def select_resources(selector=nil, &block)
-      resources = @resources.values.reject { |r| r.document? && r.draft? }
-      if block_given?
-        resources.select(&block)
-      elsif selector.kind_of?(Class)
-        resources.select { |r| r.kind_of?(selector) }
-      elsif selector
-        resources.select(selector)
-      else
-        resources
-      end
-    end
-
     def feed_resources
-      document_resources.reject(&:hidden?).sort_by(&:date)
+      document_resources
     end
 
     def sitemap_resources
-      document_resources.reject(&:hidden?).sort_by(&:date)
+      document_resources
     end
 
     def document_resources
-      select_resources(&:document?)
+      select_resources(&:public_document?).sort_by(&:date)
     end
 
     def make
@@ -201,7 +188,7 @@ module Mill
     def print_tree(node=nil, level=0)
       unless node
         build
-        node = @resources_tree
+        node = @documents_tree
       end
       if node.is_root?
         print '*'
@@ -213,6 +200,25 @@ module Mill
       print " (#{node.children.length} children)" if node.has_children?
       puts
       node.children { |child| print_tree(child, level + 1) }
+    end
+
+    def select_resources(selector=nil, &block)
+      resources = @resources.values
+      if selector
+        resources.select! do |r|
+          case selector
+          when Class
+            r.kind_of?(selector)
+          else
+            raise
+          end
+        end
+      end
+      if block_given?
+        resources.select!(&block)
+      else
+        resources
+      end
     end
 
     def list
@@ -231,8 +237,6 @@ module Mill
     end
 
     def import_resources
-      @resources = {}
-      @resources_tree = Tree::TreeNode.new('')
       add_files
       add_redirects
       add_feed if @make_feed
@@ -241,14 +245,14 @@ module Mill
     end
 
     def load_resources
-      on_each_resource do |resource|
+      select_resources.each do |resource|
         # ;;warn "#{resource.path}: loading"
         resource.load
       end
     end
 
     def build_resources
-      on_each_resource do |resource|
+      select_resources.each do |resource|
         # ;;warn "#{resource.path}: building"
         resource.build
       end
@@ -257,7 +261,7 @@ module Mill
     def save
       clean
       @output_dir.mkpath
-      on_each_resource do |resource|
+      select_resources.each do |resource|
         # ;;warn "#{resource.path}: saving"
         resource.save
       end
@@ -313,16 +317,6 @@ module Mill
         @site_rsync)
     end
 
-    def on_each_resource(&block)
-      select_resources.each do |resource|
-        begin
-          yield(resource)
-        rescue Error => e
-          raise e, "#{resource.input_file || '-'} (#{resource.path}): #{e}"
-        end
-      end
-    end
-
     private
 
     def resource_class_for_file(file)
@@ -344,44 +338,31 @@ module Mill
         elsif input_file.directory?
           # skip directories
         else (klass = resource_class_for_file(input_file))
-          resource = klass.new(
-            input_file: input_file,
-            output_file: @output_dir / input_file.relative_to(@input_dir),
-            site: self)
+          resource = klass.new(input_file: input_file, path: '/' + input_file.relative_to(@input_dir).to_s)
           add_resource(resource)
         end
       end
     end
 
     def add_feed
-      @feed_resource = Resource::Feed.new(
-        output_file: @output_dir / 'feed.xml',
-        site: self)
+      @feed_resource = Resource::Feed.new(path: '/feed.xml')
       add_resource(@feed_resource)
     end
 
     def add_sitemap
-      @sitemap_resource = Resource::Sitemap.new(
-        output_file: @output_dir / 'sitemap.xml',
-        site: self)
+      @sitemap_resource = Resource::Sitemap.new(path: '/sitemap.xml')
       add_resource(@sitemap_resource)
     end
 
     def add_robots
-      @robots_resource = Resource::Robots.new(
-        output_file: @output_dir / 'robots.txt',
-        site: self)
+      @robots_resource = Resource::Robots.new(path: '/robots.txt')
       add_resource(@robots_resource)
     end
 
     def add_redirects
       if @redirects
         @redirects.each do |from, to|
-          output_file = @output_dir / Path.new(from).relative_to('/').add_extension('.redirect')
-          resource = Resource::Redirect.new(
-            output_file: output_file,
-            redirect_uri: to,
-            site: self)
+          resource = Resource::Redirect.new(path: Path.new(from).add_extension('.redirect').to_s, redirect_uri: to)
           add_resource(resource)
         end
       end
