@@ -2,6 +2,7 @@ input_dir: content
 output_dir: output
 site_title: Test
 site_uri: http://test.test
+make_error: false
 make_feed: false
 make_sitemap: false
 make_robots: false

@@ -17,6 +17,7 @@ module Mill
     attr_accessor :robots_resource
     attr_accessor :combine_sections
     attr_reader   :modes
+    attr_accessor :make_error
     attr_accessor :make_feed
     attr_accessor :make_sitemap
     attr_accessor :make_robots
@@ -31,6 +32,7 @@ module Mill
       code_dir: 'code',
       site_uri: 'http://localhost',
       html_version: :html5,
+      make_error: true,
       make_feed: true,
       make_sitemap: true,
       make_robots: true,
@@ -219,6 +221,7 @@ module Mill
     def import_resources
       add_files
       add_redirects
+      add_error if @make_error
       add_feed if @make_feed
       add_sitemap if @make_sitemap
       add_robots if @make_robots
@@ -334,6 +337,25 @@ module Mill
           add_resource(resource)
         end
       end
+    end
+
+    def add_error
+      content = Simple::Builder.parse_html(
+        Simple::Builder.markdown_to_html(
+          %Q{
+            Something went wrong.
+            The page you were looking for doesn’t exist or couldn’t be displayed.
+            Please try another option.
+          }.gsub(/\s+/, ' ').strip
+        )
+      )
+      klass = @file_types['text/html']
+      @error_resource = klass.new(
+        path: '/error.html',
+        title: 'Error',
+        hidden: true,
+        content: content)
+      add_resource(@error_resource)
     end
 
     def add_feed
