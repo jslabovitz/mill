@@ -81,19 +81,17 @@ module Mill
           case @input_file.extname.downcase
           when '.md', '.mdown', '.markdown'
             parse_text_header
-            @content = Simple::Builder.markdown_to_html(@content)
+            @content = Simple::Builder.parse_html_document(
+              Kramdown::Document.new(@content.strip).to_html)
           when '.textile'
             parse_text_header
-            @content = Simple::Builder.textile_to_html(@content)
+            @content = Simple::Builder.parse_html_document(
+              RedCloth.new(@content, [:no_span_caps]).to_html)
           when '.htm', '.html'
+            @content = Simple::Builder.parse_html_document(@content)
             parse_html_header
           else
             raise "Unknown document type: #{@input_file}"
-          end
-          begin
-            @content = Simple::Builder.parse_html(@content)
-          rescue Error => e
-            raise e, "#{@input_file}: #{e}"
           end
         end
       end

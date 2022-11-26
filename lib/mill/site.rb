@@ -340,8 +340,8 @@ module Mill
     end
 
     def add_error
-      content = Simple::Builder.parse_html(
-        Simple::Builder.markdown_to_html(
+      content = Simple::Builder.parse_html_document(
+        Simple::Builder.string_to_html(
           %Q{
             Something went wrong.
             The page you were looking for doesn’t exist or couldn’t be displayed.
