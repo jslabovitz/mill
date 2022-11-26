@@ -1,12 +1,4 @@
-- replace error.md document with built?
-    - don't include date
-
-- move common #build_html uses into Simple::Builder/fragments
-
 - rename #final_content -> #to_html, #feed_content -> #feed_items
-
-- remove textile/pre processors from Resource::Text
-    - streamline to allow domain-specific subclassing if needed
 
 - rename Resource #load to #import
 
