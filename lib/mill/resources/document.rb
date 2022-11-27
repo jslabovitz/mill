@@ -82,11 +82,11 @@ module Mill
           when '.md', '.mdown', '.markdown'
             parse_text_header
             @content = Simple::Builder.parse_html_document(
-              Kramdown::Document.new(@content.strip).to_html)
+              Kramdown::Document.new((@content || '').strip).to_html)
           when '.textile'
             parse_text_header
             @content = Simple::Builder.parse_html_document(
-              RedCloth.new(@content, [:no_span_caps]).to_html)
+              RedCloth.new((@content || '').strip, [:no_span_caps]).to_html)
           when '.htm', '.html'
             @content = Simple::Builder.parse_html_document(@content)
             parse_html_header
