@@ -5,9 +5,9 @@ module Mill
     class Document < Resource
 
       FileTypes = %w{
-        text/plain
         text/html
         text/markdown
+        text/textile
       }
 
       attr_accessor :title
@@ -78,16 +78,16 @@ module Mill
         super
         if @input_file
           @content = @input_file.read
-          case @input_file.extname.downcase
-          when '.md', '.mdown', '.markdown'
+          case MIME::Types.of(@input_file.to_s).last
+          when 'text/markdown'
             parse_text_header
             @content = Simple::Builder.parse_html_document(
               Kramdown::Document.new((@content || '').strip).to_html)
-          when '.textile'
+          when 'text/textile'
             parse_text_header
             @content = Simple::Builder.parse_html_document(
               RedCloth.new((@content || '').strip, [:no_span_caps]).to_html)
-          when '.htm', '.html'
+          when 'text/html'
             @content = Simple::Builder.parse_html_document(@content)
             parse_html_header
           else

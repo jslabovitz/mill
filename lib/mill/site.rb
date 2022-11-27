@@ -76,6 +76,7 @@ module Mill
     def initialize(params={})
       @resources = {}
       @redirects = {}
+      MIME::Types.add(MIME::Type.new(['text/textile', %w[textile]]))
       super
     end
 
@@ -314,11 +315,12 @@ module Mill
     private
 
     def resource_class_for_file(file)
-      type = MIME::Types.of(file.to_s).first
-      if type && (klass = @file_types[type.content_type])
+      types = MIME::Types.of(file.to_s)
+      content_tyoe = types.last&.content_type
+      if content_tyoe && (klass = @file_types[content_tyoe])
         klass
       else
-        raise Error, "Unknown file type: #{file.to_s.inspect} (#{MIME::Types.of(file.to_s).join(', ')})"
+        raise Error, "Unknown file type: #{file.to_s.inspect} (#{types.join(', ')})"
       end
     end
 
