@@ -30,7 +30,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'set_params', '~> 0.2'
   s.add_dependency 'simple-builder', '~> 0.1'
   s.add_dependency 'simple-pipeline', '~> 0.1'
-  s.add_dependency 'web-checker', '~> 0.5'
 
   s.add_development_dependency 'bundler', '~> 2.2'
   s.add_development_dependency 'minitest', '~> 5.16'

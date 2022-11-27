@@ -270,11 +270,11 @@ module Mill
       end
     end
 
-    def check
+    def check(external: true)
       build
-      checker = WebChecker.new(site_uri: @site_uri, site_dir: @output_dir)
-      checker.check
-      checker.report
+      select_resources { |r| r.content.kind_of?(Nokogiri::HTML4::Document) }.each do |resource|
+        resource.check_links(external: external)
+      end
     end
 
     def snapshot
