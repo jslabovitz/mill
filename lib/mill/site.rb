@@ -15,7 +15,6 @@ module Mill
     attr_accessor :feed_resource
     attr_accessor :sitemap_resource
     attr_accessor :robots_resource
-    attr_accessor :combine_sections
     attr_reader   :modes
     attr_accessor :make_error
     attr_accessor :make_feed
