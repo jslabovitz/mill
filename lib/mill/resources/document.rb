@@ -133,7 +133,7 @@ module Mill
       def head(&block)
         Simple::Builder.build_html do |html|
           html.head do
-            title = @title || Simple::Builder.title_element&.text
+            title = @title || Simple::Builder.find_title_element(@content)&.text
             html.title { html << title.to_html } if title
             yield(html) if block_given?
             if (head = content_head)
