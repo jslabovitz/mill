@@ -1,3 +1,7 @@
+- add pipelines
+    - generate feed separately from HTML
+    - generate ICML, etc., separately
+
 - rename #final_content -> #to_html, #feed_content -> #feed_items
 
 - rename Resource #load to #import
