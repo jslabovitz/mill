@@ -24,7 +24,12 @@ module Mill
       end
 
       def load
-        info = ImageSize.path(@input_file.to_s)
+        raise Error, "Input must be file" unless @input.kind_of?(Path)
+        begin
+          info = ImageSize.path(@input.to_s)
+        rescue => e
+          raise Error, "Can't load image file #{@input.to_s.inspect}: #{e}"
+        end
         @width, @height = *info.size
         super
       end

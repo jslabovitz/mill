@@ -76,44 +76,56 @@ module Mill
 
       def load
         super
-        if @input_file
-          @content = @input_file.read
-          case MIME::Types.of(@input_file.to_s).last
-          when 'text/markdown'
-            parse_text_header
-            @content = Simple::Builder.parse_html_document(
-              Kramdown::Document.new((@content || '').strip).to_html)
-          when 'text/textile'
-            parse_text_header
-            @content = Simple::Builder.parse_html_document(
-              RedCloth.new((@content || '').strip, [:no_span_caps]).to_html)
-          when 'text/html'
-            @content = Simple::Builder.parse_html_document(@content)
-            parse_html_header
+        if @input
+          case @input
+          when Path
+            @input_type = MIME::Types.of(@input.to_s).last
+            text = @input.read
+          when String
+            raise unless @input_type
+            text = @input.dup
+          when Nokogiri::HTML4::Document
+            @document = @input
           else
-            raise "Unknown document type: #{@input_file}"
+            raise Error, "Unknown input: #{@input.class}"
           end
+          case @input_type
+          when 'text/markdown'
+            header, text = parse_text_header(text)
+            @document = Simple::Builder.parse_html_document(
+              Kramdown::Document.new((text || '').strip).to_html)
+          when 'text/textile'
+            header, text = parse_text_header(text)
+            @document = Simple::Builder.parse_html_document(
+              RedCloth.new((text || '').strip, [:no_span_caps]).to_html)
+          when 'text/html'
+            @document ||= Simple::Builder.parse_html_document(text)
+            header = parse_html_header(@document)
+          else
+            raise "Unknown/missing document type: #{@input_type.inspect}"
+          end
+          set(header)
         end
       end
 
-      def parse_html_header
-        @title ||= Simple::Builder.title_element(@content)&.text
-        set(Simple::Builder.find_meta_info(@content))
+      def parse_html_header(doc)
+        Simple::Builder.find_meta_info(doc).merge(title: @title || Simple::Builder.find_title_element(doc)&.text)
       end
 
-      def parse_text_header
-        if @content.split(/\n/, 2).first =~ /^\w+:\s+/
-          header, @content = @content.split(/\n\n/, 2)
-          params = header.split(/\n/).map do |line|
+      def parse_text_header(text)
+        header = {}
+        if text.split(/\n/, 2).first =~ /^\w+:\s+/
+          header, text = text.split(/\n\n/, 2)
+          header = header.split(/\n/).map do |line|
             key, value = line.strip.split(/:\s*/, 2)
             key = key.gsub('-', '_').downcase.to_sym
             [key, value]
           end.to_h
-          set(params)
         end
+        [header, text]
       end
 
-      def final_content
+      def build
         builder = case @site&.html_version
         when :html4
           :build_html4_document
@@ -122,50 +134,44 @@ module Mill
         else
           raise "Unknown HTML version: #{@site&.html_version.inspect}"
         end
-        Simple::Builder.send(builder) do |doc|
-          doc.html(lang: 'en') do |html|
-            html.parent << head
-            html.parent << body
+        @output = Simple::Builder.send(builder) do |html|
+          html.html(lang: 'en') do
+            html.head do
+              build_head(html)
+            end
+            html.body do
+              build_body(html)
+            end
           end
         end.to_html
       end
 
-      def head(&block)
-        Simple::Builder.build_html do |html|
-          html.head do
-            title = @title || Simple::Builder.find_title_element(@content)&.text
-            html.title { html << title.to_html } if title
-            yield(html) if block_given?
-            if (head = content_head)
-              head.children.reject { |e| e.text? || e.name == 'title' }.each do |e|
-                html << e.to_html
-              end
-            end
+      def build_head(html)
+        title = @title || Simple::Builder.find_title_element(@document)&.text
+        html.title { html << title.to_html } if title
+        if (head = document_head&.children)
+          head.reject { |e| e.text? || e.name == 'title' }.each do |e|
+            html << e.to_html
           end
         end
       end
 
-      def body(&block)
-        Simple::Builder.build_html do |html|
-          html.body do
-            if (elem = content_body)
-              html << elem.children.to_html
-            end
-            yield(html) if block_given?
-          end
+      def build_body(html)
+        if (elem = document_body&.children)
+          html << elem.to_html
         end
       end
 
-      def content_head
-        @content && Simple::Builder.find_head_element(@content)
+      def document_head
+        Simple::Builder.find_head_element(@document)
       end
 
-      def content_body
-        @content && Simple::Builder.find_body_element(@content)
+      def document_body
+        Simple::Builder.find_body_element(@document)
       end
 
       def add_image_sizes
-        @content.xpath('//img').each do |img|
+        @document.xpath('//img').each do |img|
           # skip elements that already have width/height defined
           next if img[:width] || img[:height]
           img_link = Addressable::URI.parse(img['src'])
@@ -178,7 +184,7 @@ module Mill
       end
 
       def shorten_links
-        Simple::Builder.find_link_element_attributes(@content).each do |attribute|
+        Simple::Builder.find_link_element_attributes(@document).each do |attribute|
           link_uri = Addressable::URI.parse(attribute.value) or raise Error, "Can't parse attribute value: #{attribute.inspect}"
           link_uri = @uri + link_uri
           if link_uri.relative?
@@ -191,33 +197,15 @@ module Mill
       end
 
       def feed_content
-        if (body = content_body)
-          # If we have a main element (<div class="main"> or <main>), use that.
-          # Otherwise, use the body, but delete header/footer/nav divs or elements.
-          if (main = body.at_xpath('//div[@id="main"]')) || (main = body.at_xpath('//main'))
-            main.children
-          elsif (article = body.at_xpath('//article'))
-            article.children
-          else
-            body_elem = body.clone
-            %w{header nav masthead footer}.each do |name|
-              if (elem = body_elem.at_xpath("//div[@id=\"#{name}\"]")) || (elem = body_elem.at_xpath("//#{name}"))
-                elem.remove
-              end
-            end
-            body_elem.children
-          end
-        end
+        document_body&.children
       end
 
-      def make_link
-        Simple::Builder.build_html do |html|
-          html.a(href: @uri) { html << @title.to_html }
-        end
+      def build_link(html)
+        html.a(href: @uri) { html << @title.to_html }
       end
 
       def check_links(external: false)
-        attrs = Simple::Builder.find_link_element_attributes(@content)
+        attrs = Simple::Builder.find_link_element_attributes(@document)
         unless attrs.empty?
           attrs.map { |u| Addressable::URI.parse(u) }.each do |uri|
             uri = @uri + uri if uri.relative?

@@ -6,7 +6,7 @@ module Mill
 
       def build
         resources = @site.feed_resources
-        builder = Nokogiri::XML::Builder.new do |xml|
+        @output = Nokogiri::XML::Builder.new do |xml|
           xml.feed(xmlns: 'http://www.w3.org/2005/Atom') do
             xml.id(@site.tag_uri)
             xml.title(@site.site_title) if @site.site_title
@@ -31,15 +31,11 @@ module Mill
               end
             end
           end
-        end
-        @content = builder.doc
-        super
+        end.doc
       end
 
-      def link_html
-        Simple::Builder.build_html do |html|
-          html.link(href: uri, rel: 'alternate', type: 'application/atom+xml')
-        end
+      def build_link(html)
+        html.link(href: uri, rel: 'alternate', type: 'application/atom+xml')
       end
 
     end

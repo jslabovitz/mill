@@ -5,13 +5,12 @@ module Mill
     FileTypes = []
     ListKeys = {
       path:         nil,
-      input_file:   nil,
+      input:        nil,
       output_file:  nil,
       date:         nil,
       publish?:     nil,
       advertise?:   nil,
       class:        nil,
-      content:      proc { |v| v ? ('%s (%dKB)' % [v.class, (v.to_s.length / 1024.0).ceil]) : nil },
       parent:       proc { |v| v&.path },
       siblings:     proc { |v| v&.map(&:path) },
       children:     proc { |v| v&.map(&:path) },
@@ -20,9 +19,10 @@ module Mill
 
     attr_accessor :path
     attr_reader   :uri
-    attr_accessor :input_file
+    attr_accessor :input
+    attr_accessor :input_type
     attr_reader   :date
-    attr_accessor :content
+    attr_reader   :output
     attr_accessor :site
     attr_accessor :node
 
@@ -30,7 +30,9 @@ module Mill
 
     def initialize(params={})
       super
-      @date = (@input_file ? @input_file.mtime.to_datetime : DateTime.now) unless defined?(@date)
+      unless defined?(@date)
+        @date = @input&.kind_of?(Path) ? @input.mtime.to_datetime : DateTime.now
+      end
       @uri = Addressable::URI.encode(@path, Addressable::URI)
     end
 
@@ -72,15 +74,21 @@ module Mill
     end
 
     def inspect
-      "<%p> path: %p, input_file: %p, output_file: %p, date: %s, publish: %p, advertise: %p, content: <%p>, parent: %p, siblings: %p, children: %p" % [
+      "<%p> path: %p, input: %p, output_file: %p, date: %s, publish: %p, advertise: %p, parent: %p, siblings: %p, children: %p" % [
         self.class,
         @path,
-        @input_file ? @input_file.relative_to(@site.input_dir).to_s : nil,
+        case @input
+        when Path
+          @input.relative_to(@site.input_dir).to_s
+        when String
+          @input[0..9].inspect
+        else
+          "<#{@input.class}>"
+        end,
         (o = output_file) ? o.relative_to(@site.output_dir).to_s : nil,
         @date.to_s,
         publish?,
         advertise?,
-        @content&.class,
         @node && parent&.path,
         @node && siblings&.map(&:path),
         @node && children&.map(&:path),
@@ -135,10 +143,6 @@ module Mill
       :weekly
     end
 
-    def final_content
-      @content
-    end
-
     def load
       # implemented in subclass
     end
@@ -150,15 +154,19 @@ module Mill
     def save
       file = output_file
       file.dirname.mkpath
-      if (content = final_content)
-        # ;;warn "#{@path}: writing #{@input_file} to #{file}"
-        file.write(content.to_s)
+      if @output
+        # ;;warn "#{@path}: writing output to #{file}"
+        file.write(@output)
         file.utime(@date.to_time, @date.to_time)
-      elsif @input_file
-        # ;;warn "#{@path}: copying #{@input_file} to #{file}"
-        @input_file.copy(file)
+      elsif @input.kind_of?(Path)
+        # ;;warn "#{@path}: copying #{@input} to #{file}"
+        @input.copy(file)
+      elsif @input
+        # ;;warn "#{@path}: writing input to #{file}"
+        file.write(@input)
+        file.utime(@date.to_time, @date.to_time)
       else
-        raise Error, "#{@path}: Can't build resource without content or input file"
+        raise Error, "#{@path}: Can't build resource without output or input file"
       end
     end
 

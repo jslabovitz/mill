@@ -7,7 +7,7 @@ module Mill
     class Sitemap < Resource
 
       def build
-        builder = Nokogiri::XML::Builder.new do |xml|
+        @output = Nokogiri::XML::Builder.new do |xml|
           xml.urlset('xmlns' => 'http://www.sitemaps.org/schemas/sitemap/0.9',
                      'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance',
                      'xsi:schemaLocation' => 'http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd') do
@@ -19,9 +19,7 @@ module Mill
               end
             end
           end
-        end
-        @content = builder.doc
-        super
+        end.doc
       end
 
     end

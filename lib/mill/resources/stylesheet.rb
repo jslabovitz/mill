@@ -10,11 +10,12 @@ module Mill
 
       def load
         super
-        unless @input_file.basename.to_s.end_with?('.min.css')
+        raise Error, "Input must be file" unless @input.kind_of?(Path)
+        unless @input.basename.to_s.end_with?('.min.css')
           begin
-            @content = SassC::Engine.new(@input_file.read, syntax: :scss, style: :compressed).render
+            @output = SassC::Engine.new(@input.read, syntax: :scss, style: :compressed).render
           rescue SassC::SyntaxError => e
-            raise "#{input_file}: error parsing CSS: #{e}"
+            raise "#{@input}: error parsing CSS: #{e}"
           end
         end
       end

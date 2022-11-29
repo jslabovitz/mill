@@ -272,7 +272,7 @@ module Mill
 
     def check(external: true)
       build
-      select_resources { |r| r.content.kind_of?(Nokogiri::HTML4::Document) }.each do |resource|
+      select_resources { |r| r.output.kind_of?(Nokogiri::HTML4::Document) }.each do |resource|
         resource.check_links(external: external)
       end
     end
@@ -334,28 +334,29 @@ module Mill
         elsif input_file.directory?
           # skip directories
         else (klass = resource_class_for_file(input_file))
-          resource = klass.new(input_file: input_file, path: '/' + input_file.relative_to(@input_dir).to_s)
+          resource = klass.new(input: input_file, path: '/' + input_file.relative_to(@input_dir).to_s)
           add_resource(resource)
         end
       end
     end
 
     def add_error
-      content = Simple::Builder.parse_html_document(
-        Simple::Builder.string_to_html(
+      input = Simple::Builder.parse_html_document(
+        Kramdown::Document.new(
           %Q{
             Something went wrong.
             The page you were looking for doesn’t exist or couldn’t be displayed.
             Please try another option.
           }.gsub(/\s+/, ' ').strip
-        )
+        ).to_html
       )
       klass = @file_types['text/html']
       @error_resource = klass.new(
         path: '/error.html',
         title: 'Error',
         hidden: true,
-        content: content)
+        input: input,
+        input_type: 'text/html')
       add_resource(@error_resource)
     end
 
