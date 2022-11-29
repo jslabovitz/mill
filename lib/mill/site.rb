@@ -53,11 +53,14 @@ module Mill
     end
 
     def self.load_yaml(params)
-      yaml_file = params[:dir] / 'mill.yaml'
-      if yaml_file.exist?
-        yaml = YAML.load_file(yaml_file, permitted_classes: [Date, Symbol])
-        params.update(yaml.map { |k, v| [k.to_sym, v] }.to_h)
+      if (yaml_file = ENV['MILL_CONFIG'])
+        yaml_file = Path.new(yaml_file).expand_path
+      else
+        yaml_file = params[:dir] / 'mill.yaml'
       end
+      raise Error, "Config file does not exist: #{yaml_file}" unless yaml_file.exist?
+      yaml = YAML.load_file(yaml_file, permitted_classes: [Date, Symbol])
+      params.update(yaml.map { |k, v| [k.to_sym, v] }.to_h)
     end
 
     def self.load_code(params)
