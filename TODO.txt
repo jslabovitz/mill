@@ -1,8 +1,7 @@
 - add pipelines
     - generate feed separately from HTML
+        - pull content (body) from original HTML, not from decorated
     - generate ICML, etc., separately
-
-- rename #final_content -> #to_html, #feed_content -> #feed_items
 
 - rename Resource #load to #import
 
