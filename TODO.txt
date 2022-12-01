@@ -3,18 +3,6 @@
         - pull content (body) from original HTML, not from decorated
     - generate ICML, etc., separately
 
-- rename Resource #load to #import
-
-- rename Resource #build to #process
-
-- split Resource#date into Resource#published & Resource#updated
-    + add <published> element to feed
-    + #published should be stated date (e.g., from header)
-    + #updated should be mtime of source file
-
-- make Navigator into more generic Collection
-    + include Enumerable
-
 - save compressed versions of files
     - write compressed versions along with non-compressed
     - serve compressed versions if asked by client
