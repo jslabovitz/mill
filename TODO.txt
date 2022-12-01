@@ -1,7 +1,3 @@
 - generate ICML
 
 - add pipelines
-
-- save compressed versions of files
-    - write compressed versions along with non-compressed
-    - serve compressed versions if asked by client
