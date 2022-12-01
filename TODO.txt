@@ -1,7 +1,6 @@
+- generate ICML
+
 - add pipelines
-    - generate feed separately from HTML
-        - pull content (body) from original HTML, not from decorated
-    - generate ICML, etc., separately
 
 - save compressed versions of files
     - write compressed versions along with non-compressed
