@@ -15,13 +15,11 @@ module Mill
     attr_accessor :feed_resource
     attr_accessor :sitemap_resource
     attr_accessor :robots_resource
-    attr_reader   :modes
     attr_accessor :make_error
     attr_accessor :make_feed
     attr_accessor :make_sitemap
     attr_accessor :make_robots
     attr_accessor :allow_robots
-    attr_accessor :navigator
     attr_accessor :redirects
 
     DefaultParams = {
@@ -36,7 +34,6 @@ module Mill
       make_sitemap: true,
       make_robots: true,
       allow_robots: true,
-      modes: [:html],
     }
 
     include SetParams
@@ -114,10 +111,6 @@ module Mill
 
     def html_version=(version)
       @html_version = version.to_sym
-    end
-
-    def modes=(modes)
-      @modes = modes.map(&:to_sym)
     end
 
     def build_file_types
