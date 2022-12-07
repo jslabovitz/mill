@@ -5,8 +5,8 @@ require 'mill'
 begin
   site = Mill::Site.load
   case (command = ARGV.shift)
-  when nil, 'make'
-    site.make
+  when nil, 'build'
+    site.build
   when 'clean'
     site.clean
   when 'check'

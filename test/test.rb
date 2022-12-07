@@ -10,7 +10,7 @@ module Mill
 
     def setup
       @site = Site.load('test')
-      @site.make
+      @site.build
 # ;;@site.print_tree
 # ;;@site.list
       @root = @site.find_resource('/')

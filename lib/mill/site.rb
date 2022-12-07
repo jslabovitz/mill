@@ -78,7 +78,7 @@ module Mill
       @resources = {}
       @redirects = {}
       MIME::Types.add(MIME::Type.new(['text/textile', %w[textile]]))
-      build_file_types
+      make_file_types
     end
 
     def dir=(d)
@@ -113,7 +113,7 @@ module Mill
       @html_version = version.to_sym
     end
 
-    def build_file_types
+    def make_file_types
       @file_types = {}
       self.class.subclasses(Resource).each do |resource_class|
         resource_class.const_get(:FileTypes).each do |type|
@@ -170,14 +170,9 @@ module Mill
       select_resources(&:advertise?).sort_by(&:date)
     end
 
-    def make
-      build
-      save_resources
-    end
-
     def print_tree(node=nil, level=0)
       unless node
-        build
+        load
         node = @documents_tree
       end
       if node.is_root?
@@ -200,7 +195,7 @@ module Mill
     end
 
     def list
-      build
+      load
       select_resources.each do |resource|
         resource.list
         puts
@@ -208,10 +203,16 @@ module Mill
     end
 
     def build
+      load
+      build_resources
+      check
+      save_resources
+    end
+
+    def load
       import_resources
       load_resources
-      build_tree
-      build_resources
+      make_documents_tree
     end
 
     def import_resources
@@ -230,7 +231,7 @@ module Mill
       end
     end
 
-    def build_tree
+    def make_documents_tree
       @documents_tree = Tree::TreeNode.new('')
       select_resources(&:advertise?).each do |resource|
         node = @documents_tree
@@ -267,7 +268,7 @@ module Mill
     end
 
     def check(external: false)
-      build
+      build if @resources.empty?
       select_resources { |r| r.output.kind_of?(Nokogiri::HTML4::Document) }.each do |resource|
         resource.check_links(external: external)
       end
