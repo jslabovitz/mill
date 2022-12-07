@@ -133,7 +133,7 @@ module Mill
       @resources[path] || @resources[path + '/']
     end
 
-    def home_resource
+    def root_resource
       find_resource('/')
     end
 

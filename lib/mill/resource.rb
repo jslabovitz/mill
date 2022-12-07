@@ -62,7 +62,7 @@ module Mill
     end
 
     def root?
-      self == @site.home_resource
+      self == @site.root_resource
     end
 
     def output_file
