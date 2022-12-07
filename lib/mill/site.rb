@@ -273,7 +273,7 @@ module Mill
       end
     end
 
-    def check(external: true)
+    def check(external: false)
       build
       select_resources { |r| r.output.kind_of?(Nokogiri::HTML4::Document) }.each do |resource|
         resource.check_links(external: external)
