@@ -85,6 +85,7 @@ module Mill
             raise unless @input_type
             text = @input.dup
           when Nokogiri::HTML4::Document
+            @input_type = 'text/html'
             @document = @input
           else
             raise Error, "Unknown input: #{@input.class}"
