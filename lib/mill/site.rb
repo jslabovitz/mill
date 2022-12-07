@@ -77,10 +77,11 @@ module Mill
     end
 
     def initialize(params={})
+      super
       @resources = {}
       @redirects = {}
       MIME::Types.add(MIME::Type.new(['text/textile', %w[textile]]))
-      super
+      build_file_types
     end
 
     def dir=(d)
@@ -214,7 +215,6 @@ module Mill
     end
 
     def build
-      build_file_types
       import_resources
       load_resources
       build_tree
