@@ -179,7 +179,7 @@ module Mill
 
     def make
       build
-      save
+      save_resources
     end
 
     def print_tree(node=nil, level=0)
@@ -256,7 +256,7 @@ module Mill
       end
     end
 
-    def save
+    def save_resources
       clean
       @output_dir.mkpath
       select_resources(&:publish?).each do |resource|
