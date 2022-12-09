@@ -14,6 +14,7 @@ require 'simple-pipeline'
 require 'time'
 require 'tree'
 
+require 'mill/archive'
 require 'mill/error'
 require 'mill/navigator'
 require 'mill/resource'

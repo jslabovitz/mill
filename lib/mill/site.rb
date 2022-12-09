@@ -75,7 +75,7 @@ module Mill
 
     def initialize(params={})
       super
-      @resources = {}
+      @archive = Archive.new
       @redirects = {}
       MIME::Types.add(MIME::Type.new(['text/textile', %w[textile]]))
       make_file_types
@@ -125,16 +125,15 @@ module Mill
     def add_resource(resource)
       # ;;warn "adding #{resource.class} as #{resource.path}"
       resource.site = self
-      @resources[resource.path] = resource
+      @archive << resource
     end
 
     def find_resource(path)
-      path = path.path if path.kind_of?(Addressable::URI)
-      @resources[path] || @resources[path + '/']
+      @archive[path]
     end
 
     def root_resource
-      find_resource('/')
+      @archive['/']
     end
 
     def tag_uri
@@ -167,7 +166,7 @@ module Mill
     end
 
     def advertised_resources
-      select_resources(&:advertise?).sort_by(&:date)
+      @archive.select(&:advertise?).sort_by(&:date)
     end
 
     def print_tree(node=nil, level=0)
@@ -187,16 +186,9 @@ module Mill
       node.children { |child| print_tree(child, level + 1) }
     end
 
-    def select_resources(selector=nil, &block)
-      resources = @resources.values
-      resources.select! { |r| r.kind_of?(selector) } if selector
-      resources.select!(&block) if block_given?
-      resources
-    end
-
     def list
       load
-      select_resources.each do |resource|
+      @archive.select.each do |resource|
         resource.list
         puts
       end
@@ -225,7 +217,7 @@ module Mill
     end
 
     def load_resources
-      select_resources.each do |resource|
+      @archive.each do |resource|
         # ;;warn "#{resource.path}: loading"
         resource.load
       end
@@ -233,7 +225,7 @@ module Mill
 
     def make_documents_tree
       @documents_tree = Tree::TreeNode.new('')
-      select_resources(&:advertise?).each do |resource|
+      @archive.select(&:advertise?).each do |resource|
         node = @documents_tree
         resource.path.split('/').reject(&:empty?).each do |component|
           node = node[component] || (node << Tree::TreeNode.new(component))
@@ -244,7 +236,7 @@ module Mill
     end
 
     def build_resources
-      select_resources.each do |resource|
+      @archive.each do |resource|
         # ;;warn "#{resource.path}: building"
         resource.build
       end
@@ -253,7 +245,7 @@ module Mill
     def save_resources
       clean
       @output_dir.mkpath
-      select_resources(&:publish?).each do |resource|
+      @archive.select(&:publish?).each do |resource|
         # ;;warn "#{resource.path}: saving"
         resource.save
       end
@@ -268,8 +260,8 @@ module Mill
     end
 
     def check(external: false)
-      build if @resources.empty?
-      select_resources { |r| r.output.kind_of?(Nokogiri::HTML4::Document) }.each do |resource|
+      build if @archive.empty?
+      @archive.select { |r| r.output.kind_of?(Nokogiri::HTML4::Document) }.each do |resource|
         resource.check_links(external: external)
       end
     end
