@@ -261,8 +261,14 @@ module Mill
 
     def check(external: false)
       build if @archive.empty?
-      @archive.select { |r| r.output.kind_of?(Nokogiri::HTML4::Document) }.each do |resource|
-        resource.check_links(external: external)
+      @archive.select(Resource::Document).each do |resource|
+        resource.links.each do |link|
+          begin
+            check_uri(link, external: external)
+          rescue Error => e
+            warn "#{resource.path}: #{e}"
+          end
+        end
       end
     end
 
@@ -370,6 +376,42 @@ module Mill
           resource = Resource::Redirect.new(path: Path.new(from).add_extension('.redirect').to_s, redirect_uri: to)
           add_resource(resource)
         end
+      end
+    end
+
+    def check_uri(uri, external: false)
+      if uri.relative?
+        unless find_resource(uri.path)
+          raise Error, "NOT FOUND: #{uri}"
+        end
+      elsif external
+        if uri.scheme.start_with?('http')
+          # warn "checking external URI: #{uri}"
+          begin
+            check_external_uri(uri)
+          rescue => e
+            raise Error, "external URI: #{uri}: #{e}"
+          end
+        else
+          warn "Don't know how to check URI: #{uri}"
+        end
+      end
+    end
+
+    def check_external_uri(uri)
+      response = HTTP.timeout(3).get(uri)
+      case response.code
+      when 200...300
+        # ignore
+      when 300...400
+        redirect_uri = Addressable::URI.parse(response.headers['Location'])
+        check_external_uri(uri + redirect_uri)
+      when 404
+        raise Error, "URI not found: #{uri}"
+      when 999
+        # ignore bogus LinkedIn status
+      else
+        raise Error, "Bad status from #{uri}: #{response.inspect}"
       end
     end
 

@@ -205,42 +205,10 @@ module Mill
         html.a(href: @uri) { html << @title.to_html }
       end
 
-      def check_links(external: false)
-        attrs = Simple::Builder.find_link_element_attributes(@document)
-        unless attrs.empty?
-          attrs.map { |u| Addressable::URI.parse(u) }.each do |uri|
-            uri = @uri + uri if uri.relative?
-            uri.normalize!
-            if uri.relative?
-              unless @site.find_resource(uri.path)
-                warn "#{@uri}: NOT FOUND: #{uri}"
-              end
-            elsif external && uri.absolute? && uri.scheme.start_with?('http')
-              # warn "#{@uri}: checking external: #{uri}"
-              begin
-                check_external_uri(uri)
-              rescue => e
-                warn "#{@uri}: external URI: #{uri}: #{e}"
-              end
-            end
-          end
-        end
-      end
-
-      def check_external_uri(uri)
-        response = HTTP.timeout(3).get(uri)
-        case response.code
-        when 200...300
-          # ignore
-        when 300...400
-          redirect_uri = Addressable::URI.parse(response.headers['Location'])
-          check_external_uri(uri + redirect_uri)
-        when 404
-          raise Error, "URI not found: #{uri}"
-        when 999
-          # ignore bogus LinkedIn status
-        else
-          raise Error, "Bad status: #{response.inspect}"
+      def links
+        raise "#{@path}: Can't get links for empty document: #{self}" unless @document
+        Simple::Builder.find_link_element_attributes(@document).map do |u|
+          (@uri + u).normalize
         end
       end
 
