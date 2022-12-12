@@ -125,6 +125,7 @@ module Mill
     def add_resource(resource)
       # ;;warn "adding #{resource.class} as #{resource.path}"
       resource.site = self
+      resource.load
       @archive << resource
     end
 
@@ -171,7 +172,7 @@ module Mill
 
     def print_tree(node=nil, level=0)
       unless node
-        load
+        load_resources
         node = @documents_tree
       end
       if node.is_root?
@@ -187,7 +188,7 @@ module Mill
     end
 
     def list
-      load
+      load_resources
       @archive.select.each do |resource|
         resource.list
         puts
@@ -195,32 +196,20 @@ module Mill
     end
 
     def build
-      load
+      load_resources
       build_resources
       check
       save_resources
     end
 
-    def load
-      import_resources
-      load_resources
-      make_documents_tree
-    end
-
-    def import_resources
+    def load_resources
       add_files
       add_redirects
       add_error if @make_error
       add_feed if @make_feed
       add_sitemap if @make_sitemap
       add_robots if @make_robots
-    end
-
-    def load_resources
-      @archive.each do |resource|
-        # ;;warn "#{resource.path}: loading"
-        resource.load
-      end
+      make_documents_tree
     end
 
     def make_documents_tree
