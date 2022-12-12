@@ -29,7 +29,6 @@ module Mill
 
       def load
         @output = "%s %d" % [@redirect_uri, @redirect_code]
-        super
       end
 
     end

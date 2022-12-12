@@ -31,7 +31,6 @@ module Mill
           raise Error, "Can't load image file #{@input.to_s.inspect}: #{e}"
         end
         @width, @height = *info.size
-        super
       end
 
     end

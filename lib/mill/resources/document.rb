@@ -75,7 +75,6 @@ module Mill
       end
 
       def load
-        super
         if @input
           case @input
           when Path
