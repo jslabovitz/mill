@@ -27,7 +27,7 @@ module Mill
         ]
       end
 
-      def load
+      def build
         @output = "%s %d" % [@redirect_uri, @redirect_code]
       end
 
