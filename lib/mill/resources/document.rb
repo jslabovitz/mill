@@ -201,7 +201,7 @@ module Mill
       end
 
       def build_link(html)
-        html.a(href: @uri) { html << @title.to_html }
+        html.a(href: @uri) { html << (@title || @path).to_html }
       end
 
       def links
