@@ -170,6 +170,10 @@ module Mill
       @archive.select(&:advertise?).sort_by(&:date)
     end
 
+    def select_resources(*args)
+      @archive.select(*args)
+    end
+
     def print_tree(node=nil, level=0)
       unless node
         load_resources
