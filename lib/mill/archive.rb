@@ -33,6 +33,10 @@ module Mill
       resources
     end
 
+    def delete(resource)
+      @resources.delete(resource.path) or raise Error, "No resource with path #{resource.path.inspect}"
+    end
+
   end
 
 end

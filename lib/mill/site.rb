@@ -207,6 +207,8 @@ module Mill
 
     def build
       load_resources
+      convert_resources
+      make_documents_tree
       build_resources
       check
       save_resources
@@ -219,7 +221,6 @@ module Mill
       add_feed if @make_feed
       add_sitemap if @make_sitemap
       add_robots if @make_robots
-      make_documents_tree
     end
 
     def make_documents_tree
@@ -241,10 +242,21 @@ module Mill
       end
     end
 
+    def convert_resources
+      @archive.select { |r| r.respond_to?(:convert) }.each do |resource|
+        new_resource = resource.convert
+        @archive.delete(resource)
+        if new_resource
+          new_resource.load
+          add_resource(new_resource)
+        end
+      end
+    end
+
     def save_resources
       clean
       @output_dir.mkpath
-      @archive.select(&:publish?).each do |resource|
+      @archive.each do |resource|
         # ;;warn "#{resource.path}: saving"
         resource.save
       end
@@ -306,17 +318,21 @@ module Mill
         @site_rsync)
     end
 
-    private
-
     def resource_class_for_file(file)
       types = MIME::Types.of(file.to_s)
-      content_tyoe = types.last&.content_type
-      if content_tyoe && (klass = @file_types[content_tyoe])
+      content_type = types.last&.content_type
+      if content_type && (klass = resource_class_for_type(content_type))
         klass
       else
         raise Error, "Unknown file type: #{file.to_s.inspect} (#{types.join(', ')})"
       end
     end
+
+    def resource_class_for_type(type)
+      @file_types[type]
+    end
+
+    private
 
     def add_files
       raise Error, "Input directory not found: #{@input_dir}" unless @input_dir.exist?
@@ -344,13 +360,12 @@ module Mill
           }.gsub(/\s+/, ' ').strip
         ).to_html
       )
-      klass = @file_types['text/html']
+      klass = resource_class_for_type('text/html')
       @error_resource = klass.new(
         path: '/error.html',
         title: 'Error',
         hidden: true,
-        input: input,
-        input_type: 'text/html')
+        input: input)
       add_resource(@error_resource)
     end
 

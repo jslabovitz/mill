@@ -8,7 +8,6 @@ module Mill
       input:        nil,
       output_file:  nil,
       date:         nil,
-      publish?:     nil,
       advertise?:   nil,
       class:        nil,
       parent:       proc { |v| v&.path },
@@ -20,7 +19,6 @@ module Mill
     attr_accessor :path
     attr_reader   :uri
     attr_accessor :input
-    attr_accessor :input_type
     attr_reader   :date
     attr_reader   :output
     attr_accessor :site
@@ -53,10 +51,6 @@ module Mill
       end
     end
 
-    def publish?
-      true
-    end
-
     def advertise?
       false
     end
@@ -74,7 +68,7 @@ module Mill
     end
 
     def inspect
-      "<%p> path: %p, input: %p, output_file: %p, date: %s, publish: %p, advertise: %p, parent: %p, siblings: %p, children: %p" % [
+      "<%p> path: %p, input: %p, output_file: %p, date: %s, advertise: %p, parent: %p, siblings: %p, children: %p" % [
         self.class,
         @path,
         case @input
@@ -87,7 +81,6 @@ module Mill
         end,
         (o = output_file) ? o.relative_to(@site.output_dir).to_s : nil,
         @date.to_s,
-        publish?,
         advertise?,
         @node && parent&.path,
         @node && siblings&.map(&:path),

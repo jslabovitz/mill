@@ -33,15 +33,11 @@ module Mill
       assert { @ba }
       assert { @bb }
       assert { @c }
-      assert { @d }
+      assert { @d == nil }
     end
 
     def test_hidden
       assert { @c.hidden? }
-    end
-
-    def test_draft
-      assert { @d.draft? }
     end
 
     def test_children
