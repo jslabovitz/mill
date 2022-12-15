@@ -199,6 +199,12 @@ module Mill
       end
     end
 
+    def print_file_types
+      @file_types.sort.each do |type, klass|
+        puts '%-40s %s' % [type, klass]
+      end
+    end
+
     def build
       load_resources
       build_resources
