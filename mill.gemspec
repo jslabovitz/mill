@@ -20,10 +20,10 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'addressable', '~> 2.8'
   s.add_dependency 'http', '~> 5.1'
-  s.add_dependency 'image_size', '~> 3.1'
+  s.add_dependency 'image_size', '~> 3.2'
   s.add_dependency 'kramdown', '~> 2.4'
   s.add_dependency 'mime-types', '~> 3.4'
-  s.add_dependency 'nokogiri', '~> 1.13'
+  s.add_dependency 'nokogiri', '~> 1.14'
   s.add_dependency 'path', '~> 2.0'
   s.add_dependency 'RedCloth', '~> 4.3'
   s.add_dependency 'rubypants', '~> 0.7'
