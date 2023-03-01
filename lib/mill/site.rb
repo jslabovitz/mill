@@ -115,7 +115,7 @@ module Mill
 
     def make_file_types
       @file_types = {}
-      self.class.subclasses(Resource).each do |resource_class|
+      Resource.subclasses.each do |resource_class|
         resource_class.const_get(:FileTypes).each do |type|
           @file_types[type] = resource_class
         end
