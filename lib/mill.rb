@@ -14,7 +14,6 @@ require 'tree'
 
 require 'mill/archive'
 require 'mill/error'
-require 'mill/navigator'
 require 'mill/resource'
 require 'mill/resources/blob'
 require 'mill/resources/document'
