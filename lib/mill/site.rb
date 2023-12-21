@@ -73,7 +73,7 @@ module Mill
       super
       @archive = Archive.new
       @redirects = {}
-      MIME::Types.add(MIME::Type.new(['text/textile', %w[textile]])) unless MIME::Types['text/textile']
+      MIME::Types.add(MIME::Type.new(['text/textile', %w[textile]])) if MIME::Types['text/textile'].empty?
       make_file_types
     end
 
