@@ -11,6 +11,9 @@
 
 - use Simple::Config instead of lots of ivars in Site
 
+- remove Textile usage
+  - implement only in sites that need it (eg, MTS)
+
 - build site to memory without cleaning/saving
 
 - add 'serve' command to serve from memory with WEBrick, etc.
