@@ -1,10 +1,6 @@
-#encoding: utf-8
-
-require_relative 'lib/mill/version'
-
 Gem::Specification.new do |s|
   s.name          = 'mill'
-  s.version       = Mill::VERSION
+  s.version       = '0.17'
   s.summary       = 'A simple but useful static site generator.'
   s.author        = 'John Labovitz'
   s.email         = 'johnl@johnlabovitz.com'
