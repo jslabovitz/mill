@@ -320,13 +320,9 @@ module Mill
     end
 
     def resource_class_for_file(file)
-      types = MIME::Types.of(file.to_s)
-      content_type = types.last&.content_type
-      if content_type && (klass = resource_class_for_type(content_type))
-        klass
-      else
-        raise Error, "Unknown file type: #{file.to_s.inspect} (#{types.join(', ')})"
-      end
+      types = MIME::Types.type_for(file.to_s)
+      content_type = types.last&.content_type or raise Error, "Can't determine content type: #{file.to_s.inspect}"
+      resource_class_for_type(content_type) or raise Error, "Unknown file type: #{file.to_s.inspect} (#{types.join(', ')})"
     end
 
     def resource_class_for_type(type)
