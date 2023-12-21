@@ -12,6 +12,16 @@ require 'simple-builder'
 require 'time'
 require 'tree'
 
+class Class
+
+  def self.subclasses
+    constants
+      .map { |c| const_get(c) }
+      .select { |c| c.kind_of?(Class) }
+  end
+
+end
+
 require 'mill/archive'
 require 'mill/error'
 require 'mill/resource'

@@ -26,15 +26,6 @@ module Mill
 
     include SetParams
 
-    def self.inherited(subclass)
-      @@subclasses ||= []
-      @@subclasses << subclass
-    end
-
-    def self.subclasses
-      @@subclasses
-    end
-
     def initialize(params={})
       super
       unless defined?(@date)

@@ -62,15 +62,11 @@ module Mill
 
     def self.load_code(params)
       if (site_file = params[:dir] / params[:code_dir] / 'site.rb').exist?
-        Kernel.require(site_file.expand_path.without_extension.to_s)
-        site_classes = subclasses(self)
-        raise Error, "More than one Site class defined" if site_classes.length > 1
+        Kernel.load(site_file.expand_path.to_s)
+        site_classes = subclasses
+        raise Error, "More than one #{self.class} class defined" if site_classes.length > 1
         site_classes.first
       end
-    end
-
-    def self.subclasses(klass)
-      ObjectSpace.each_object(Class).select { |c| c < klass }
     end
 
     def initialize(params={})
@@ -115,10 +111,15 @@ module Mill
 
     def make_file_types
       @file_types = {}
-      Resource.subclasses.each do |resource_class|
+      get_file_types(Resource)
+    end
+
+    def get_file_types(klass)
+      klass.subclasses.each do |resource_class|
         resource_class.const_get(:FileTypes).each do |type|
           @file_types[type] = resource_class
         end
+        get_file_types(resource_class)
       end
     end
 
