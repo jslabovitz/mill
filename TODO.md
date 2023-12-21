@@ -1,9 +1,11 @@
 # TODO
 
-- splilt out commands to separate files
+- split out commands to separate files
   - use Simple::Command
 
 - move logic of trivial commands from Site into command class
+
+- use Simple::Printable instead of ListKeys, etc.
 
 - use RunCommand instead of `system`
 
