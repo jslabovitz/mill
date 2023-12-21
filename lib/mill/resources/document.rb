@@ -34,10 +34,10 @@ module Mill
         @hidden == true
       end
 
-      def inspect
-        super + ", title: %p, hidden: %p" % [
-          @title,
-          @hidden,
+      def printable
+        super + [
+          :title,
+          :hidden,
         ]
       end
 

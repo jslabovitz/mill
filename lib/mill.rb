@@ -9,6 +9,7 @@ require 'RedCloth'
 require 'sassc'
 require 'set_params'
 require 'simple-builder'
+require 'simple-printer'
 require 'time'
 require 'tree'
 

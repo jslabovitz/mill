@@ -20,10 +20,10 @@ module Mill
         @redirect_uri = Addressable::URI.parse(uri)
       end
 
-      def inspect
-        super + ", redirect_uri: %p, redirect_code: %p" % [
-          @redirect_uri.to_s,
-          @redirect_code,
+      def printable
+        super + [
+          :redirect_uri,
+          :redirect_code,
         ]
       end
 

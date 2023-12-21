@@ -4,10 +4,10 @@ module Mill
 
     class Markup < Resource
 
-      def inspect
-        super + ", header: %p, text: %p" % [
-          @header,
-          @text[0..9] + '...'
+      def printable
+        super + [
+          :header,
+          { label: 'Text', value: @text[0...100] + '...' },
         ]
       end
 

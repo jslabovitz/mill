@@ -16,10 +16,10 @@ module Mill
       attr_accessor :width
       attr_accessor :height
 
-      def inspect
-        super + ", width: %p, height: %p" % [
-          @width,
-          @height,
+      def printable
+        super + [
+          :width,
+          :height,
         ]
       end
 

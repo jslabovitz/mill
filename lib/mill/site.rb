@@ -77,6 +77,10 @@ module Mill
       make_file_types
     end
 
+    def inspect
+      "<#{self.class}>"
+    end
+
     def dir=(d)
       @dir = d.kind_of?(Path) ? d : Path.new(d)
     end

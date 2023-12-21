@@ -3,18 +3,6 @@ module Mill
   class Resource
 
     FileTypes = []
-    ListKeys = {
-      path:         nil,
-      input:        nil,
-      output_file:  nil,
-      date:         nil,
-      advertise?:   nil,
-      class:        nil,
-      parent:       proc { |v| v&.path },
-      siblings:     proc { |v| v&.map(&:path) },
-      children:     proc { |v| v&.map(&:path) },
-    }
-    ListKeyWidth = ListKeys.keys.map(&:length).max
 
     attr_accessor :path
     attr_reader   :uri
@@ -25,6 +13,7 @@ module Mill
     attr_accessor :node
 
     include SetParams
+    include Simple::Printer::Printable
 
     def initialize(params={})
       super
@@ -32,6 +21,10 @@ module Mill
         @date = @input&.kind_of?(Path) ? @input.mtime.to_datetime : DateTime.now
       end
       @uri = Addressable::URI.encode(@path, Addressable::URI)
+    end
+
+    def inspect
+      "<#{self.class}>"
     end
 
     def date=(date)
@@ -67,48 +60,30 @@ module Mill
       end
     end
 
-    def inspect
-      "<%p> path: %p, input: %p, output_file: %p, date: %s, advertise: %p, parent: %p, siblings: %p, children: %p" % [
-        self.class,
-        @path,
-        case @input
-        when Path
-          @input.relative_to(@site.input_dir).to_s
-        when String
-          @input[0..9].inspect
-        else
-          "<#{@input.class}>"
-        end,
-        (o = output_file) ? o.relative_to(@site.output_dir).to_s : nil,
-        @date.to_s,
-        advertise?,
-        @node && parent&.path,
-        @node && siblings&.map(&:path),
-        @node && children&.map(&:path),
+    def printable
+      [
+        :path,
+        { key: :input, value: input_description },
+        { key: :output_file, value: (o = output_file) ? o.relative_to(@site.output_dir).to_s : nil },
+        :date,
+        :advertise?,
+        :class,
+        { label: 'Parent', value: parent&.path || '-' },
+        { label: 'Siblings', value: siblings&.map(&:path)&.join(', ') || '-' },
+        { label: 'Children', value: children&.map(&:path)&.join(', ') || '-' },
       ]
     end
 
-    def list
-      ListKeys.keys.each { |k| list_key(k) }
-      puts
-    end
-
-    def list_key(key)
-      print '%*s: ' % [ListKeyWidth, key]
-      value = send(key)
-      value = (converter = ListKeys[key]) ? converter.call(value) : value
-      case value
-      when Array
-        if value.empty?
-          puts '-'
-        else
-          value.each_with_index do |v, i|
-            print '%*s  ' % [ListKeyWidth, ''] if i > 0
-            puts (v.nil? ? '-' : v)
-          end
-        end
+    def input_description
+      case @input
+      when Path
+        @input.relative_to(@site.input_dir).to_s
+      when String
+        (@input[0...100] + '...').inspect
+      when nil
+        '-'
       else
-        puts (value.nil? ? '-' : value)
+        "<#{@input.class}>"
       end
     end
 
