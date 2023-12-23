@@ -277,7 +277,7 @@ module Mill
 
     def check(external: false)
       build if @archive.empty?
-      @archive.select(Resource::Document).each do |resource|
+      @archive.select(Resource::Page).each do |resource|
         resource.links.each do |link|
           begin
             check_uri(link, external: external)

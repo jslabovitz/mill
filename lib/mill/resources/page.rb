@@ -2,7 +2,7 @@ module Mill
 
   class Resource
 
-    class Document < Resource
+    class Page < Resource
 
       FileTypes = %w{
         text/html

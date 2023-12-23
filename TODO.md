@@ -1,7 +1,5 @@
 # TODO
 
-- rename Resource::Document -> HTML
-
 - rename Archive/@archive -> Resources/@resources
 
 - split out commands to separate files
