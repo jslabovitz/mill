@@ -104,19 +104,19 @@ module Mill
     end
 
     def siblings
-      @node && @node.siblings.map(&:content).compact
+      @node ? @node.siblings.map(&:content).compact : []
     end
 
     def previous_sibling
-      @node.previous_sibling&.content
+      @node&.previous_sibling&.content
     end
 
     def next_sibling
-      @node.next_sibling&.content
+      @node&.next_sibling&.content
     end
 
     def children
-      @node && @node.children.map(&:content).compact
+      @node ? @node.children.map(&:content).compact : []
     end
 
     def absolute_uri
