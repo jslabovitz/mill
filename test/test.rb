@@ -13,7 +13,7 @@ module Mill
       @site.build
       @site.save
 # ;;pp @site
-# ;;@site.print_tree
+# ;;@site.resources.print_tree
 # ;;@site.list
       @root = @site.find_resource('/')
       @a = @site.find_resource('/a')

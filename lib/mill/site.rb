@@ -174,27 +174,6 @@ module Mill
       @resources.select(&:advertise?).sort_by(&:date)
     end
 
-    def select_resources(*args)
-      @resources.select(*args)
-    end
-
-    def print_tree(node=nil, level=0)
-      unless node
-        load_resources
-        node = @documents_tree
-      end
-      if node.is_root?
-        print '*'
-      else
-        print "\t" * level
-      end
-      print " #{node.name.inspect}"
-      print " <#{node.content&.path}>"
-      print " (#{node.children.length} children)" if node.has_children?
-      puts
-      node.children { |child| print_tree(child, level + 1) }
-    end
-
     def list
       build
       @resources.each do |resource|
@@ -212,7 +191,6 @@ module Mill
     def build
       load_resources
       convert_resources
-      make_documents_tree
       build_resources
       check
     end
@@ -224,18 +202,6 @@ module Mill
       add_feed if @make_feed
       add_sitemap if @make_sitemap
       add_robots if @make_robots
-    end
-
-    def make_documents_tree
-      @documents_tree = Tree::TreeNode.new('')
-      @resources.select(&:advertise?).each do |resource|
-        node = @documents_tree
-        resource.path.split('/').reject(&:empty?).each do |component|
-          node = node[component] || (node << Tree::TreeNode.new(component))
-        end
-        resource.node = node
-        node.content = resource
-      end
     end
 
     def build_resources
@@ -275,7 +241,7 @@ module Mill
 
     def check(external: false)
       build if @resources.empty?
-      @resources.select(Resource::Page).each do |resource|
+      @resources.of_class(Resource::Page).each do |resource|
         resource.links.each do |link|
           begin
             check_uri(link, external: external)
