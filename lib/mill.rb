@@ -23,9 +23,9 @@ class Class
 
 end
 
-require 'mill/archive'
 require 'mill/error'
 require 'mill/resource'
+require 'mill/resources'
 require 'mill/resources/blob'
 require 'mill/resources/feed'
 require 'mill/resources/image'

@@ -1,6 +1,6 @@
 module Mill
 
-  class Archive
+  class Resources
 
     include SetParams
 

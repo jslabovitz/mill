@@ -71,7 +71,7 @@ module Mill
 
     def initialize(params={})
       super
-      @archive = Archive.new
+      @resources = Resources.new
       @redirects = {}
       MIME::Types.add(MIME::Type.new(['text/textile', %w[textile]])) if MIME::Types['text/textile'].empty?
       make_file_types
@@ -131,15 +131,15 @@ module Mill
       # ;;warn "adding #{resource.class} as #{resource.path}"
       resource.site = self
       resource.load
-      @archive << resource
+      @resources << resource
     end
 
     def find_resource(path)
-      @archive[path]
+      @resources[path]
     end
 
     def root_resource
-      @archive['/']
+      @resources['/']
     end
 
     def tag_uri
@@ -172,11 +172,11 @@ module Mill
     end
 
     def advertised_resources
-      @archive.select(&:advertise?).sort_by(&:date)
+      @resources.select(&:advertise?).sort_by(&:date)
     end
 
     def select_resources(*args)
-      @archive.select(*args)
+      @resources.select(*args)
     end
 
     def print_tree(node=nil, level=0)
@@ -198,7 +198,7 @@ module Mill
 
     def list
       build
-      @archive.each do |resource|
+      @resources.each do |resource|
         resource.print
         puts
       end
@@ -229,7 +229,7 @@ module Mill
 
     def make_documents_tree
       @documents_tree = Tree::TreeNode.new('')
-      @archive.select(&:advertise?).each do |resource|
+      @resources.select(&:advertise?).each do |resource|
         node = @documents_tree
         resource.path.split('/').reject(&:empty?).each do |component|
           node = node[component] || (node << Tree::TreeNode.new(component))
@@ -240,16 +240,16 @@ module Mill
     end
 
     def build_resources
-      @archive.each do |resource|
+      @resources.each do |resource|
         # ;;warn "#{resource.path}: building"
         resource.build
       end
     end
 
     def convert_resources
-      @archive.select { |r| r.respond_to?(:convert) }.each do |resource|
+      @resources.select { |r| r.respond_to?(:convert) }.each do |resource|
         new_resource = resource.convert
-        @archive.delete(resource)
+        @resources.delete(resource)
         if new_resource
           new_resource.load
           add_resource(new_resource)
@@ -260,7 +260,7 @@ module Mill
     def save
       clean
       @output_dir.mkpath
-      @archive.each do |resource|
+      @resources.each do |resource|
         # ;;warn "#{resource.path}: saving"
         resource.save
       end
@@ -275,8 +275,8 @@ module Mill
     end
 
     def check(external: false)
-      build if @archive.empty?
-      @archive.select(Resource::Page).each do |resource|
+      build if @resources.empty?
+      @resources.select(Resource::Page).each do |resource|
         resource.links.each do |link|
           begin
             check_uri(link, external: external)
