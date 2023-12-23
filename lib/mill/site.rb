@@ -163,15 +163,15 @@ module Mill
     end
 
     def feed_resources
-      advertised_resources
+      primary_resources
     end
 
     def sitemap_resources
-      advertised_resources
+      primary_resources
     end
 
-    def advertised_resources
-      @resources.select(&:advertise?).sort_by(&:date)
+    def primary_resources
+      @resources.select(&:primary?).sort_by(&:date)
     end
 
     def list
@@ -329,7 +329,7 @@ module Mill
       @error_resource = klass.new(
         path: '/error.html',
         title: 'Error',
-        hidden: true,
+        primary: false,
         input: input)
       add_resource(@error_resource)
     end

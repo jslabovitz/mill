@@ -37,8 +37,8 @@ module Mill
       assert { @d == nil }
     end
 
-    def test_hidden
-      assert { @c.hidden? }
+    def test_primary
+      assert { !@c.primary? }
     end
 
     def test_children

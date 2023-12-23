@@ -9,40 +9,19 @@ module Mill
       }
 
       attr_accessor :title
-      attr_reader   :hidden
       attr_reader   :document
 
       def initialize(params={})
-        super
+        super({ primary: true }.merge(params))
         @path.sub!(%r{\.\w+$}, '')
         @path.sub!(%r{/index$}, '/')
         @uri = Addressable::URI.encode(@path, Addressable::URI)
       end
 
-      def hidden=(state)
-        @hidden = case state
-        when 'false', FalseClass, nil
-          false
-        when 'true', TrueClass
-          true
-        else
-          raise ArgumentError, "Invalid hidden value: #{state.inspect}"
-        end
-      end
-
-      def hidden?
-        @hidden == true
-      end
-
       def printable
         super + [
           :title,
-          :hidden,
         ]
-      end
-
-      def advertise?
-        !hidden?
       end
 
       def output_file

@@ -12,7 +12,7 @@ module Mill
 
     def <<(resource)
       @dictionary[resource.path] = resource
-      if resource.advertise?
+      if resource.primary?
         node = find_or_create_node(resource.path)
         resource.node = node
         node.content = resource

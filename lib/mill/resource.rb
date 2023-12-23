@@ -6,6 +6,7 @@ module Mill
 
     attr_accessor :path
     attr_reader   :uri
+    attr_reader   :primary
     attr_accessor :input
     attr_reader   :date
     attr_reader   :output
@@ -16,7 +17,7 @@ module Mill
     include Simple::Printer::Printable
 
     def initialize(params={})
-      super
+      super({ primary: false }.merge(params))
       unless defined?(@date)
         @date = @input&.kind_of?(Path) ? @input.mtime.to_datetime : DateTime.now
       end
@@ -25,6 +26,17 @@ module Mill
 
     def inspect
       "<#{self.class}>"
+    end
+
+    def primary=(state)
+      @primary = case state
+      when nil, 'false', FalseClass
+        false
+      when 'true', TrueClass
+        true
+      else
+        raise
+      end
     end
 
     def date=(date)
@@ -44,8 +56,8 @@ module Mill
       end
     end
 
-    def advertise?
-      false
+    def primary?
+      @primary
     end
 
     def root?
@@ -66,7 +78,7 @@ module Mill
         { key: :input, value: input_description },
         { key: :output_file, value: (o = output_file) ? o.relative_to(@site.output_dir).to_s : nil },
         :date,
-        :advertise?,
+        :primary?,
         :class,
         { label: 'Parent', value: parent&.path || '-' },
         { label: 'Siblings', value: siblings&.map(&:path)&.join(', ') || '-' },
