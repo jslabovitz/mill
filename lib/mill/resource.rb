@@ -5,10 +5,10 @@ module Mill
     FileTypes = []
 
     attr_accessor :path
-    attr_reader   :uri
-    attr_reader   :primary
+    attr_accessor :uri
+    attr_accessor :primary
     attr_accessor :input
-    attr_reader   :date
+    attr_accessor :date
     attr_reader   :output
     attr_accessor :site
     attr_accessor :node
@@ -26,34 +26,6 @@ module Mill
 
     def inspect
       "<#{self.class}>"
-    end
-
-    def primary=(state)
-      @primary = case state
-      when nil, 'false', FalseClass
-        false
-      when 'true', TrueClass
-        true
-      else
-        raise
-      end
-    end
-
-    def date=(date)
-      @date = case date
-      when String
-        begin
-          DateTime.parse(date.to_s)
-        rescue ArgumentError => e
-          raise Error, "Can't parse date: #{date.inspect} (#{e})"
-        end
-      when Time, Date
-        date.to_datetime
-      when DateTime, nil
-        date
-      else
-        raise Error, "Can't assign 'date' attribute: #{date.inspect}"
-      end
     end
 
     def primary?

@@ -20,20 +20,20 @@ module Mill
         else
           raise Error, "Unknown markup input: #{@input.class}"
         end
-        @header = {}
+        @header = HashStruct.new
         if @text.split(/\n/, 2).first =~ /^\w+:\s+/
-          header_block, @text = @text.split(/\n\n/, 2)
-          @header = {}
-          header_block.split(/\n/).each do |line|
+          fields = {}
+          lines, @text = @text.split(/\n\n/, 2)
+          lines.split(/\n/).each do |line|
             if line.start_with?(/\s+/)
-              key = @header.keys.last
-              @header[key] += line
+              key = fields.keys.last
+              fields[key] += line
             else
               key, value = line.strip.split(/:\s*/, 2)
-              key = key.gsub('-', '_').downcase.to_sym
-              @header[key] = value
+              fields[key] = value
             end
           end
+          @header = HashStruct.new(fields)
         end
       end
 
@@ -46,7 +46,7 @@ module Mill
       end
 
       def convert
-        return nil if @header[:draft] == 'true' || @header[:draft] == true
+        return nil if @header[:draft]
         convert_class.new(
           path: @path.sub(%r{\.\w+$}, '.html'),
           input: parse_text(@text),

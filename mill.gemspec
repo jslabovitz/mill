@@ -15,6 +15,7 @@ Gem::Specification.new do |s|
   s.require_path  = 'lib'
 
   s.add_dependency 'addressable', '~> 2.8'
+  s.add_dependency 'hashstruct', '~> 1.5'
   s.add_dependency 'http', '~> 5.1'
   s.add_dependency 'image_size', '~> 3.3'
   s.add_dependency 'kramdown', '~> 2.4'

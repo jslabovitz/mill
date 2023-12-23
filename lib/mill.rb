@@ -1,6 +1,7 @@
 require 'addressable'
-require 'image_size'
+require 'hashstruct'
 require 'http'
+require 'image_size'
 require 'kramdown'
 require 'mime/types'
 require 'nokogiri'
