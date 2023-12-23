@@ -254,12 +254,12 @@ module Mill
 
     def snapshot
       @output_dir.chdir do
-        system('git',
+        run_command('git',
           'init') unless Path.new('.git').exist?
-        system('git',
+        run_command('git',
           'add',
           '.')
-        system('git',
+        run_command('git',
           'commit',
           '-a',
           '-m',
@@ -269,21 +269,21 @@ module Mill
 
     def diff
       @output_dir.chdir do
-        system('git',
+        run_command('git',
           'diff')
       end
     end
 
     def upload
       raise "site_rsync not defined" unless @site_rsync
-      system('rsync',
+      run_command('rsync',
         '--progress',
         '--verbose',
         '--archive',
         # '--append-verify',
         '--exclude=.git',
         '--delete-after',
-        @output_dir.to_s,
+        @output_dir,
         @site_rsync)
     end
 
