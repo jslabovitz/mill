@@ -7,6 +7,7 @@ begin
   case (command = ARGV.shift)
   when nil, 'build'
     site.build
+    site.save
   when 'clean'
     site.clean
   when 'check'

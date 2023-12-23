@@ -11,6 +11,7 @@ module Mill
     def setup
       @site = Site.load('test')
       @site.build
+      @site.save
 # ;;pp @site
 # ;;@site.print_tree
 # ;;@site.list

@@ -197,9 +197,9 @@ module Mill
     end
 
     def list
-      load_resources
-      @archive.select.each do |resource|
-        resource.list
+      build
+      @archive.each do |resource|
+        resource.print
         puts
       end
     end
@@ -216,7 +216,6 @@ module Mill
       make_documents_tree
       build_resources
       check
-      save_resources
     end
 
     def load_resources
@@ -258,7 +257,7 @@ module Mill
       end
     end
 
-    def save_resources
+    def save
       clean
       @output_dir.mkpath
       @archive.each do |resource|
