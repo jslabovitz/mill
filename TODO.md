@@ -1,8 +1,5 @@
 # TODO
 
-- use HashStruct for markup header?
-  - then remove writers from relevant resources
-
 - split out commands to separate files
   - use Simple::Command
 
