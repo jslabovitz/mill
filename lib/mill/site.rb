@@ -70,10 +70,9 @@ module Mill
     end
 
     def initialize(params={})
+      @redirects = {}
       super
       @resources = Resources.new
-      @redirects = {}
-      MIME::Types.add(MIME::Type.new(['text/textile', %w[textile]])) if MIME::Types['text/textile'].empty?
       make_file_types
     end
 
