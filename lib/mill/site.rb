@@ -21,6 +21,7 @@ module Mill
     attr_accessor :make_robots
     attr_accessor :allow_robots
     attr_accessor :redirects
+    attr_reader   :resources
 
     DefaultParams = {
       dir: '.',
