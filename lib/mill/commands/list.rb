@@ -6,7 +6,11 @@ module Mill
 
       def run(args)
         super
-        @site.list
+        @site.build
+        @site.resources.each do |resource|
+          resource.print
+          puts
+        end
       end
 
     end

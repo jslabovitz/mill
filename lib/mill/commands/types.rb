@@ -6,7 +6,9 @@ module Mill
 
       def run(args)
         super
-        @site.print_file_types
+        @site.file_types.sort.each do |type, klass|
+          puts '%-40s %s' % [type, klass]
+        end
       end
 
     end

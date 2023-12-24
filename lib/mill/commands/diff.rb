@@ -6,7 +6,9 @@ module Mill
 
       def run(args)
         super
-        @site.diff
+        @site.output_dir.chdir do
+          run_command(%w[git diff])
+        end
       end
 
     end

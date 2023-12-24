@@ -22,6 +22,7 @@ module Mill
     attr_accessor :allow_robots
     attr_accessor :redirects
     attr_reader   :resources
+    attr_reader   :file_types
 
     DefaultParams = {
       dir: '.',
@@ -175,20 +176,6 @@ module Mill
       @resources.select(&:primary?).sort_by(&:date)
     end
 
-    def list
-      build
-      @resources.each do |resource|
-        resource.print
-        puts
-      end
-    end
-
-    def print_file_types
-      @file_types.sort.each do |type, klass|
-        puts '%-40s %s' % [type, klass]
-      end
-    end
-
     def build
       load_resources
       convert_resources
@@ -224,19 +211,16 @@ module Mill
     end
 
     def save
-      clean
-      @output_dir.mkpath
-      @resources.each do |resource|
-        # ;;warn "#{resource.path}: saving"
-        resource.save
-      end
-    end
-
-    def clean
       if @output_dir.exist?
         @output_dir.children.reject { |p| p.basename.to_s == '.git' }.each do |path|
           path.rm_rf
         end
+      else
+        @output_dir.mkpath
+      end
+      @resources.each do |resource|
+        # ;;warn "#{resource.path}: saving"
+        resource.save
       end
     end
 
@@ -251,41 +235,6 @@ module Mill
           end
         end
       end
-    end
-
-    def snapshot
-      @output_dir.chdir do
-        run_command('git',
-          'init') unless Path.new('.git').exist?
-        run_command('git',
-          'add',
-          '.')
-        run_command('git',
-          'commit',
-          '-a',
-          '-m',
-          'Update.')
-      end
-    end
-
-    def diff
-      @output_dir.chdir do
-        run_command('git',
-          'diff')
-      end
-    end
-
-    def upload
-      raise "site_rsync not defined" unless @site_rsync
-      run_command('rsync',
-        '--progress',
-        '--verbose',
-        '--archive',
-        # '--append-verify',
-        '--exclude=.git',
-        '--delete-after',
-        @output_dir,
-        @site_rsync)
     end
 
     def resource_class_for_file(file)
