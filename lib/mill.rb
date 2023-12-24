@@ -11,6 +11,7 @@ require 'run-command'
 require 'sassc'
 require 'set_params'
 require 'simple-builder'
+require 'simple-command'
 require 'simple-printer'
 require 'time'
 require 'tree'
@@ -25,6 +26,7 @@ class Class
 
 end
 
+require 'mill/command'
 require 'mill/error'
 require 'mill/resource'
 require 'mill/resources'
@@ -40,3 +42,5 @@ require 'mill/resources/sitemap'
 require 'mill/resources/stylesheet'
 require 'mill/resources/textile'
 require 'mill/site'
+
+Path.new(__FILE__).dirname.glob('mill/commands/*.rb').each { |p| require p }

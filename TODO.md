@@ -1,8 +1,5 @@
 # TODO
 
-- split out commands to separate files
-  - use Simple::Command
-
 - move logic of trivial commands from Site into command class
 
 - use Simple::Config instead of lots of ivars in Site

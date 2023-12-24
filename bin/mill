@@ -2,33 +2,4 @@
 
 require 'mill'
 
-begin
-  site = Mill::Site.load
-  case (command = ARGV.shift)
-  when nil, 'build'
-    site.build
-    site.save
-  when 'clean'
-    site.clean
-  when 'check'
-    site.check
-  when 'list'
-    site.list
-  when 'tree'
-    site.build
-    site.print_tree
-  when 'types'
-    site.print_file_types
-  when 'diff'
-    site.diff
-  when 'snapshot'
-    site.snapshot
-  when 'upload'
-    site.upload
-  else
-    raise "Unknown command: #{command.inspect}"
-  end
-rescue Mill::Error => e
-  warn e
-  exit(1)
-end
+SimpleCommand::Commander.new.run(ARGV)
