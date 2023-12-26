@@ -28,6 +28,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'sassc', '~> 2.4'
   s.add_dependency 'set_params', '~> 0.2'
   s.add_dependency 'simple-command', '~> 0.4'
+  s.add_dependency 'simple-config', '~> 0.1'
   s.add_dependency 'simple-builder', '~> 0.3'
   s.add_dependency 'simple-printer', '~> 0.3'
 

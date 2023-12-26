@@ -2,78 +2,37 @@ module Mill
 
   class Site
 
-    attr_reader   :dir
-    attr_reader   :input_dir
-    attr_reader   :output_dir
-    attr_reader   :code_dir
-    attr_accessor :site_rsync
-    attr_accessor :site_title
-    attr_reader   :site_uri
-    attr_reader   :site_email
-    attr_reader   :site_control_date
-    attr_reader   :html_version
-    attr_accessor :feed_resource
-    attr_accessor :sitemap_resource
-    attr_accessor :robots_resource
-    attr_accessor :make_error
-    attr_accessor :make_feed
-    attr_accessor :make_sitemap
-    attr_accessor :make_robots
-    attr_accessor :allow_robots
-    attr_accessor :redirects
+    attr_accessor :config
+    attr_reader   :feed_resource
+    attr_reader   :sitemap_resource
+    attr_reader   :robots_resource
+    attr_reader   :redirects
     attr_reader   :resources
     attr_reader   :file_types
 
-    DefaultParams = {
-      dir: '.',
-      input_dir: 'content',
-      output_dir: 'public_html',
-      code_dir: 'code',
-      site_uri: 'http://localhost',
-      html_version: :html5,
-      make_error: true,
-      make_feed: true,
-      make_sitemap: true,
-      make_robots: true,
-      allow_robots: true,
-    }
-
-    include SetParams
-
     def self.load(dir=nil)
-      params = DefaultParams.dup
-      params[:dir] = Path.new(dir || params[:dir])
-      [:input_dir, :output_dir, :code_dir].each do |key|
-        params[key] = params[:dir] / params[key]
-      end
-      load_yaml(params)
-      klass = load_code(params) || self
-      klass.new(params)
+      config = BaseConfig.make(dir: dir)
+      config = config.load_yaml(config.dir / ConfigFileName)
+      site_file = config.dir / config.code_dir / 'site.rb'
+      klass = load_site_class(site_file)
+      klass.new(config)
     end
 
-    def self.load_yaml(params)
-      if (yaml_file = ENV['MILL_CONFIG'])
-        yaml_file = Path.new(yaml_file).expand_path
+    def self.load_site_class(site_file)
+      Kernel.load(site_file.expand_path.to_s) if site_file.exist?
+      site_classes = subclasses
+      if site_classes.length == 0
+        self
+      elsif site_classes.length > 1
+        raise Error, "More than one #{self.class} class defined"
       else
-        yaml_file = params[:dir] / 'mill.yaml'
-      end
-      raise Error, "Config file does not exist: #{yaml_file}" unless yaml_file.exist?
-      yaml = YAML.load_file(yaml_file, permitted_classes: [Date, Symbol])
-      params.update(yaml.map { |k, v| [k.to_sym, v] }.to_h)
-    end
-
-    def self.load_code(params)
-      if (site_file = params[:dir] / params[:code_dir] / 'site.rb').exist?
-        Kernel.load(site_file.expand_path.to_s)
-        site_classes = subclasses
-        raise Error, "More than one #{self.class} class defined" if site_classes.length > 1
         site_classes.first
       end
     end
 
-    def initialize(params={})
+    def initialize(config)
+      @config = config
       @redirects = {}
-      super
       @resources = Resources.new
       make_file_types
     end
@@ -82,37 +41,22 @@ module Mill
       "<#{self.class}>"
     end
 
-    def dir=(d)
-      @dir = d.kind_of?(Path) ? d : Path.new(d)
-    end
-
-    def input_dir=(d)
-      @input_dir = @dir / d
-    end
-
-    def output_dir=(d)
-      @output_dir = @dir / d
-    end
-
-    def code_dir=(d)
-      @code_dir = @dir / d
-    end
-
-    def site_uri=(uri)
-      @site_uri = Addressable::URI.parse(uri)
-    end
-
-    def site_email=(uri)
-      @site_email = Addressable::URI.parse(uri)
-    end
-
-    def site_control_date=(date)
-      @site_control_date = date.kind_of?(Date) ? date : Date.parse(date)
-    end
-
-    def html_version=(version)
-      @html_version = version.to_sym
-    end
+    def input_dir = @config.dir / @config.input_dir
+    def output_dir = @config.dir / @config.output_dir
+    def site_uri = @config.site_uri
+    def site_rsync = @config.site_rsync
+    def site_title = @config.site_title
+    def site_email = @config.site_email
+    def site_postal = @config.site_postal
+    def site_phone = @config.site_phone
+    def site_instagram = @config.site_instagram
+    def site_control_date = @config.site_control_date
+    def html_version = @config.html_version
+    def make_error? = @config.make_error
+    def make_feed? = @config.make_feed
+    def make_sitemap? = @config.make_sitemap
+    def make_robots? = @config.make_robots
+    def allow_robots? = @config.allow_robots
 
     def make_file_types
       @file_types = {}
@@ -146,22 +90,22 @@ module Mill
     def tag_uri
       'tag:%s:' % [
         [
-          @site_uri.host.downcase,
-          @site_control_date
+          site_uri.host.downcase,
+          site_control_date
         ].join(','),
       ]
     end
 
     def feed_author_name
-      @site_title
+      site_title
     end
 
     def feed_author_uri
-      @site_uri
+      site_uri
     end
 
     def feed_author_email
-      @site_email
+      site_email
     end
 
     def feed_resources
@@ -186,10 +130,10 @@ module Mill
     def load_resources
       add_files
       add_redirects
-      add_error if @make_error
-      add_feed if @make_feed
-      add_sitemap if @make_sitemap
-      add_robots if @make_robots
+      add_error if make_error?
+      add_feed if make_feed?
+      add_sitemap if make_sitemap?
+      add_robots if make_robots?
     end
 
     def build_resources
@@ -211,12 +155,12 @@ module Mill
     end
 
     def save
-      if @output_dir.exist?
-        @output_dir.children.reject { |p| p.basename.to_s == '.git' }.each do |path|
+      if output_dir.exist?
+        output_dir.children.reject { |p| p.basename.to_s == '.git' }.each do |path|
           path.rm_rf
         end
       else
-        @output_dir.mkpath
+        output_dir.mkpath
       end
       @resources.each do |resource|
         # ;;warn "#{resource.path}: saving"
@@ -250,8 +194,8 @@ module Mill
     private
 
     def add_files
-      raise Error, "Input directory not found: #{@input_dir}" unless @input_dir.exist?
-      @input_dir.find do |input_file|
+      raise Error, "Input directory not found: #{input_dir}" unless input_dir.exist?
+      input_dir.find do |input_file|
         if input_file.basename.to_s[0] == '.'
           Find.prune
         elsif input_file.basename.to_s == "Icon\r"
@@ -259,7 +203,7 @@ module Mill
         elsif input_file.directory?
           # skip directories
         else (klass = resource_class_for_file(input_file))
-          resource = klass.new(input: input_file, path: '/' + input_file.relative_to(@input_dir).to_s)
+          resource = klass.new(input: input_file, path: '/' + input_file.relative_to(input_dir).to_s)
           add_resource(resource)
         end
       end

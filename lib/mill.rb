@@ -12,6 +12,7 @@ require 'sassc'
 require 'set_params'
 require 'simple-builder'
 require 'simple-command'
+require 'simple-config'
 require 'simple-printer'
 require 'time'
 require 'tree'
@@ -27,6 +28,7 @@ class Class
 end
 
 require 'mill/command'
+require 'mill/config'
 require 'mill/error'
 require 'mill/resource'
 require 'mill/resources'

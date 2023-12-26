@@ -48,13 +48,13 @@ module Mill
 
       def build
         raise Error, "No document defined" unless @document
-        builder = case @site&.html_version
+        builder = case @site.html_version
         when :html4
           :build_html4_document
         when :html5, nil
           :build_html5_document
         else
-          raise "Unknown HTML version: #{@site&.html_version.inspect}"
+          raise "Unknown HTML version: #{@site.html_version.inspect}"
         end
         @output = Simple::Builder.send(builder) do |html|
           html.html(lang: 'en') do
