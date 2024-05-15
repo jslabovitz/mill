@@ -1,6 +1,8 @@
 module Mill
 
-  class Command < SimpleCommand::Command
+  class Command < Simple::CommandParser::Command
+
+    attr_accessor :dir
 
     def run(args)
       @site = Mill::Site.load(@dir || '.')

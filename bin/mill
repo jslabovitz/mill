@@ -2,4 +2,4 @@
 
 require 'mill'
 
-SimpleCommand::Commander.new.run(ARGV)
+Simple::CommandParser.run(ARGV)
