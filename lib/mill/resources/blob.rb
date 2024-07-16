@@ -16,9 +16,11 @@ module Mill
         application/x-javascript
 
         font/otf
+        font/woff2
         application/font-sfnt
         application/x-font-opentype
         application/x-font-otf
+        application/font-woff
 
         application/mp4
         audio/mpeg
