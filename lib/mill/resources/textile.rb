@@ -8,7 +8,13 @@ module Mill
         text/textile
       }
 
-      MIME::Types.add(MIME::Type.new(['text/textile', %w[textile]])) if MIME::Types['text/textile'].empty?
+      if MIME::Types['text/textile'].empty?
+        type = MIME::Type.new(
+          'content-type'        => 'text/textile',
+          'preferred-extension' => 'textile',
+        )
+        MIME::Types.add(type)
+      end
 
       def parse_text(text)
         RedCloth.new((text || '').strip, [:no_span_caps]).to_html
