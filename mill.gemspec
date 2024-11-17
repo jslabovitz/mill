@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name          = 'mill'
-  s.version       = '0.17'
+  s.version       = '0.18'
   s.summary       = 'A simple but useful static site generator.'
   s.author        = 'John Labovitz'
   s.email         = 'johnl@johnlabovitz.com'
