@@ -5,6 +5,8 @@ module Mill
     class Blob < Resource
 
       FileTypes = %w{
+        text/plain
+
         application/pdf
 
         application/zip

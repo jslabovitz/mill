@@ -6,6 +6,7 @@ module Mill
 
       FileTypes = %w{
         text/markdown
+        text/x-web-markdown
       }
 
       def parse_text(text)
