@@ -2,7 +2,7 @@ module Mill
 
   ConfigFileName = 'mill.yaml'
 
-  BaseConfig = Simple::Config.define(
+  BaseConfig = Simple::Configurator.define(
     dir: { default: '.', converter: :path },
     input_dir: { default: 'content', converter: :path },
     output_dir: { default: 'public_html', converter: :path },
