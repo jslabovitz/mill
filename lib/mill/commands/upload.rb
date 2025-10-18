@@ -14,7 +14,7 @@ module Mill
           --exclude=.git
           --delete-after
         ]
-        run_command('rsync', *options, @site.output_dir, @site.site_rsync)
+        run_command('rsync', *options, @site.output_dir, @site.site_rsync, verbose: true)
       end
 
     end
